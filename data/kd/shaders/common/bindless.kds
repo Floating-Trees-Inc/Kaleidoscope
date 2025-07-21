@@ -1,0 +1,90 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-15 22:59:19
+//
+
+#ifndef BINDLESS_KDS
+#define BINDLESS_KDS
+
+static const uint INVALID_DESCRIPTOR = 0x00000000;
+
+#ifdef D3D12
+
+#define PUSH_CONSTANTS(Type, Name) ConstantBuffer<Type> Name : register(b0)
+
+#define DECLARE_BINDLESS_TEXTURE2D(TypeName, Type)                     \
+    Texture2D<Type> BindlessTexture2D##TypeName##_Load(uint index)    \
+    {                                                                 \
+        Texture2D<Type> result = ResourceDescriptorHeap[index];       \
+        return result;                                                \
+    }
+
+#define DECLARE_BINDLESS_TEXTURECUBE(TypeName, Type)                     \
+    TextureCube<Type> BindlessTextureCube##TypeName##_Load(uint index)    \
+    {                                                                 \
+        TextureCube<Type> result = ResourceDescriptorHeap[index];       \
+        return result;                                                \
+    }
+
+#define DECLARE_BINDLESS_RWTEXTURE2D(TypeName, Type)                  \
+    RWTexture2D<Type> BindlessRWTexture2D##TypeName##_Load(uint index)\
+    {                                                                 \
+        RWTexture2D<Type> result = ResourceDescriptorHeap[index];     \
+        return result;                                                \
+    }
+
+#define DECLARE_BINDLESS_RWTEXTURE2DARRAY(TypeName, Type)                  \
+    RWTexture2DArray<Type> BindlessRWTexture2DArray##TypeName##_Load(uint index)\
+    {                                                                 \
+        RWTexture2DArray<Type> result = ResourceDescriptorHeap[index];     \
+        return result;                                                \
+    }
+
+SamplerState BindlessSampler_Load(uint index)
+{
+    return SamplerDescriptorHeap[index];
+}
+
+RaytracingAccelerationStructure BindlessAccelerationStructure_Load(uint index)
+{
+    return ResourceDescriptorHeap[index];
+}
+
+DECLARE_BINDLESS_TEXTURE2D(Float, float);
+DECLARE_BINDLESS_TEXTURE2D(Float2, float2);
+DECLARE_BINDLESS_TEXTURE2D(Float3, float3);
+DECLARE_BINDLESS_TEXTURE2D(Float4, float4);
+
+DECLARE_BINDLESS_TEXTURECUBE(Float, float);
+DECLARE_BINDLESS_TEXTURECUBE(Float2, float2);
+DECLARE_BINDLESS_TEXTURECUBE(Float3, float3);
+DECLARE_BINDLESS_TEXTURECUBE(Float4, float4);
+
+DECLARE_BINDLESS_RWTEXTURE2D(Float, float);
+DECLARE_BINDLESS_RWTEXTURE2D(Float2, float2);
+DECLARE_BINDLESS_RWTEXTURE2D(Float3, float3);
+DECLARE_BINDLESS_RWTEXTURE2D(Float4, float4);
+
+DECLARE_BINDLESS_RWTEXTURE2DARRAY(Float, float);
+DECLARE_BINDLESS_RWTEXTURE2DARRAY(Float2, float2);
+DECLARE_BINDLESS_RWTEXTURE2DARRAY(Float3, float3);
+DECLARE_BINDLESS_RWTEXTURE2DARRAY(Float4, float4);
+
+#define DEFINE_CBV_ARRAY(type)                                       \
+    ConstantBuffer<type> BindlessCBV_##type##_Load(uint index) {    \
+        return ResourceDescriptorHeap[index];                        \
+    }
+
+#define DEFINE_SRV_ARRAY(type)                                             \
+    StructuredBuffer<type> BindlessSRV_##type##_Load(uint index) {        \
+        return ResourceDescriptorHeap[index];                              \
+    }
+
+#define DEFINE_UAV_ARRAY(type)                                                  \
+    RWStructuredBuffer<type> BindlessUAV_##type##_Load(uint index) {          \
+        return ResourceDescriptorHeap[index];                                   \
+    }
+
+#endif
+
+#endif

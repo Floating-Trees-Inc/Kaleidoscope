@@ -1,0 +1,9 @@
+# IDE
+.vscode
+.vs
+generated
+
+# Binaries
+.xmake
+build
+kaleidoscope.txt
