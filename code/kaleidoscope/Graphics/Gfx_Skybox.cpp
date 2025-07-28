@@ -6,6 +6,8 @@
 #include "Gfx_Skybox.h"
 #include "Gfx_ShaderManager.h"
 #include "Gfx_Uploader.h"
+#include "Gfx_TempResourceStorage.h"
+#include "Gfx_CommandListRecycler.h"
 
 #include <KDAsset/KDA_TextureLoader.h>
 
@@ -20,12 +22,12 @@ namespace Gfx
     {
         // Load image
         KDA::Texture texture = KDA::TextureLoader::LoadFromFile(path);
-        KGPU::ITexture* inputTex = Manager::GetDevice()->CreateTexture(texture.ToTextureDesc());
-        KGPU::ITextureView* inputView = Manager::GetDevice()->CreateTextureView(KGPU::TextureViewDesc(inputTex, KGPU::TextureViewType::kShaderRead));
-        KGPU::ISampler* defaultSampler = Manager::GetDevice()->CreateSampler(KGPU::SamplerDesc(KGPU::SamplerAddress::kWrap, KGPU::SamplerFilter::kLinear, false));
+        KGPU::ITexture* inputTex = TempResourceStorage::CreateTexture(texture.ToTextureDesc());
+        KGPU::ITextureView* inputView = TempResourceStorage::CreateTextureView(KGPU::TextureViewDesc(inputTex, KGPU::TextureViewType::kShaderRead));
+        KGPU::ISampler* defaultSampler = TempResourceStorage::CreateSampler(KGPU::SamplerDesc(KGPU::SamplerAddress::kWrap, KGPU::SamplerFilter::kLinear, false));
         Uploader::EnqueueTextureUploadRaw(texture.Bytes.data(), texture.Bytes.size(), inputTex);
-        Uploader::Flush();
 
+        // NOT TEMPORARY
         KGPU::TextureDesc outDesc;
         outDesc.Width = 2048;
         outDesc.Height = 2048;
@@ -43,9 +45,10 @@ namespace Gfx
         cubeViewDesc.Type = KGPU::TextureViewType::kShaderRead;
         cubeViewDesc.ViewMip = KGPU::VIEW_ALL_MIPS;
         sky.CubeView = Manager::GetDevice()->CreateTextureView(cubeViewDesc);
+        //
 
         cubeViewDesc.Type = KGPU::TextureViewType::kShaderWrite;
-        auto cubeWrite = Manager::GetDevice()->CreateTextureView(cubeViewDesc);
+        auto cubeWrite = TempResourceStorage::CreateTextureView(cubeViewDesc);
 
         // Run shader
         KGPU::IComputePipeline* pipeline = ShaderManager::GetCompute("data/kd/shaders/skybox_cook.kds");
@@ -92,20 +95,11 @@ namespace Gfx
         endBarrier.SourceAccess = KGPU::ResourceAccess::kShaderWrite;
         endBarrier.DestAccess = KGPU::ResourceAccess::kShaderRead;
 
-        auto cmdList = Manager::GetCommandQueue()->CreateCommandList(true);
-        cmdList->Begin();
+        auto cmdList = CommandListRecycler::RequestCommandList();
         cmdList->Barrier(beginBarrier);
         cmdList->SetComputePipeline(pipeline);
         cmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
         cmdList->Dispatch(2048 / 32, 2048 / 32, 6);
         cmdList->Barrier(endBarrier);
-        cmdList->End();
-        Manager::GetCommandQueue()->CommitCommandList(cmdList);
-
-        KC_DELETE(cmdList);
-        KC_DELETE(defaultSampler);
-        KC_DELETE(cubeWrite);
-        KC_DELETE(inputTex);
-        KC_DELETE(inputView);
     }
 }

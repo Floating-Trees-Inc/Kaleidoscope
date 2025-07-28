@@ -101,9 +101,9 @@ namespace KDA
         node->Primitives.push_back(meshPrimitive);
     }
 
-    void LoadMeshNode(Mesh& mesh, cgltf_node* node, int parentIndex)
+    void LoadMeshNode(Mesh& mesh, cgltf_node* node, int parentIndex, glm::mat4 transform)
     {
-        float4x4 localTransform(1.0f);
+        float4x4 localTransform = transform;
         float4x4 translationMatrix(1.0f);
         float4x4 rotationMatrix(1.0f);
         float4x4 scaleMatrix(1.0f);
@@ -139,7 +139,7 @@ namespace KDA
         }
 
         for (int i = 0; i < node->children_count; i++) {
-            LoadMeshNode(mesh, node->children[i], meshNode.ParentIndex);
+            LoadMeshNode(mesh, node->children[i], meshNode.ParentIndex, localTransform);
         }
 
         mesh.Nodes.push_back(std::move(meshNode));
@@ -174,7 +174,7 @@ namespace KDA
         result.Nodes.push_back(rootNode);
 
         for (int i = 0; i < scene->nodes_count; i++) {
-            LoadMeshNode(result, scene->nodes[i], 0);
+            LoadMeshNode(result, scene->nodes[i], 0, glm::mat4(1.0f));
         }
 
         return result;

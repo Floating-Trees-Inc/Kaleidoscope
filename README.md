@@ -10,4 +10,18 @@ To run: `xmake run {target}`, target can be your app (for instance, demo_app)
 
 ## Notes
 
-This engine is **Windows only** for now. More platforms may be added in the future however.
+This engine is **Windows only** for now. More platforms may be added in the future however, MacOS being one of my priorities.
+The mindset I have for this engine is to leave rendering and world management up to the game. Kaleidoscope is just here to provide the tools to help -- but the way you make and render your game or program is up to you.
+
+## Projects using Kaleidoscope
+
+- [Seraph](https://github.com/AmelieHeinrich/Seraph): Showcase renderer for my portfolio
+- RF: Indie game I'm making with the engine.
+
+## Features
+
+- RHI with D3D12/Vulkan support - other APIs will be added to the future
+- Input system
+- Asset management
+- Graphics utilities (resource recycling)
+- Custom ImGui renderer

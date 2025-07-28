@@ -13,8 +13,7 @@ target("KernelGPU")
 
     add_deps("sdl3", "glm", "KernelOS", "KernelCore")
 
+    add_deps("KernelGPU-Dummy")
     if is_plat("windows") then
-        add_files("D3D12/*.cpp")
-        add_headerfiles("D3D12/*.h")
-        add_deps("directx")
+        add_deps("KernelGPU-D3D12", "KernelGPU-Vulkan")
     end

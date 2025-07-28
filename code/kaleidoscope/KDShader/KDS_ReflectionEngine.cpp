@@ -7,6 +7,7 @@
 
 #if defined(KD_WINDOWS)
     #include "DXIL/KDS_DXILReflectionEngine.h"
+    #include "SPIRV/KDS_SPIRVReflectionEngine.h"
 #endif
 
 namespace KDS
@@ -17,6 +18,9 @@ namespace KDS
 #if defined(KD_WINDOWS)
             case KGPU::ShaderBytecodeType::kDXIL: {
                 return KC_NEW(DXILReflectionEngine);
+            }
+            case KGPU::ShaderBytecodeType::kSPIRV: {
+                return KC_NEW(SPIRVReflectionEngine);
             }
 #endif
             default: {

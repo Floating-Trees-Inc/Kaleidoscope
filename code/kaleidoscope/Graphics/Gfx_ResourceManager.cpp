@@ -40,10 +40,10 @@ namespace Gfx
         CreateTexture(DEFAULT_WHITE_TEXTURE, defaultDesc);
         CreateTexture(DEFAULT_BLACK_TEXTURE, defaultDesc);
         
-        auto& black = Get(DEFAULT_WHITE_TEXTURE);
-        auto& white = Get(DEFAULT_BLACK_TEXTURE);
+        auto& black = Get(DEFAULT_BLACK_TEXTURE);
+        auto& white = Get(DEFAULT_WHITE_TEXTURE);
         
-        uint32 blackColor = 0x000000FF;
+        uint32 blackColor = 0xFF000000;
         uint32 whiteColor = 0xFFFFFFFF;
         
         Uploader::EnqueueTextureUploadRaw(&blackColor, sizeof(uint), black.Texture);

@@ -24,6 +24,8 @@ namespace Gfx
         KGPU::ITextureView* GetNormalView() { return mNormal.View; }
         KGPU::ITextureView* GetMRView() { return mMetallicRoughness.View; }
         KGPU::ITextureView* GetEmissiveView() { return mEmissive.View; }
+
+        bool IsOpaque() const { return mIsOpaque; }
     private:
         struct TexturePair {
             KGPU::ITexture* Texture = nullptr;
@@ -34,5 +36,6 @@ namespace Gfx
         TexturePair mNormal;
         TexturePair mMetallicRoughness;
         TexturePair mEmissive;
+        bool mIsOpaque;
     };
 }

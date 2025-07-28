@@ -23,8 +23,8 @@ namespace Gfx
     {
         for (auto& [_, entry] : sData.Entries) {
             switch (entry.Type) {
-                case PipelineType::kGraphics: KC_DELETE(entry.GraphicsPipeline);
-                case PipelineType::kCompute: KC_DELETE(entry.ComputePipeline);
+            case PipelineType::kGraphics: KC_DELETE(entry.GraphicsPipeline); break;
+            case PipelineType::kCompute: KC_DELETE(entry.ComputePipeline); break;
             }
         }
         sData.Entries.clear();
@@ -74,10 +74,10 @@ namespace Gfx
                     KDS::ParseResult result = KDS::Parser::ParseShaderSource(source);
                     KDS::IncludeHandler includeHandler;
                     includeHandler.AddIncludePath("data");
+                    includeHandler.AddIncludePath("data/rf/shaders");
                     includeHandler.AddIncludePath("data/kd/shaders");
+                    includeHandler.AddIncludePath("data/sp/shaders");
                     source = includeHandler.ReplaceIncludes(result, source);
-
-                    // TODO: Add custom shader includes inside shader manager config?
 
                     entry.GraphicsDesc.PushConstantSize = 0;
                     for (auto& name : result.EntryPoints) {
@@ -100,6 +100,7 @@ namespace Gfx
                     includeHandler.AddIncludePath("data");
                     includeHandler.AddIncludePath("data/rf/shaders");
                     includeHandler.AddIncludePath("data/kd/shaders");
+                    includeHandler.AddIncludePath("data/sp/shaders");
                     source = includeHandler.ReplaceIncludes(result, source);
 
                     for (auto& name : result.EntryPoints) {

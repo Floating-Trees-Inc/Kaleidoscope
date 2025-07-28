@@ -9,14 +9,15 @@ namespace KGPU
 {
     enum class Backend
     {
+        // Null
+        kDummy,
+
         // Desktop
         kD3D12,
         kVulkan,
         kMetal,
 
         // Console
-        kAGC,
-        kD3D12X,
-        kNVN2,
+        kSignTheNDAFirst
     };
 }

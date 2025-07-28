@@ -22,7 +22,11 @@ namespace KOS
     {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD);
         
+#ifdef KD_MAC
         mWindow = SDL_CreateWindow(title, width, height, 0);
+#else
+        mWindow = SDL_CreateWindow(title, width, height, SDL_WINDOW_VULKAN);
+#endif
         mRunning = true;
     }
 

@@ -9,4 +9,4 @@ target("Graphics")
 
     add_files("*.cpp")
     add_headerfiles("*.h")
-    add_deps("KernelGPU")
+    add_deps("KernelGPU", "stb")

@@ -14,9 +14,9 @@ target("KDShader")
     add_deps("KernelOS", "KernelCore", "glm")
 
     if is_plat("windows") then
-        add_headerfiles("DXIL/*.h")
-        add_files("DXIL/*.cpp")
-        add_deps("dxc")
+        add_headerfiles("DXIL/*.h", "SPIRV/*.h")
+        add_files("DXIL/*.cpp", "SPIRV/*.cpp")
+        add_deps("dxc", "spirv-reflect")
 
         add_syslinks("kernel32", "user32")
     end

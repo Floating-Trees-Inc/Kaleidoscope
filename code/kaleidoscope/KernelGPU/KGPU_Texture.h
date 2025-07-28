@@ -66,14 +66,15 @@ namespace KGPU
     
         TextureDesc GetDesc() const { return mDesc; }
     
-        ResourceLayout GetLayout() { return mLayout; }
-        void SetLayout(ResourceLayout layout) { mLayout = layout; }
+        ResourceLayout GetLayout(uint mip = 0) { return mLayouts[mip]; }
+        void SetLayout(ResourceLayout layout, uint mip = 0) { mLayouts[mip] = layout; }
     public:
         static uint32 BytesPerPixel(TextureFormat format);
         static bool IsBlockFormat(TextureFormat format);
+        static TextureFormat ToSRGB(TextureFormat format);
     
     protected:
         TextureDesc mDesc;
-        ResourceLayout mLayout = ResourceLayout::kUndefined;
+        KC::Array<ResourceLayout> mLayouts;
     };
 }

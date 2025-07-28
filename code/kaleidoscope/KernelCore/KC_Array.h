@@ -9,11 +9,15 @@
 #include <KernelOS/KOS_DirectAllocation.h>
 
 #include <vector>
+#include <array>
 #include <set>
 
 namespace KC {
     template<typename T>
     using Array = std::vector<T>;
+
+    template<typename T, int N>
+    using StaticArray = std::array<T, N>;
 
     template<typename T>
     using Set = std::set<T>;

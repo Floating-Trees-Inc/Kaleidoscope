@@ -33,4 +33,15 @@ namespace KGPU
             return true;
         return false;
     }
+
+    TextureFormat ITexture::ToSRGB(TextureFormat format)
+    {
+        switch (format)
+        {
+        case TextureFormat::kR8G8B8A8_UNORM:     return TextureFormat::kR8G8B8A8_sRGB;
+        case TextureFormat::kBC7_UNORM:          return TextureFormat::kBC7_sRGB;
+        default: return format;
+        }
+        return format;
+    }
 }

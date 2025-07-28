@@ -64,16 +64,17 @@ namespace KGPU
         kMemoryRead                  = BIT(14),
         kMemoryWrite                 = BIT(15),
         kAccelerationStructureRead   = BIT(16),
-        kAccelerationStructureWrite  = BIT(17),
+        kAccelerationStructureWrite  = BIT(17)
     };
     ENUM_CLASS_FLAGS(ResourceAccess);
-    
+
     struct TextureBarrier
     {
         PipelineStage SourceStage;
         PipelineStage DestStage;
         ResourceAccess SourceAccess;
         ResourceAccess DestAccess;
+        ResourceLayout SourceLayout = (ResourceLayout)123456789;
         ResourceLayout NewLayout;
         ITexture* Texture;
     
@@ -178,7 +179,8 @@ namespace KGPU
         virtual void SetRenderSize(float width, float height) = 0;
         virtual void SetVertexBuffer(IBuffer* buffer, uint64 offset = 0) = 0;
         virtual void SetIndexBuffer(IBuffer* buffer) = 0;
-    
+        virtual void SetDepthBounds(float min, float max) {}
+
         virtual void SetGraphicsPipeline(IGraphicsPipeline* pipeline) = 0;
         virtual void SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size) = 0;
     
@@ -191,7 +193,7 @@ namespace KGPU
         virtual void DispatchMesh(uint x, uint y, uint z) = 0;
     
         virtual void CopyBufferToBufferFull(IBuffer* dest, IBuffer* src) = 0;
-        virtual void CopyBufferToTexture(ITexture* dest, IBuffer* src) = 0;
+        virtual void CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips = true) = 0;
         virtual void CopyTextureToBuffer(IBuffer* dest, ITexture* src) = 0;
         virtual void CopyTextureToTexture(ITexture* dst, ITexture* src) = 0;
         virtual void BuildBLAS(IBLAS* blas, ASBuildMode mode) = 0;
@@ -204,5 +206,19 @@ namespace KGPU
     
     protected:
         ICommandQueue* mParentQueue;
+    };
+
+    struct ScopedMarker
+    {
+        ScopedMarker(ICommandList* list, const KC::String& name)
+            : cmdList(list) {
+            list->PushMarker(name);
+        }
+
+        ~ScopedMarker() {
+            cmdList->PopMarker();
+        }
+
+        ICommandList* cmdList;
     };
 }

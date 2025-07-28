@@ -18,7 +18,7 @@ namespace KDA
         desc.MipLevels = MipCount;
         desc.Format = Format;
         desc.Depth = 1;
-        desc.Usage = KGPU::TextureUsage::kShaderResource;
+        desc.Usage = KGPU::TextureUsage::kShaderResource | KGPU::TextureUsage::kStorage;
 
         return desc;
     }
@@ -46,8 +46,8 @@ namespace KDA
 
         // Load!
         Texture result = {};
-        result.MipCount = 1;
         result.Type = type;
+        result.MipCount = 1;
 
         switch (type) {
             case TextureType::UncompressedImage: {
@@ -55,8 +55,12 @@ namespace KDA
                 uint8* data = stbi_load(path.c_str(), &result.Width, &result.Height, &channels, STBI_rgb_alpha);
                 KD_ASSERT_EQ(data, "Failed to load stbi data!");
 
+                // Calculate number of mip levels
+                uint maxDim = std::max(result.Width, result.Height);
+                result.MipCount = floor(log2(std::max(result.Width, result.Height))) + 1;
+
                 result.Bytes.resize(result.Width * result.Height * 4 * sizeof(uint8));
-                result.Format = srgb ? KGPU::TextureFormat::kR8G8B8A8_sRGB : KGPU::TextureFormat::kR8G8B8A8_UNORM;
+                result.Format = KGPU::TextureFormat::kR8G8B8A8_UNORM;
                 memcpy(result.Bytes.data(), data, result.Bytes.size());
                 stbi_image_free(data);
                 return result;

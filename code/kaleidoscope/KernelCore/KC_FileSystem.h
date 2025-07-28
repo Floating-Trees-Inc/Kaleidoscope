@@ -18,5 +18,7 @@ namespace KC
         static String GetExtension(const String& path);
         
         static String ReadWholeFile(const String& path);
+
+        static void CreateDirectory(const String& path);
     };
 }

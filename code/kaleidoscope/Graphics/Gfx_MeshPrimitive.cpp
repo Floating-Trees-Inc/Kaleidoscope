@@ -17,6 +17,7 @@ namespace Gfx
         mIndexBuffer = device->CreateBuffer(KGPU::BufferDesc(primitive.Indices.size() * sizeof(uint), sizeof(uint), KGPU::BufferUsage::kIndex));
         mBLAS = device->CreateBLAS(KGPU::BLASDesc(mVertexBuffer, mIndexBuffer));
         mVertexBufferView = device->CreateBufferView(KGPU::BufferViewDesc(mVertexBuffer, KGPU::BufferViewType::kStructured));
+        mIndexBufferView = device->CreateBufferView(KGPU::BufferViewDesc(mIndexBuffer, KGPU::BufferViewType::kStructured));
     
         Uploader::EnqueueBufferUpload(primitive.Vertices.data(), mVertexBuffer->GetDesc().Size, mVertexBuffer);
         Uploader::EnqueueBufferUpload(primitive.Indices.data(), mIndexBuffer->GetDesc().Size, mIndexBuffer);
@@ -28,6 +29,7 @@ namespace Gfx
         if (mVertexBuffer) KC_DELETE(mVertexBuffer);
         if (mIndexBuffer) KC_DELETE(mIndexBuffer);
         if (mBLAS) KC_DELETE(mBLAS);
+        if (mIndexBufferView) KC_DELETE(mIndexBufferView);
         if (mVertexBufferView) KC_DELETE(mVertexBufferView);        
     }
 }

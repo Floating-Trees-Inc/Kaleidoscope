@@ -6,6 +6,8 @@
 #include "KC_FileSystem.h"
 #include "KC_Context.h"
 
+#include <filesystem>
+
 namespace KC
 {
     bool FileSystem::Exists(const String& path)
@@ -41,5 +43,10 @@ namespace KC
         file.Close();
 
         return result;
+    }
+
+    void FileSystem::CreateDirectory(const String& path)
+    {
+        std::filesystem::create_directory(path);
     }
 }

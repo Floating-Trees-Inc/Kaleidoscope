@@ -5,11 +5,11 @@
 
 #include "Gfx_Uploader.h"
 #include "Gfx_Manager.h"
+#include "Gfx_CommandListRecycler.h"
+#include "Gfx_TempResourceStorage.h"
 
 namespace Gfx
 {
-    Uploader::PrivateData Uploader::sData;
-
     struct MipLevelInfo
     {
         uint32 Width, Height;
@@ -17,55 +17,55 @@ namespace Gfx
         uint64 RowPitch;
     };
 
-    void Uploader::Initialize()
-    {
-        sData = {};
-        sData.UploadBatchSize = 0;
-
-        KD_WHATEVER("Initialized uploader");
-    }
-
-    void Uploader::Shutdown()
-    {
-        for (auto& request : sData.Requests) {
-            if (request.StagingBuffer) KC_DELETE(request.StagingBuffer);
-        }
-        sData.Requests.clear();
-    }
-
     void Uploader::EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::IBuffer* instanceBuffer, uint instanceCount)
     {
-        UploadRequest request = {};
-        request.Type = UploadRequestType::kTLASBuild;
-        request.TLAS = tlas;
-        request.InstanceBuffer = instanceBuffer;
-        request.InstanceCount = instanceCount;
+        KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
 
-        sData.Requests.push_back(std::move(request));
-        sData.UploadBatchSize += KGPU::MAX_TLAS_INSTANCES; // Approximate
-        if (sData.UploadBatchSize >= MAX_BATCH_SIZE)
-            Flush();
+        KGPU::BufferBarrier beforeBarrier(tlas->GetMemory());
+        beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
+        beforeBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
+        beforeBarrier.SourceStage = KGPU::PipelineStage::kCopy;
+        beforeBarrier.DestStage = KGPU::PipelineStage::kAccelStructureWrite;
+
+        KGPU::BufferBarrier afterBarrier(tlas->GetMemory());
+        afterBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
+        afterBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
+        afterBarrier.SourceStage = KGPU::PipelineStage::kAccelStructureWrite;
+        afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
+
+        cmdList->Barrier(beforeBarrier);
+        cmdList->BuildTLAS(tlas, KGPU::ASBuildMode::kRebuild, instanceCount, instanceBuffer);
+        cmdList->Barrier(afterBarrier);
     }
 
     void Uploader::EnqueueBLASBuild(KGPU::IBLAS* blas)
     {
-        UploadRequest request = {};
-        request.Type = UploadRequestType::kBLASBuild;
-        request.BLAS = blas;
+        KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
 
-        sData.Requests.push_back(std::move(request));
-        sData.UploadBatchSize += blas->GetDesc().VertexCount * 2; // Approximate
-        if (sData.UploadBatchSize >= MAX_BATCH_SIZE)
-            Flush();
+        KGPU::BufferBarrier beforeBarrier(blas->GetMemory());
+        beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
+        beforeBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
+        beforeBarrier.SourceStage = KGPU::PipelineStage::kCopy;
+        beforeBarrier.DestStage = KGPU::PipelineStage::kAccelStructureWrite;
+
+        KGPU::BufferBarrier afterBarrier(blas->GetMemory());
+        afterBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
+        afterBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
+        afterBarrier.SourceStage = KGPU::PipelineStage::kAccelStructureWrite;
+        afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
+
+        cmdList->Barrier(beforeBarrier);
+        cmdList->BuildBLAS(blas, KGPU::ASBuildMode::kRebuild);
+        cmdList->Barrier(afterBarrier);
     }
 
-    void Uploader::EnqueueTextureUploadRaw(const void* data, uint64 size, KGPU::ITexture* texture)
+    void Uploader::EnqueueTextureUploadRaw(const void* data, uint64 size, KGPU::ITexture* texture, bool bufferHasMips, KGPU::ICommandList* list)
     {
         KGPU::TextureDesc desc = texture->GetDesc();
-        uint mipLevels = desc.MipLevels;
+        uint mipLevels = bufferHasMips ? desc.MipLevels : 1;
         uint baseWidth = desc.Width;
         uint baseHeight = desc.Height;
-        std::vector<MipLevelInfo> mips;
+        KC::Array<MipLevelInfo> mips;
 
         // Get buffer-image granularity for proper alignment
         uint64 bufferImageGranularity = Manager::GetDevice()->GetBufferImageGranularity();
@@ -109,13 +109,11 @@ namespace Gfx
         stagingDesc.Size = totalBufferSize; // No need for extra alignment here
         stagingDesc.Usage = KGPU::BufferUsage::kStaging;
 
-        UploadRequest request = {};
-        request.Type = UploadRequestType::kTextureCPUToGPU;
-        request.DstTexture = texture;
-        request.StagingBuffer = Manager::GetDevice()->CreateBuffer(stagingDesc);
+        KGPU::IBuffer* stagingBuffer = TempResourceStorage::CreateBuffer(stagingDesc);
+        stagingBuffer->SetName("Staging Buffer");
 
         // 3. Copy data into staging buffer
-        void* mappedVoid = request.StagingBuffer->Map();
+        void* mappedVoid = stagingBuffer->Map();
         uint8* dstBase = reinterpret_cast<uint8*>(mappedVoid);
         const uint8* srcPtr = reinterpret_cast<const uint8*>(data);
         uint64 srcOffset = 0;
@@ -148,175 +146,101 @@ namespace Gfx
                 }
             }
         }
-        request.StagingBuffer->Unmap();
+        stagingBuffer->Unmap();
 
-        sData.Requests.push_back(std::move(request));
-        sData.UploadBatchSize += totalBufferSize;
-        if (sData.UploadBatchSize >= MAX_BATCH_SIZE)
-            Flush();
+        // Upload
+        KGPU::ICommandList* cmdList = list == nullptr ? CommandListRecycler::RequestCommandList() : list;
+
+        KGPU::TextureBarrier dstBarrier(texture);
+        dstBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
+        dstBarrier.DestStage = KGPU::PipelineStage::kCopy;
+        dstBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
+        dstBarrier.DestAccess = KGPU::ResourceAccess::kTransferWrite;
+        dstBarrier.NewLayout = KGPU::ResourceLayout::kTransferDst;
+        dstBarrier.BaseMipLevel = 0;
+        dstBarrier.LevelCount = texture->GetDesc().MipLevels;
+
+        KGPU::BufferBarrier stagingBarrier(stagingBuffer);
+        stagingBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
+        stagingBarrier.DestStage = KGPU::PipelineStage::kCopy;
+        stagingBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
+        stagingBarrier.DestAccess = KGPU::ResourceAccess::kTransferRead;
+
+        KGPU::BarrierGroup firstGroup = {};
+        firstGroup.BufferBarriers = { stagingBarrier };
+        firstGroup.TextureBarriers = { dstBarrier };
+
+        KGPU::TextureBarrier dstBarrierAfter(texture);
+        dstBarrierAfter.SourceStage = KGPU::PipelineStage::kCopy;
+        dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
+        dstBarrierAfter.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
+        dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderRead;
+        dstBarrierAfter.NewLayout = KGPU::ResourceLayout::kReadOnly;
+        dstBarrierAfter.BaseMipLevel = 0;
+        dstBarrierAfter.LevelCount = texture->GetDesc().MipLevels;
+
+        cmdList->Barrier(firstGroup);
+        cmdList->CopyBufferToTexture(texture, stagingBuffer, bufferHasMips);
+        cmdList->Barrier(dstBarrierAfter);
     }
 
     void Uploader::EnqueueBufferUpload(const void* data, uint64 size, KGPU::IBuffer* buffer)
     {
-        sData.UploadBatchSize += size;
-
         KGPU::BufferDesc stagingBufferDesc = {};
         stagingBufferDesc.Size = size;
         stagingBufferDesc.Usage = KGPU::BufferUsage::kStaging;
 
-        UploadRequest request = {};
-        request.Type = UploadRequestType::kBufferCPUToGPU;
-        request.DstBuffer = buffer;
-        request.StagingBuffer = Manager::GetDevice()->CreateBuffer(stagingBufferDesc);
+        KGPU::IBuffer* stagingBuffer = TempResourceStorage::CreateBuffer(stagingBufferDesc);
 
-        void* ptr = request.StagingBuffer->Map();
+        void* ptr = stagingBuffer->Map();
         memcpy(ptr, data, size);
-        request.StagingBuffer->Unmap();
+        stagingBuffer->Unmap();
 
-        sData.Requests.push_back(std::move(request));
+        // Flush
+        KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
+        KGPU::BufferDesc dstDesc = buffer->GetDesc();
 
-        if (sData.UploadBatchSize >= MAX_BATCH_SIZE)
-            Flush();
-    }
+        KGPU::BufferBarrier dstBarrier(buffer);
+        dstBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
+        dstBarrier.DestStage = KGPU::PipelineStage::kCopy;
+        dstBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
+        dstBarrier.DestAccess = KGPU::ResourceAccess::kTransferWrite;
 
-    void Uploader::Flush()
-    {
-        if (sData.Requests.empty())
-            return;
+        KGPU::BufferBarrier stagingBarrier(stagingBuffer);
+        stagingBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
+        stagingBarrier.DestStage = KGPU::PipelineStage::kCopy;
+        stagingBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
+        stagingBarrier.DestAccess = KGPU::ResourceAccess::kTransferRead;
 
-        KD_WHATEVER("Flushing uploader, batch size %d bytes", sData.UploadBatchSize);
+        KGPU::BarrierGroup firstGroup = {};
+        firstGroup.BufferBarriers = { dstBarrier, stagingBarrier };
 
-        sData.CommandBuffer = Manager::GetCommandQueue()->CreateCommandList(true);
-        sData.CommandBuffer->Begin();
-        for (auto& request : sData.Requests) {
-            switch (request.Type) {
-                case UploadRequestType::kBufferCPUToGPU: {
-                    KGPU::BufferDesc dstDesc = request.DstBuffer->GetDesc();
-
-                    KGPU::BufferBarrier dstBarrier(request.DstBuffer);
-                    dstBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
-                    dstBarrier.DestStage = KGPU::PipelineStage::kCopy;
-                    dstBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
-                    dstBarrier.DestAccess = KGPU::ResourceAccess::kTransferWrite;
-
-                    KGPU::BufferBarrier stagingBarrier(request.DstBuffer);
-                    stagingBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
-                    stagingBarrier.DestStage = KGPU::PipelineStage::kCopy;
-                    stagingBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
-                    stagingBarrier.DestAccess = KGPU::ResourceAccess::kTransferRead;
-
-                    KGPU::BarrierGroup firstGroup = {};
-                    firstGroup.BufferBarriers = { dstBarrier, stagingBarrier };
-
-                    KGPU::BufferBarrier dstBarrierAfter(request.DstBuffer);
-                    dstBarrierAfter.SourceStage = KGPU::PipelineStage::kCopy;
-                    dstBarrierAfter.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
-                    if (Any(dstDesc.Usage & KGPU::BufferUsage::kVertex)) {
-                        dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kVertexBufferRead;
-                        dstBarrierAfter.DestStage = KGPU::PipelineStage::kVertexInput;
-                    }
-                    if (Any(dstDesc.Usage & KGPU::BufferUsage::kIndex)) {
-                        dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kIndexBufferRead;
-                        dstBarrierAfter.DestStage = KGPU::PipelineStage::kVertexInput;
-                    }
-                    if (Any(dstDesc.Usage & KGPU::BufferUsage::kConstant)) {
-                        dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kConstantBufferRead;
-                        dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllCommands;
-                    }
-                    if (Any(dstDesc.Usage & KGPU::BufferUsage::kShaderRead)) {
-                        dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderRead;
-                        dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
-                    }
-                    if (Any(dstDesc.Usage & KGPU::BufferUsage::kShaderWrite)) {
-                        dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderWrite;
-                        dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
-                    }
-
-                    sData.CommandBuffer->Barrier(firstGroup);
-                    sData.CommandBuffer->CopyBufferToBufferFull(request.DstBuffer, request.StagingBuffer);
-                    sData.CommandBuffer->Barrier(dstBarrierAfter);
-                    break;
-                }
-                case UploadRequestType::kTextureCPUToGPU: {
-                    KGPU::TextureBarrier dstBarrier(request.DstTexture);
-                    dstBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
-                    dstBarrier.DestStage = KGPU::PipelineStage::kCopy;
-                    dstBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
-                    dstBarrier.DestAccess = KGPU::ResourceAccess::kTransferWrite;
-                    dstBarrier.NewLayout = KGPU::ResourceLayout::kTransferDst;
-                    dstBarrier.BaseMipLevel = 0;
-                    dstBarrier.LevelCount = request.DstTexture->GetDesc().MipLevels;
-
-                    KGPU::BufferBarrier stagingBarrier(request.StagingBuffer);
-                    stagingBarrier.SourceStage = KGPU::PipelineStage::kAllCommands;
-                    stagingBarrier.DestStage = KGPU::PipelineStage::kCopy;
-                    stagingBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
-                    stagingBarrier.DestAccess = KGPU::ResourceAccess::kTransferRead;
-
-                    KGPU::BarrierGroup firstGroup = {};
-                    firstGroup.BufferBarriers = { stagingBarrier };
-                    firstGroup.TextureBarriers = { dstBarrier };
-
-                    KGPU::TextureBarrier dstBarrierAfter(request.DstTexture);
-                    dstBarrierAfter.SourceStage = KGPU::PipelineStage::kCopy;
-                    dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
-                    dstBarrierAfter.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
-                    dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderRead;
-                    dstBarrierAfter.NewLayout = KGPU::ResourceLayout::kReadOnly;
-                    dstBarrierAfter.BaseMipLevel = 0;
-                    dstBarrierAfter.LevelCount = request.DstTexture->GetDesc().MipLevels;
-
-                    sData.CommandBuffer->Barrier(firstGroup);
-                    sData.CommandBuffer->CopyBufferToTexture(request.DstTexture, request.StagingBuffer);
-                    sData.CommandBuffer->Barrier(dstBarrierAfter);
-                    break;
-                }
-                case UploadRequestType::kBLASBuild: {
-                    KGPU::BufferBarrier beforeBarrier(request.BLAS->GetMemory());
-                    beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
-                    beforeBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
-                    beforeBarrier.SourceStage = KGPU::PipelineStage::kCopy;
-                    beforeBarrier.DestStage = KGPU::PipelineStage::kAccelStructureWrite;
-
-                    KGPU::BufferBarrier afterBarrier(request.BLAS->GetMemory());
-                    afterBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
-                    afterBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
-                    afterBarrier.SourceStage = KGPU::PipelineStage::kAccelStructureWrite;
-                    afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
-
-                    sData.CommandBuffer->Barrier(beforeBarrier);
-                    sData.CommandBuffer->BuildBLAS(request.BLAS, KGPU::ASBuildMode::kRebuild);
-                    sData.CommandBuffer->Barrier(afterBarrier);
-                    break;
-                }
-                case UploadRequestType::kTLASBuild: {
-                    KGPU::BufferBarrier beforeBarrier(request.TLAS->GetMemory());
-                    beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
-                    beforeBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
-                    beforeBarrier.SourceStage = KGPU::PipelineStage::kCopy;
-                    beforeBarrier.DestStage = KGPU::PipelineStage::kAccelStructureWrite;
-
-                    KGPU::BufferBarrier afterBarrier(request.TLAS->GetMemory());
-                    afterBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
-                    afterBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
-                    afterBarrier.SourceStage = KGPU::PipelineStage::kAccelStructureWrite;
-                    afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
-
-                    sData.CommandBuffer->Barrier(beforeBarrier);
-                    sData.CommandBuffer->BuildTLAS(request.TLAS, KGPU::ASBuildMode::kRebuild, request.InstanceCount, request.InstanceBuffer);
-                    sData.CommandBuffer->Barrier(afterBarrier);
-                    break;
-                }
-            }
+        KGPU::BufferBarrier dstBarrierAfter(buffer);
+        dstBarrierAfter.SourceStage = KGPU::PipelineStage::kCopy;
+        dstBarrierAfter.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
+        if (Any(dstDesc.Usage & KGPU::BufferUsage::kVertex)) {
+            dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kVertexBufferRead;
+            dstBarrierAfter.DestStage = KGPU::PipelineStage::kVertexInput;
         }
-        sData.CommandBuffer->End();
-        Manager::GetCommandQueue()->CommitCommandList(sData.CommandBuffer);
-        sData.UploadBatchSize = 0;
-
-        for (auto& request : sData.Requests) {
-            if (request.StagingBuffer) KC_DELETE(request.StagingBuffer);
+        if (Any(dstDesc.Usage & KGPU::BufferUsage::kIndex)) {
+            dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kIndexBufferRead;
+            dstBarrierAfter.DestStage = KGPU::PipelineStage::kVertexInput;
         }
-        sData.Requests.clear();
-        KC_DELETE(sData.CommandBuffer);
+        if (Any(dstDesc.Usage & KGPU::BufferUsage::kConstant)) {
+            dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kConstantBufferRead;
+            dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllCommands;
+        }
+        if (Any(dstDesc.Usage & KGPU::BufferUsage::kShaderRead)) {
+            dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderRead;
+            dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
+        }
+        if (Any(dstDesc.Usage & KGPU::BufferUsage::kShaderWrite)) {
+            dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderWrite;
+            dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
+        }
+
+        cmdList->Barrier(firstGroup);
+        cmdList->CopyBufferToBufferFull(buffer, stagingBuffer);
+        cmdList->Barrier(dstBarrierAfter);
     }
 }

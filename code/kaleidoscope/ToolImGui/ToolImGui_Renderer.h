@@ -11,6 +11,13 @@
 
 namespace ToolImGui
 {
+    struct ImGuiFontTexture
+    {
+        KGPU::ITexture* Tex;
+        KGPU::ITextureView* View;
+        bool UploadedAtLeastOnce = false;
+    };
+
     class Renderer
     {
     public:
@@ -20,7 +27,7 @@ namespace ToolImGui
         void Render(ImDrawData* data, KGPU::ICommandList* commandList, int frameIndex);
     private:
         void CreatePipeline(KGPU::IDevice* device);
-        void CreateFont(KGPU::IDevice* device);
+        void UpdateTexture(KGPU::IDevice* device, ImDrawData* data, KGPU::ICommandList* commandList);
 
     private:
         struct FrameResource {

@@ -23,12 +23,14 @@ namespace Gfx
         KGPU::IBuffer* GetIndexBuffer() { return mIndexBuffer; }
         KGPU::IBLAS* GetBLAS() { return mBLAS; }
         KGPU::IBufferView* GetVertexBufferView() { return mVertexBufferView; }
+        KGPU::IBufferView* GetIndexBufferView() { return mIndexBufferView; }
 
         uint GetIndexCount() const { return mIndexBuffer->GetDesc().Size / sizeof(uint); }
     private:
         KGPU::IBuffer* mVertexBuffer = nullptr;
         KGPU::IBufferView* mVertexBufferView = nullptr;
         KGPU::IBuffer* mIndexBuffer = nullptr;
+        KGPU::IBufferView* mIndexBufferView = nullptr;
         KGPU::IBLAS* mBLAS = nullptr;
     };
 }
