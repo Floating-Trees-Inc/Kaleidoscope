@@ -15,13 +15,15 @@ namespace Gfx
 
         mVertexBuffer = device->CreateBuffer(KGPU::BufferDesc(primitive.Vertices.size() * sizeof(KDA::MeshVertex), sizeof(KDA::MeshVertex), KGPU::BufferUsage::kShaderRead));
         mIndexBuffer = device->CreateBuffer(KGPU::BufferDesc(primitive.Indices.size() * sizeof(uint), sizeof(uint), KGPU::BufferUsage::kIndex));
-        mBLAS = device->CreateBLAS(KGPU::BLASDesc(mVertexBuffer, mIndexBuffer));
         mVertexBufferView = device->CreateBufferView(KGPU::BufferViewDesc(mVertexBuffer, KGPU::BufferViewType::kStructured));
         mIndexBufferView = device->CreateBufferView(KGPU::BufferViewDesc(mIndexBuffer, KGPU::BufferViewType::kStructured));
     
         Uploader::EnqueueBufferUpload(primitive.Vertices.data(), mVertexBuffer->GetDesc().Size, mVertexBuffer);
         Uploader::EnqueueBufferUpload(primitive.Indices.data(), mIndexBuffer->GetDesc().Size, mIndexBuffer);
-        Uploader::EnqueueBLASBuild(mBLAS);
+        if (device->SupportsRaytracing()) {
+            mBLAS = device->CreateBLAS(KGPU::BLASDesc(mVertexBuffer, mIndexBuffer));
+            Uploader::EnqueueBLASBuild(mBLAS);
+        }
     }
 
     MeshPrimitive::~MeshPrimitive()

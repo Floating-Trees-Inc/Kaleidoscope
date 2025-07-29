@@ -11,7 +11,11 @@
 namespace KGPU
 {
     D3D12BLAS::D3D12BLAS(D3D12Device* device, BLASDesc desc)
+        : mParentDevice(device)
     {
+        if (!device->SupportsRaytracing())
+            return;
+
         mDesc = desc;
         
         mGeometry = {};
@@ -57,6 +61,8 @@ namespace KGPU
     
     uint64 D3D12BLAS::GetAddress()
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return 0;
         return mMemory->GetAddress();
     }
 }

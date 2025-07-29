@@ -7,6 +7,8 @@
 
 #include <KernelGPU/KGPU_Device.h>
 #include <KDShader/KDS_ShaderFile.h>
+#include <KernelCore/KC_FileSystem.h>
+#include <KernelCore/KC_Timer.h>
 
 namespace Gfx
 {
@@ -22,7 +24,7 @@ namespace Gfx
         static KGPU::IGraphicsPipeline* GetGraphics(const KC::String& path);
         static KGPU::IComputePipeline* GetCompute(const KC::String& path);
 
-        static void ReloadPipelines(bool force = false);
+        static void ReloadPipelines();
     private:
         enum class PipelineType
         {
@@ -30,10 +32,17 @@ namespace Gfx
             kCompute
         };
 
+        struct FileWatch
+        {
+            KC::String Path;
+            KC::FileTime LastWritten;
+        };
+
         struct PipelineEntry
         {
             PipelineType Type;
             KC::String ShaderFile;
+            KC::Array<FileWatch> Dependencies;
 
             KGPU::IComputePipeline* ComputePipeline = nullptr;
             KGPU::ComputePipelineDesc ComputeDesc = {};
@@ -47,6 +56,7 @@ namespace Gfx
             KDS::IReflectionEngine* ReflectionEngine;
 
             KC::HashMap<KC::String, PipelineEntry> Entries;
+            KC::Timer ReloadTimer;
         } sData;
     };
 }

@@ -23,6 +23,8 @@ namespace KGPU
 
     private:
         friend class D3D12CommandList;
+        
+        D3D12Device* mParentDevice;
 
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS mInputs;
         D3D12_RAYTRACING_GEOMETRY_DESC mGeometry;

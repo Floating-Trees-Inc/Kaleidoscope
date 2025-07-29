@@ -16,12 +16,13 @@ namespace KDS
         
         Parser parser;
         ParseResult parseResult = parser.ParseShaderSource(source);
+        KC::Array<KC::String> found;
         
         IncludeHandler handler;
         handler.AddIncludePath("data/");
         handler.AddIncludePath("data/kd/shaders");
         handler.AddIncludePath("data/rf/shaders");
-        source = handler.ReplaceIncludes(parseResult, source);
+        source = handler.ReplaceIncludes(parseResult, source, found);
     
         for (auto& entryPoint : parseResult.EntryPoints) {
             KGPU::ShaderModule module = compiler->Compile(source, entryPoint.Name, entryPoint.Stage);

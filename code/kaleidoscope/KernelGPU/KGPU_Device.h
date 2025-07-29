@@ -44,6 +44,8 @@ namespace KGPU
         virtual IBufferView* CreateBufferView(BufferViewDesc desc) = 0;
         
         virtual Backend GetBackend() = 0;
+        virtual bool SupportsRaytracing() { return false; };
+        virtual bool SupportsMeshShaders() { return false; };
 
         virtual TextureFormat GetSurfaceFormat() = 0;
         virtual uint64 GetOptimalRowPitchAlignment() = 0;

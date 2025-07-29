@@ -28,6 +28,9 @@ namespace Gfx
 
     void RaytracingWorld::AddInstance(Gfx::MeshPrimitive* primitive, KGPU::float4x4 transform, bool opaque)
     {
+        if (!Gfx::Manager::GetDevice()->SupportsRaytracing())
+            return;
+
         KGPU::TLASInstance instance;
         instance.AccelerationStructureReference = primitive->GetBLAS()->GetAddress();
         instance.Mask = 1;

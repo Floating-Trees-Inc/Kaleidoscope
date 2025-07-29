@@ -19,8 +19,8 @@ PUSH_CONSTANTS(PushConstants, Push);
 [numthreads(8, 8, 1)]
 void CSMain(uint3 tid : SV_DispatchThreadID)
 {
-    RWTexture2D<float4> output = BindlessRWTexture2DFloat4_Load(Push.Output);
-    RaytracingAccelerationStructure accelerationStructure = BindlessAccelerationStructure_Load(Push.AccelerationStructure);
+    RWTexture2D<float4> output = ResourceDescriptorHeap[Push.Output];
+    RaytracingAccelerationStructure accelerationStructure = LoadRaytracingWorld(Push.AccelerationStructure);
 
     if (tid.x >= Push.Width || tid.y >= Push.Height) return;
 

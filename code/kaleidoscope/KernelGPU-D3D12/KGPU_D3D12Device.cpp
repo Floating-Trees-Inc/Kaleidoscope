@@ -97,6 +97,20 @@ namespace KGPU
 
         mManager = KC_NEW(D3D12BindlessManager, this);
 
+        CODE_BLOCK("Check for features") {
+            D3D12_FEATURE_DATA_D3D12_OPTIONS5 raytracingData = {};
+            D3D12_FEATURE_DATA_D3D12_OPTIONS7 meshShaderData = {};
+            mDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &raytracingData, sizeof(raytracingData));
+            mDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &meshShaderData, sizeof(meshShaderData));
+
+            if (raytracingData.RaytracingTier >= D3D12_RAYTRACING_TIER_1_1) {
+                mSupportsRT = true;
+            }
+            if (meshShaderData.MeshShaderTier >= D3D12_MESH_SHADER_TIER_1) {
+                mSupportsMS = true;
+            }
+        }
+
         KD_INFO("Created D3D12 device!");
     }
 

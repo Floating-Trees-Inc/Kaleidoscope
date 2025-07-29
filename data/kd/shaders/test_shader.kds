@@ -16,6 +16,6 @@ PUSH_CONSTANTS(PushConstants, Push);
 [numthreads(8, 8, 1)]
 void CSMain(uint3 tid : SV_DispatchThreadID)
 {
-    RWTexture2D<float> tex = BindlessRWTexture2DFloat_Load(0);
+    RWTexture2D<float> tex = ResourceDescriptorHeap[0];
     tex[tid.xy] = Push.data.x;
 }

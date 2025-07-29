@@ -26,7 +26,7 @@ namespace KDS
         mIncludePaths.push_back(path);
     }
 
-    KC::String IncludeHandler::ReplaceIncludes(const ParseResult& result, const KC::String& source)
+    KC::String IncludeHandler::ReplaceIncludes(const ParseResult& result, const KC::String& source, KC::Array<KC::String>& outFoundPaths)
     {
         KC::Array<KC::String> lines = KC::StringUtil::ToLines(source);
 
@@ -42,6 +42,7 @@ namespace KDS
                 if (KC::FileSystem::Exists(fullPath)) {
                     includeContent = KC::FileSystem::ReadWholeFile(fullPath);
                     found = true;
+                    outFoundPaths.push_back(fullPath);
                     break;
                 }
             }

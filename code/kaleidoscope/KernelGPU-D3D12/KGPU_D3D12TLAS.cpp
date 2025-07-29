@@ -13,6 +13,9 @@ namespace KGPU
     D3D12TLAS::D3D12TLAS(D3D12Device* device)
         : mParentDevice(device)
     {
+        if (!device->SupportsRaytracing())
+            return;
+
         mInputs = {};
         mInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
         mInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
@@ -36,6 +39,9 @@ namespace KGPU
     
     D3D12TLAS::~D3D12TLAS()
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
         mParentDevice->GetBindlessManager()->FreeCBVSRVUAV(mAlloc);
 
         KC_DELETE(mMemory);

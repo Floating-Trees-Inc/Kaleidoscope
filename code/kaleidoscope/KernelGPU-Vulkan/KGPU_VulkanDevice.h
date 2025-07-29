@@ -46,6 +46,8 @@ namespace KGPU
         IBufferView* CreateBufferView(BufferViewDesc desc) override;
 
         Backend GetBackend() { return Backend::kVulkan; }
+        bool SupportsRaytracing() { return mSupportsRT; }
+        bool SupportsMeshShaders() { return mSupportsMS; }
 
         TextureFormat GetSurfaceFormat() override { return TextureFormat::kB8G8R8A8_UNORM; }
         uint64 GetOptimalRowPitchAlignment() override { return mOptimalRowPitchAlignment; }
@@ -71,6 +73,9 @@ namespace KGPU
         VkDevice mDevice;
 
         VmaAllocator mAllocator;
+
+        bool mSupportsRT = false;
+        bool mSupportsMS = false;
 
         VulkanBindlessManager* mBindlessManager;
 

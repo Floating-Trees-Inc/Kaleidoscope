@@ -611,6 +611,9 @@ namespace KGPU
 
     void VulkanCommandList::BuildBLAS(IBLAS* blas, ASBuildMode mode)
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
         VulkanBLAS* vkBlas = static_cast<VulkanBLAS*>(blas);
 
         const VkAccelerationStructureBuildRangeInfoKHR* range = &vkBlas->mRangeInfo;        
@@ -635,6 +638,9 @@ namespace KGPU
 
     void VulkanCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode, uint instanceCount, IBuffer* buffer)
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
         VulkanTLAS* vkTlas = static_cast<VulkanTLAS*>(tlas);
         vkTlas->mGeometry.geometry.instances.data.deviceAddress = buffer->GetAddress();
         vkTlas->mRangeInfo.primitiveCount = instanceCount;      

@@ -9,7 +9,7 @@ set_languages("c++20")
 
 -- Platform
 if is_plat("windows") then
-    add_defines("KD_WINDOWS")
+    add_defines("KD_WINDOWS", "USE_PIX")
 elseif is_plat("linux") then
     add_defines("KD_LINUX")
 else
@@ -17,6 +17,7 @@ else
 end
 
 -- Config
+add_defines("GLM_FORCE_DEPTH_ZERO_TO_ONE")
 if is_mode("debug") then
     add_defines("KD_DEBUG")
     set_symbols("debug")
@@ -35,7 +36,7 @@ end
 
 -- Build steps
 before_link(function (target)
-    os.cp("dlls/*", "$(buildir)/$(plat)/$(arch)/$(mode)/")
+    os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/")
 end)
 
 -- Includes

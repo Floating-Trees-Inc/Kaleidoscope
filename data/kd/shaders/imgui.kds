@@ -14,7 +14,6 @@ struct VertexInput
     float2 UV : TEXCOORD;
     uint Color : COLOR;
 };
-DEFINE_SRV_ARRAY(VertexInput);
 
 struct PixelInput
 {
@@ -36,7 +35,7 @@ PUSH_CONSTANTS(PushConstants, Push);
 
 PixelInput VSMain(uint vertexID : SV_VertexID)
 {
-    StructuredBuffer<VertexInput> vertices = BindlessSRV_VertexInput_Load(Push.VertexIndex);
+    StructuredBuffer<VertexInput> vertices = ResourceDescriptorHeap[Push.VertexIndex];
     VertexInput input = vertices[vertexID + Push.VertexOffset];
 
     // Unpack color from uint to float4 (normalized)
@@ -55,8 +54,8 @@ PixelInput VSMain(uint vertexID : SV_VertexID)
 
 float4 PSMain(PixelInput input) : SV_Target
 {
-    SamplerState sampler = BindlessSampler_Load(Push.SamplerIndex);
-    Texture2D<float4> texture = BindlessTexture2DFloat4_Load(Push.TextureIndex);
+    SamplerState sampler = SamplerDescriptorHeap[Push.SamplerIndex];
+    Texture2D<float4> texture = ResourceDescriptorHeap[Push.TextureIndex];
 
     float4 texColor = texture.Sample(sampler, input.UV);
     float4 outColor = input.Color * texColor;

@@ -49,4 +49,9 @@ namespace KC
     {
         std::filesystem::create_directory(path);
     }
+
+    FileTime FileSystem::GetWriteTime(const KC::String& path)
+    {
+        return std::filesystem::last_write_time(path);
+    }
 }

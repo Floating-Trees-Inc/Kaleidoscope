@@ -16,13 +16,12 @@ PUSH_CONSTANTS(PushConstants, Push);
 [numthreads(8, 8, 1)]
 void CSMain(uint3 tid : SV_DispatchThreadID)
 {
-    RWTexture2D<float4> output = BindlessRWTexture2DFloat4_Load(Push.OutputIndex);
+    RWTexture2D<float4> output = ResourceDescriptorHeap[Push.OutputIndex];
 
     uint width, height;
     output.GetDimensions(width, height);
 
-    if (tid.x < width && tid.y < height)
-    {
+    if (tid.x < width && tid.y < height) {
         output[tid.xy] = float4(float(tid.x) / width, float(tid.y) / height, 0.0f, 1.0f);
     }
 }

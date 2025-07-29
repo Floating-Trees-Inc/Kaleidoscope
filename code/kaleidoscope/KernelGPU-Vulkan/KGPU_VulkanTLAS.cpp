@@ -13,6 +13,9 @@ namespace KGPU
     VulkanTLAS::VulkanTLAS(VulkanDevice* device)
         : mParentDevice(device)
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
         mGeometry = {
             .sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR,
             .pNext = nullptr,
@@ -86,7 +89,10 @@ namespace KGPU
     
     VulkanTLAS::~VulkanTLAS()
     {
-        // mParentDevice->GetBindlessManager()->FreeAS(mBindless.Index);
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
+        mParentDevice->GetBindlessManager()->FreeAS(mBindless.Index);
         KC_DELETE(mMemory);
         KC_DELETE(mScratch);
         if (mHandle) vkDestroyAccelerationStructureKHR(mParentDevice->Device(), mHandle, nullptr);

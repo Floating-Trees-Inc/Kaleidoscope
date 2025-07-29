@@ -23,9 +23,9 @@ PUSH_CONSTANTS(PushConstants, Push);
 void CSMain(uint3 tid : SV_DispatchThreadID)
 {
     // Load resources
-    Texture2D<float4> SrcTexture = BindlessTexture2DFloat4_Load(Push.SrcIndex);
-    RWTexture2D<float4> DstTexture = BindlessRWTexture2DFloat4_Load(Push.DstIndex);
-    SamplerState BilinearClamp = BindlessSampler_Load(Push.SamplerIndex);
+    Texture2D<float4> SrcTexture = ResourceDescriptorHeap[Push.SrcIndex];
+    RWTexture2D<float4> DstTexture = ResourceDescriptorHeap[Push.DstIndex];
+    SamplerState BilinearClamp = SamplerDescriptorHeap[Push.SamplerIndex];
 
     float2 texcoords = (1.0f / Push.MipSize) * (tid.xy + 0.5);
 

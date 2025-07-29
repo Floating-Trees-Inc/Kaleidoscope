@@ -6,11 +6,14 @@
 #pragma once
 
 #include <KernelOS/KOS_File.h>
+#include <filesystem>
 
 #include "KC_String.h"
 
 namespace KC
 {
+    using FileTime = std::filesystem::file_time_type;
+
     class FileSystem
     {
     public:
@@ -20,5 +23,7 @@ namespace KC
         static String ReadWholeFile(const String& path);
 
         static void CreateDirectory(const String& path);
+
+        static FileTime GetWriteTime(const KC::String& path);
     };
 }

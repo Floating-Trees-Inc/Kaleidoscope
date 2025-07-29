@@ -11,12 +11,8 @@
 struct VertexIn
 {
     float3 Position : POSITION;
-    float Pad;
-
     float3 Color : COLOR;
-    float Pad1;
 };
-DEFINE_SRV_ARRAY(VertexIn);
 
 struct VertexOut
 {
@@ -36,7 +32,7 @@ PUSH_CONSTANTS(Settings, PushConstants);
 
 VertexOut VSMain(uint vid : SV_VertexID)
 {
-    StructuredBuffer<VertexIn> vertices = BindlessSRV_VertexIn_Load(PushConstants.MyVertexBuffer);
+    StructuredBuffer<VertexIn> vertices = ResourceDescriptorHeap[PushConstants.MyVertexBuffer];
     VertexIn Input = vertices[vid];
 
     VertexOut Output = (VertexOut)0;

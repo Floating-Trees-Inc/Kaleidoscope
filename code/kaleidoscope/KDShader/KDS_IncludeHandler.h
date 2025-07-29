@@ -16,7 +16,7 @@ namespace KDS
         ~IncludeHandler();
 
         void AddIncludePath(const KC::String& path);
-        KC::String ReplaceIncludes(const ParseResult& result, const KC::String& source);
+        KC::String ReplaceIncludes(const ParseResult& result, const KC::String& source, KC::Array<KC::String>& outFoundPaths);
     private:
         KC::Array<KC::String> mIncludePaths;
     };

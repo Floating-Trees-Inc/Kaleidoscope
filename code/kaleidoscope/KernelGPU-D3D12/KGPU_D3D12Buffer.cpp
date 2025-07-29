@@ -27,7 +27,7 @@ namespace KGPU
         if (Any(desc.Usage & BufferUsage::kShaderWrite)) {
             resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
         }
-        if (Any(desc.Usage & BufferUsage::kAccelerationStructure)) {
+        if (Any(desc.Usage & BufferUsage::kAccelerationStructure) && mParentDevice->SupportsRaytracing()) {
             resourceDesc.Flags |= D3D12_RESOURCE_FLAG_RAYTRACING_ACCELERATION_STRUCTURE;
         }
 

@@ -13,6 +13,9 @@ namespace KGPU
     VulkanBLAS::VulkanBLAS(VulkanDevice* device, BLASDesc desc)
         : mParentDevice(device)
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
         mDesc = desc;
 
         // Geometry
@@ -90,6 +93,9 @@ namespace KGPU
     
     VulkanBLAS::~VulkanBLAS() 
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
         KC_DELETE(mMemory);
         KC_DELETE(mScratch);
         if (mHandle) vkDestroyAccelerationStructureKHR(mParentDevice->Device(), mHandle, nullptr);
@@ -97,6 +103,9 @@ namespace KGPU
     
     uint64 VulkanBLAS::GetAddress()
     {
+        if (!mParentDevice->SupportsRaytracing())
+            return 0;
+
         VkAccelerationStructureDeviceAddressInfoKHR address = {};
         address.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
         address.accelerationStructure = mHandle;

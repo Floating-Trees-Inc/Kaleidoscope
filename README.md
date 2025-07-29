@@ -25,3 +25,4 @@ The mindset I have for this engine is to leave rendering and world management up
 - Asset management
 - Graphics utilities (resource recycling)
 - Custom ImGui renderer
+- Test suite for KernelCore, KernelOS, KDShader and KernelGPU

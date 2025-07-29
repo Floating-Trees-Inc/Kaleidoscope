@@ -10,13 +10,8 @@
 struct VertexInput
 {
     float3 Position;
-    float _pad0;
-
     float2 Texcoord;
-    float2 _pad1;
 };
-DEFINE_SRV_ARRAY(VertexInput);
-DEFINE_SRV_ARRAY(uint);
 
 struct PushConstants
 {
@@ -37,12 +32,12 @@ void CSMain(uint3 tid : SV_DispatchThreadID)
 {
     if (tid.x >= Push.Width || tid.y >= Push.Height) return;
 
-    RWTexture2D<float4> output = BindlessRWTexture2DFloat4_Load(Push.Output);
-    RaytracingAccelerationStructure accelerationStructure = BindlessAccelerationStructure_Load(Push.AccelerationStructure);
-    StructuredBuffer<VertexInput> vertices = BindlessSRV_VertexInput_Load(Push.VBV);
-    StructuredBuffer<uint> indices = BindlessSRV_uint_Load(Push.IBV);
-    Texture2D<float4> albedo = BindlessTexture2DFloat4_Load(Push.SRV);
-    SamplerState sampler = BindlessSampler_Load(Push.Sampler);
+    RWTexture2D<float4> output = ResourceDescriptorHeap[Push.Output];
+    RaytracingAccelerationStructure accelerationStructure = LoadRaytracingWorld(Push.AccelerationStructure);
+    StructuredBuffer<VertexInput> vertices = ResourceDescriptorHeap[Push.VBV];
+    StructuredBuffer<uint> indices = ResourceDescriptorHeap[Push.IBV];
+    Texture2D<float4> albedo = ResourceDescriptorHeap[Push.SRV];
+    SamplerState sampler = SamplerDescriptorHeap[Push.Sampler];
 
     float2 lerpValues = (float2)tid.xy / float2(Push.Width, Push.Height);
     float3 rayDir = float3(0, 0, 1);

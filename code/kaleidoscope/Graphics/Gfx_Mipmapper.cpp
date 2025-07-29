@@ -17,7 +17,7 @@ namespace Gfx
 
     void Mipmapper::ComputeMipmaps(KGPU::ITexture* texture)
     {
-        KD_INFO("Generating mipmaps for your goofy ahh texture");
+        KD_INFO("Generating mipmaps for your texture. I'd ask you to kindly pack them but I didn't implement that yet :(");
 
         KGPU::ISampler* tempSampler = TempResourceStorage::CreateSampler(KGPU::SamplerDesc(KGPU::SamplerAddress::kClamp, KGPU::SamplerFilter::kLinear, false));
         KC::Array<KGPU::ITextureView*> ReadViews;

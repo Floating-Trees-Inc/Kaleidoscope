@@ -6,7 +6,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-#define PI 3.14159265359
+#define PI 3.14159265357
 #define TWO_PI (2 * PI)
 #define EPSILON 0.0001
 

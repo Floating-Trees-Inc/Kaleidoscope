@@ -133,54 +133,48 @@ namespace KGPU
     uint64 VulkanDevice::CalculateDeviceScore(VkPhysicalDevice device)
     {
         uint64 score = 0;
-
+    
         // Query device properties and features
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
+    
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
+    
         VkPhysicalDeviceLimits limits = deviceProperties.limits;
-
+    
         // Query supported extensions
         uint32_t extensionCount = 0;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
         KC::Array<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-        // Required extensions
-        const KC::Array<const char*> requiredExtensions = {
+    
+        auto supportsExt = [&](const char* name) {
+            for (auto& ext : availableExtensions) {
+                if (strcmp(ext.extensionName, name) == 0) return true;
+            }
+            return false;
+        };
+    
+        // Required baseline extensions
+        const KC::Array<const char*> baselineExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-            VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-            VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
             VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
             VK_KHR_SPIRV_1_4_EXTENSION_NAME,
             VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
-            VK_KHR_RAY_QUERY_EXTENSION_NAME,
-            VK_EXT_MESH_SHADER_EXTENSION_NAME,
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
             VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
         };
-
-        // Check if all required extensions are supported
-        for (const char* required : requiredExtensions) {
-            bool found = false;
-            for (const auto& ext : availableExtensions) {
-                if (strcmp(required, ext.extensionName) == 0) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
+    
+        for (auto* required : baselineExtensions) {
+            if (!supportsExt(required)) {
                 KD_INFO("GPU %s is missing %s. Skipping", deviceProperties.deviceName, required);
-                return 0; // Missing a required extension
+                return 0;
             }
         }
-
-        // Add to score based on device properties/features
+    
+        // Score weighting
         if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 100000000;
         if (deviceFeatures.depthClamp) score += 1000;
         if (deviceFeatures.geometryShader) score += 1000;
@@ -189,33 +183,39 @@ namespace KGPU
         if (deviceFeatures.wideLines) score += 1000;
         if (deviceFeatures.samplerAnisotropy) score += 10000;
         if (deviceFeatures.pipelineStatisticsQuery) score += 10000;
-
+    
         score += limits.maxDescriptorSetSamplers;
-
+    
         return score;
     }
-
+    
     void VulkanDevice::BuildLogicalDevice()
     {
-        // Required extensions
-        const KC::Array<const char*> requiredExtensions = {
+        // Query supported extensions
+        uint32_t extensionCount = 0;
+        vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, nullptr);
+        KC::Array<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(mPhysicalDevice, nullptr, &extensionCount, availableExtensions.data());
+    
+        auto supportsExt = [&](const char* name) {
+            for (auto& ext : availableExtensions) {
+                if (strcmp(ext.extensionName, name) == 0) return true;
+            }
+            return false;
+        };
+    
+        KC::Array<const char*> enabledExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-            VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-            VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
             VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
             VK_KHR_SPIRV_1_4_EXTENSION_NAME,
             VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
-            VK_KHR_RAY_QUERY_EXTENSION_NAME,
-            VK_EXT_MESH_SHADER_EXTENSION_NAME,
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
             VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
         };
-
-        // Base features
+    
+        // Feature structs
         VkPhysicalDeviceFeatures2 deviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-
         VkPhysicalDeviceFeatures baseFeatures = {};
         baseFeatures.multiDrawIndirect = VK_TRUE;
         baseFeatures.drawIndirectFirstInstance = VK_TRUE;
@@ -223,112 +223,123 @@ namespace KGPU
         baseFeatures.depthClamp = VK_TRUE;
         baseFeatures.fillModeNonSolid = VK_TRUE;
         deviceFeatures2.features = baseFeatures;
-
-        // Feature structs
-        VkPhysicalDeviceSynchronization2FeaturesKHR sync2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR };
-        sync2.synchronization2 = VK_TRUE;
-
+    
+        // Common features
         VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexing = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES };
         descriptorIndexing.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
         descriptorIndexing.runtimeDescriptorArray = VK_TRUE;
         descriptorIndexing.descriptorBindingVariableDescriptorCount = VK_TRUE;
         descriptorIndexing.descriptorBindingPartiallyBound = VK_TRUE;
         descriptorIndexing.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
-
-        VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructure = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR };
-        accelerationStructure.accelerationStructure = VK_TRUE;
-        accelerationStructure.descriptorBindingAccelerationStructureUpdateAfterBind = VK_TRUE;
-
-        VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipeline = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR };
-        rayTracingPipeline.rayTracingPipeline = VK_TRUE;
-        rayTracingPipeline.rayTracingPipelineTraceRaysIndirect = VK_TRUE;
-
-        VkPhysicalDeviceRayQueryFeaturesKHR rayQuery = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR };
-        rayQuery.rayQuery = VK_TRUE;
-
-        VkPhysicalDeviceMeshShaderFeaturesEXT meshShader = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
-        meshShader.meshShader = VK_TRUE;
-        meshShader.meshShaderQueries = VK_TRUE;
-
-        VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT mutableDescriptor = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT };
-        mutableDescriptor.mutableDescriptorType = VK_TRUE;
-
-        VkPhysicalDeviceBufferDeviceAddressFeatures bda = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES };
-        bda.bufferDeviceAddress = VK_TRUE;
-
+    
         VkPhysicalDeviceVulkan13Features vk13Features = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
         vk13Features.dynamicRendering = VK_TRUE;
         vk13Features.shaderDemoteToHelperInvocation = VK_TRUE;
         vk13Features.synchronization2 = VK_TRUE;
-
-        VkPhysicalDeviceDynamicRenderingLocalReadFeatures localReadFeatures = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES };
-        localReadFeatures.dynamicRenderingLocalRead = VK_TRUE;
-
-        // Chain pNexts (careful with ordering!)
-        deviceFeatures2.pNext = &vk13Features;
+    
+        // Optional RT + Mesh Shader features
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR accel = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR };
+        accel.accelerationStructure = VK_TRUE;
+        accel.descriptorBindingAccelerationStructureUpdateAfterBind = VK_TRUE;
+    
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipeline = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR };
+        rtPipeline.rayTracingPipeline = VK_TRUE;
+        rtPipeline.rayTracingPipelineTraceRaysIndirect = VK_TRUE;
+    
+        VkPhysicalDeviceRayQueryFeaturesKHR rayQuery = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR };
+        rayQuery.rayQuery = VK_TRUE;
+    
+        VkPhysicalDeviceBufferDeviceAddressFeatures bda = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES };
+        bda.bufferDeviceAddress = VK_TRUE;
+    
+        VkPhysicalDeviceMeshShaderFeaturesEXT meshShader = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
+        meshShader.meshShader = VK_TRUE;
+        meshShader.meshShaderQueries = VK_TRUE;
+    
+        // Build extension list + pNext chain
+        void* nextChain = &vk13Features;
         vk13Features.pNext = &descriptorIndexing;
-        descriptorIndexing.pNext = &accelerationStructure;
-        accelerationStructure.pNext = &rayTracingPipeline;
-        rayTracingPipeline.pNext = &rayQuery;
-        rayQuery.pNext = &meshShader;
-        meshShader.pNext = &mutableDescriptor;
-        mutableDescriptor.pNext = &bda;
-        bda.pNext = nullptr;
-
+        void** chainTail = &descriptorIndexing.pNext;
+    
+        // Check RT extensions
+        bool hasRT = supportsExt(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME) &&
+                     supportsExt(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) &&
+                     supportsExt(VK_KHR_RAY_QUERY_EXTENSION_NAME) &&
+                     supportsExt(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+    
+        if (hasRT) {
+            enabledExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+            enabledExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            enabledExtensions.push_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+            enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+        
+            *chainTail = &accel;        chainTail = &accel.pNext;
+            *chainTail = &rtPipeline;   chainTail = &rtPipeline.pNext;
+            *chainTail = &rayQuery;     chainTail = &rayQuery.pNext;
+            *chainTail = &bda;          chainTail = &bda.pNext;
+        
+            mSupportsRT = true;
+        } else {
+            mSupportsRT = false;
+        }
+    
+        // Check Mesh Shader
+        if (supportsExt(VK_EXT_MESH_SHADER_EXTENSION_NAME)) {
+            enabledExtensions.push_back(VK_EXT_MESH_SHADER_EXTENSION_NAME);
+            *chainTail = &meshShader;
+            chainTail = &meshShader.pNext;
+            mSupportsMS = true;
+        } else {
+            mSupportsMS = false;
+        }
+    
+        *chainTail = nullptr; // terminate pNext
+    
         // Queue family selection
         uint queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, nullptr);
         KC::Array<VkQueueFamilyProperties> families(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, families.data());
-
+    
         uint graphicsIndex = UINT32_MAX;
         uint computeIndex = UINT32_MAX;
         uint transferIndex = UINT32_MAX;
-
+    
         for (uint i = 0; i < queueFamilyCount; ++i) {
             const auto& flags = families[i].queueFlags;
-
-            if ((flags & VK_QUEUE_GRAPHICS_BIT) && graphicsIndex == UINT32_MAX)
-                graphicsIndex = i;
-
-            if ((flags & VK_QUEUE_COMPUTE_BIT) && !(flags & VK_QUEUE_GRAPHICS_BIT) && computeIndex == UINT32_MAX)
-                computeIndex = i;
-
-            if ((flags & VK_QUEUE_TRANSFER_BIT) && !(flags & VK_QUEUE_GRAPHICS_BIT) && !(flags & VK_QUEUE_COMPUTE_BIT) && transferIndex == UINT32_MAX)
-                transferIndex = i;
+            if ((flags & VK_QUEUE_GRAPHICS_BIT) && graphicsIndex == UINT32_MAX) graphicsIndex = i;
+            if ((flags & VK_QUEUE_COMPUTE_BIT) && !(flags & VK_QUEUE_GRAPHICS_BIT) && computeIndex == UINT32_MAX) computeIndex = i;
+            if ((flags & VK_QUEUE_TRANSFER_BIT) && !(flags & VK_QUEUE_GRAPHICS_BIT) && !(flags & VK_QUEUE_COMPUTE_BIT) && transferIndex == UINT32_MAX) transferIndex = i;
         }
-
+    
         if (computeIndex == UINT32_MAX) computeIndex = graphicsIndex;
         if (transferIndex == UINT32_MAX) transferIndex = graphicsIndex;
-
+    
         // Deduplicate queue families
         KC::Array<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint> uniqueQueueFamilies = { graphicsIndex, computeIndex, transferIndex };
+        std::set<uint> uniqueFamilies = { graphicsIndex, computeIndex, transferIndex };
         float priority = 1.0f;
-
-        for (uint index : uniqueQueueFamilies) {
-            VkDeviceQueueCreateInfo queueInfo = {};
-            queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueInfo.queueFamilyIndex = index;
+        for (uint idx : uniqueFamilies) {
+            VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+            queueInfo.queueFamilyIndex = idx;
             queueInfo.queueCount = 1;
             queueInfo.pQueuePriorities = &priority;
             queueCreateInfos.push_back(queueInfo);
         }
-
-        // Create the logical device
-        VkDeviceCreateInfo deviceCreateInfo = {};
-        deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceCreateInfo.pNext = &deviceFeatures2;
+    
+        // Create device
+        VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+        deviceCreateInfo.pNext = nextChain;
         deviceCreateInfo.queueCreateInfoCount = static_cast<uint>(queueCreateInfos.size());
         deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
-        deviceCreateInfo.enabledExtensionCount = static_cast<uint>(requiredExtensions.size());
-        deviceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
-
+        deviceCreateInfo.enabledExtensionCount = static_cast<uint>(enabledExtensions.size());
+        deviceCreateInfo.ppEnabledExtensionNames = enabledExtensions.data();
+    
         VkResult result = vkCreateDevice(mPhysicalDevice, &deviceCreateInfo, nullptr, &mDevice);
         KD_ASSERT_EQ(result == VK_SUCCESS, "Failed to create logical Vulkan device!");
-
+    
         volkLoadDevice(mDevice);
-
+    
         mGraphicsQueueFamilyIndex = graphicsIndex;
         mComputeQueueFamilyIndex = computeIndex;
         mTransferQueueFamilyIndex = transferIndex;

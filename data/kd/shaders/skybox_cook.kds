@@ -24,9 +24,9 @@ PUSH_CONSTANTS(Constants, Settings);
 [numthreads(32, 32, 1)]
 void CSMain(uint3 ThreadID : SV_DispatchThreadID)
 {
-    Texture2D<float4> HDR = BindlessTexture2DFloat4_Load(Settings.HDRInput);
-    RWTexture2DArray<float4> Cube = BindlessRWTexture2DArrayFloat4_Load(Settings.CubemapOutput);
-    SamplerState Sampler = BindlessSampler_Load(Settings.CubeSampler);
+    Texture2D<float4> HDR = ResourceDescriptorHeap[Settings.HDRInput];
+    RWTexture2DArray<float4> Cube = ResourceDescriptorHeap[Settings.CubemapOutput];
+    SamplerState Sampler = SamplerDescriptorHeap[Settings.CubeSampler];
 
     // Normalized screen UVs [0,1]
     float2 st = ThreadID.xy / float2(Settings.Width, Settings.Height);

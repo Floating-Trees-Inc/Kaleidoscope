@@ -80,7 +80,6 @@ namespace KDS
 
         // Prepare arguments
         KC::Array<LPCWSTR> args = {};
-        args.push_back(L"-Zi");
         args.push_back(L"-DVULKAN");
         args.push_back(L"-spirv");
         args.push_back(L"-fspv-extension=SPV_EXT_mesh_shader");
@@ -89,11 +88,17 @@ namespace KDS
         args.push_back(L"-fspv-extension=SPV_KHR_ray_query");
         args.push_back(L"-fspv-extension=SPV_KHR_shader_draw_parameters");
         args.push_back(L"-fspv-extension=SPV_EXT_demote_to_helper_invocation");
-        args.push_back(L"-fvk-allow-rwstructuredbuffer-arrays");
         args.push_back(L"-fspv-target-env=vulkan1.3");
         args.push_back(L"-fvk-use-scalar-layout");
+        args.push_back(L"-fvk-bind-resource-heap");
+        args.push_back(L"0");
+        args.push_back(L"0");
+        args.push_back(L"-fvk-bind-sampler-heap");
+        args.push_back(L"1");
+        args.push_back(L"0");
     #if !defined(KD_RETAIL)
         args.push_back(L"-Qembed_debug");
+        args.push_back(L"-Zi");
     #endif
 
         // Compile

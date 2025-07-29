@@ -46,6 +46,8 @@ namespace KGPU
         IBufferView* CreateBufferView(BufferViewDesc desc) override;
 
         Backend GetBackend() { return Backend::kD3D12; }
+        bool SupportsRaytracing() { return mSupportsRT; }
+        bool SupportsMeshShaders() { return mSupportsMS; }
 
         TextureFormat GetSurfaceFormat() override { return TextureFormat::kR8G8B8A8_UNORM; }
         uint64 GetOptimalRowPitchAlignment() override { return D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; }
@@ -65,6 +67,8 @@ namespace KGPU
         ID3D12InfoQueue1* mInfoQueue = nullptr;
 
         D3D12BindlessManager* mManager;
+        bool mSupportsRT = false;
+        bool mSupportsMS = false;
 
         uint64 CalculateAdapterScore(IDXGIAdapter1* adapter);
     };
