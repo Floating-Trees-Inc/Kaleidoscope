@@ -20,9 +20,9 @@ The mindset I have for this engine is to leave rendering and world management up
 
 ## Features
 
-- RHI with D3D12/Vulkan support - other APIs will be added to the future
+- RHI with D3D12/Vulkan support. Has bindless, raytracing, mesh shaders, indirect commands
 - Input system
 - Asset management
 - Graphics utilities (resource recycling)
 - Custom ImGui renderer
-- Test suite for KernelCore, KernelOS, KDShader and KernelGPU
+- Test suite for various engine modules, auto test runner written in Haskell
