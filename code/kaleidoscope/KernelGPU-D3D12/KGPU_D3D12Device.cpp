@@ -5,6 +5,8 @@
 
 #include "KGPU_D3D12Device.h"
 
+#include <Agility/d3dx12/d3dx12.h>
+
 #include <KernelCore/KC_Assert.h>
 
 #include <unordered_map>
@@ -111,11 +113,126 @@ namespace KGPU
             }
         }
 
+        CODE_BLOCK("Create Global Root Sig") {
+            CD3DX12_ROOT_PARAMETER1 rootParameters[2];
+            rootParameters[0].InitAsConstants(120 / sizeof(uint), 0, 0, D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[1].InitAsConstants(sizeof(uint), 1, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+            D3D12_ROOT_SIGNATURE_FLAGS rootSigFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+                                                    | D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED
+                                                    | D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
+
+            CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
+            rootSignatureDesc.Init_1_1(2, rootParameters, 0, nullptr, rootSigFlags);
+
+            ID3DBlob* signatureBlob;
+            ID3DBlob* errorBlob;
+            HRESULT hr = D3DX12SerializeVersionedRootSignature(
+                &rootSignatureDesc,
+                D3D_ROOT_SIGNATURE_VERSION_1_1,
+                &signatureBlob,
+                &errorBlob
+            );
+            KD_ASSERT_EQ(SUCCEEDED(hr), "Failed to serialize global D3D12 root signature!");
+
+            hr = mDevice->CreateRootSignature(
+                0,
+                signatureBlob->GetBufferPointer(),
+                signatureBlob->GetBufferSize(),
+                IID_PPV_ARGS(&mGlobalRootSig)
+            );
+            KD_ASSERT_EQ(SUCCEEDED(hr), "Failed to create global D3D12 root signature");
+
+            if (signatureBlob) signatureBlob->Release();
+            if (errorBlob) errorBlob->Release();
+        }
+
+        CODE_BLOCK("Create signatures") {
+            CODE_BLOCK("Draw") {
+                D3D12_INDIRECT_ARGUMENT_DESC drawDesc = {};
+                drawDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+
+                D3D12_INDIRECT_ARGUMENT_DESC idDesc = {};
+                idDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
+                idDesc.Constant.DestOffsetIn32BitValues = 0;
+                idDesc.Constant.Num32BitValuesToSet = 1;
+                idDesc.Constant.RootParameterIndex = 1;
+
+                D3D12_INDIRECT_ARGUMENT_DESC descs[] = { idDesc, drawDesc };
+
+                D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
+                signatureDesc.ByteStride = 32;
+                signatureDesc.NumArgumentDescs = 2;
+                signatureDesc.pArgumentDescs = descs;
+
+                KD_ASSERT_EQ(SUCCEEDED(mDevice->CreateCommandSignature(&signatureDesc, mGlobalRootSig, IID_PPV_ARGS(&mSignatures.DrawSignature))), "Your GPU doesn't support indirect draw? Seriously?");
+            }
+
+            CODE_BLOCK("Draw Indexed") {
+                D3D12_INDIRECT_ARGUMENT_DESC drawDesc = {};
+                drawDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+            
+                D3D12_INDIRECT_ARGUMENT_DESC idDesc = {};
+                idDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
+                idDesc.Constant.DestOffsetIn32BitValues = 0;
+                idDesc.Constant.Num32BitValuesToSet = 1;
+                idDesc.Constant.RootParameterIndex = 1;
+
+                D3D12_INDIRECT_ARGUMENT_DESC descs[] = { idDesc, drawDesc };
+
+                D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
+                signatureDesc.ByteStride = 32;
+                signatureDesc.NumArgumentDescs = 2;
+                signatureDesc.pArgumentDescs = descs;
+
+                KD_ASSERT_EQ(SUCCEEDED(mDevice->CreateCommandSignature(&signatureDesc, mGlobalRootSig, IID_PPV_ARGS(&mSignatures.DrawIndexedSignature))), "Your GPU doesn't support indirect draw indexed? Seriously?");
+            }
+
+            CODE_BLOCK("Dispatch") {
+                D3D12_INDIRECT_ARGUMENT_DESC drawDesc = {};
+                drawDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+        
+                D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
+                signatureDesc.ByteStride = 32;
+                signatureDesc.NumArgumentDescs = 1;
+                signatureDesc.pArgumentDescs = &drawDesc;
+
+                KD_ASSERT_EQ(SUCCEEDED(mDevice->CreateCommandSignature(&signatureDesc, nullptr, IID_PPV_ARGS(&mSignatures.DispatchSignature))), "Your GPU doesn't support indirect dispatch? Seriously?");
+            }
+
+            CODE_BLOCK("Dispatch Mesh") {
+                if (SupportsMeshShaders()) {
+                    D3D12_INDIRECT_ARGUMENT_DESC drawDesc = {};
+                    drawDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH;
+                    
+                    D3D12_INDIRECT_ARGUMENT_DESC idDesc = {};
+                    idDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
+                    idDesc.Constant.DestOffsetIn32BitValues = 0;
+                    idDesc.Constant.Num32BitValuesToSet = 1;
+                    idDesc.Constant.RootParameterIndex = 1;
+
+                    D3D12_INDIRECT_ARGUMENT_DESC descs[] = { idDesc, drawDesc };
+
+                    D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
+                    signatureDesc.ByteStride = 32;
+                    signatureDesc.NumArgumentDescs = 2;
+                    signatureDesc.pArgumentDescs = descs;
+
+                    KD_ASSERT_EQ(SUCCEEDED(mDevice->CreateCommandSignature(&signatureDesc, mGlobalRootSig, IID_PPV_ARGS(&mSignatures.DrawMeshSignature))), "Your GPU supports mesh shaders but NOT indirect dispatch mesh? Seriously?");
+                }
+            }
+        }
+
         KD_INFO("Created D3D12 device!");
     }
 
     D3D12Device::~D3D12Device()
     {
+        if (mGlobalRootSig) mGlobalRootSig->Release();
+        if (mSignatures.DrawMeshSignature) mSignatures.DrawMeshSignature->Release();
+        if (mSignatures.DispatchSignature) mSignatures.DispatchSignature->Release();
+        if (mSignatures.DrawIndexedSignature) mSignatures.DrawIndexedSignature->Release();
+        if (mSignatures.DrawSignature) mSignatures.DrawSignature->Release();
         KC_DELETE(mManager);
         if (mInfoQueue) mInfoQueue->Release();
         if (mDevice) mDevice->Release();

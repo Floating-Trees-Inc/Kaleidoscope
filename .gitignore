@@ -7,3 +7,6 @@ generated
 .xmake
 build
 kaleidoscope.txt
+
+# Images
+data/kd/tests/*.png

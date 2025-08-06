@@ -20,7 +20,7 @@ namespace KGPUT
     {
         TestData data;
 
-        data.Device = KGPU::IDevice::Create(false);
+        data.Device = KGPU::IDevice::Create(true);
         data.CommandQueue = data.Device->CreateCommandQueue(KGPU::CommandQueueType::kGraphics);
 
         KGPU::TextureDesc renderDesc = {};
@@ -36,19 +36,15 @@ namespace KGPUT
         Gfx::Manager::Initialize(data.Device, data.CommandQueue);
         Gfx::ShaderManager::Initialize();
         Gfx::Mipmapper::Initialize();
-        Gfx::ResourceManager::Initialize();
         
         return data;
     }
 
     void ITest::DeleteData(TestData& data)
     {
-        Gfx::CommandListRecycler::FlushCommandLists();
-        Gfx::CommandListRecycler::Clean();
         Gfx::ViewRecycler::Clean();
         Gfx::TempResourceStorage::Clean();
         Gfx::ShaderManager::Shutdown();
-        Gfx::ResourceManager::Shutdown();
         KDS::Manager::Shutdown();
 
         KC_DELETE(data.ScreenshotBuffer);

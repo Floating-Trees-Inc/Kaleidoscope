@@ -51,6 +51,11 @@ namespace KGPU
         void Dispatch(uint x, uint y, uint z) override;
         void DispatchMesh(uint x, uint y, uint z) override;
 
+        void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+        void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+        void DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer = nullptr) override;
+        void DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+
         void CopyBufferToBufferFull(IBuffer* dest, IBuffer* src) override;
         void CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips = true) override;
         void CopyTextureToBuffer(IBuffer* dest, ITexture* src) override;

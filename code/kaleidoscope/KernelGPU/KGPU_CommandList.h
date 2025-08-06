@@ -191,6 +191,11 @@ namespace KGPU
         virtual void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) = 0;
         virtual void Dispatch(uint x, uint y, uint z) = 0;
         virtual void DispatchMesh(uint x, uint y, uint z) = 0;
+
+        virtual void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
+        virtual void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
+        virtual void DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer = nullptr) = 0;
+        virtual void DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
     
         virtual void CopyBufferToBufferFull(IBuffer* dest, IBuffer* src) = 0;
         virtual void CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips = true) = 0;

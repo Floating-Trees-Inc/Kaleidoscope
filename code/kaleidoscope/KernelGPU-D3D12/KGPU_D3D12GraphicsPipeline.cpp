@@ -69,61 +69,7 @@ namespace KGPU
             }
         }
         Desc.SampleDesc.Count = 1;
-    
-        if (desc.PushConstantSize > 0) {
-            CD3DX12_ROOT_PARAMETER1 rootParameters[1] = {};
-            rootParameters[0].InitAsConstants(desc.PushConstantSize / 4, 0, D3D12_SHADER_VISIBILITY_ALL);
-        
-            D3D12_ROOT_SIGNATURE_FLAGS rootSigFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
-                                                    | D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED
-                                                    | D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
-            
-            CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc;
-            rootSignatureDesc.Init_1_1(1, rootParameters, 0, nullptr, rootSigFlags);
-        
-            ID3DBlob* signatureBlob;
-            ID3DBlob* errorBlob;
-            HRESULT hr = D3DX12SerializeVersionedRootSignature(
-                &rootSignatureDesc,
-                D3D_ROOT_SIGNATURE_VERSION_1_1,
-                &signatureBlob,
-                &errorBlob
-            );
-            KD_ASSERT_EQ(SUCCEEDED(hr), "Failed to serialize D3D12 root siganture!");
-        
-            hr = device->GetDevice()->CreateRootSignature(
-                0,
-                signatureBlob->GetBufferPointer(),
-                signatureBlob->GetBufferSize(),
-                IID_PPV_ARGS(&mRootSignature)
-            );
-            KD_ASSERT_EQ(SUCCEEDED(hr), "Failed to create D3D12 root siganture!");
-        
-            if (signatureBlob) signatureBlob->Release();
-            if (errorBlob) errorBlob->Release();
-        } else {
-            D3D12_ROOT_SIGNATURE_DESC RootSignatureDesc = {};
-            RootSignatureDesc.NumParameters = 0;
-            RootSignatureDesc.pParameters = nullptr;
-            RootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-        
-            ID3DBlob* signatureBlob;
-            ID3DBlob* errorBlob;
-            HRESULT hr = D3D12SerializeRootSignature(&RootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signatureBlob, &errorBlob);
-            KD_ASSERT_EQ(SUCCEEDED(hr), "Failed to create D3D12 root siganture!");
-        
-            hr = device->GetDevice()->CreateRootSignature(
-                0,
-                signatureBlob->GetBufferPointer(),
-                signatureBlob->GetBufferSize(),
-                IID_PPV_ARGS(&mRootSignature)
-            );
-            KD_ASSERT_EQ(SUCCEEDED(hr), "Failed to create D3D12 root siganture!");
-        
-            if (signatureBlob) signatureBlob->Release();
-            if (errorBlob) errorBlob->Release();
-        }
-        Desc.pRootSignature = mRootSignature;
+        Desc.pRootSignature = device->GetGlobalRootSig();
     
         HRESULT result = device->GetDevice()->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&mPipelineState));
         KD_ASSERT_EQ(SUCCEEDED(result), "Failed to create D3D12 graphics pipeline!");
@@ -133,8 +79,7 @@ namespace KGPU
     
     D3D12GraphicsPipeline::~D3D12GraphicsPipeline()
     {
-        mPipelineState->Release();
-        mRootSignature->Release();    
+        if (mPipelineState) mPipelineState->Release();
     }
     
     D3D12_COMPARISON_FUNC D3D12GraphicsPipeline::ToD3DCompareOp(DepthOperation op)

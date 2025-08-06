@@ -19,7 +19,8 @@ namespace KGPU
         kStaging = BIT(5),
         kReadback = BIT(6),
         kAccelerationStructure = BIT(7),
-        kShaderBindingTable = BIT(8)
+        kShaderBindingTable = BIT(8),
+        kIndirectCommands = BIT(9)
     };
     ENUM_CLASS_FLAGS(BufferUsage);
 

@@ -60,9 +60,14 @@ namespace KGPU
         uint32 instanceLayerCount = 1;
         const char* instanceLayers[] = { "VK_LAYER_KHRONOS_validation" };
 
-        uint32 sdlExtensionCount = 2;
-        auto sdlInstanceExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
-        KC::Array<const char*> extensions(sdlInstanceExtensions, sdlInstanceExtensions + sdlExtensionCount);
+        KC::Array<const char*> extensions;
+        if (SDL_WasInit(SDL_INIT_VIDEO)) {
+            uint32 sdlExtensionCount = 2;
+            auto sdlInstanceExtensions = SDL_Vulkan_GetInstanceExtensions(&sdlExtensionCount);
+            for (int i = 0; i < sdlExtensionCount; i++) {
+                extensions.push_back(sdlInstanceExtensions[i]);
+            }
+        }
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
         VkApplicationInfo appInfo = {};
@@ -157,8 +162,7 @@ namespace KGPU
         };
     
         // Required baseline extensions
-        const KC::Array<const char*> baselineExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        KC::Array<const char*> baselineExtensions = {
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
             VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
             VK_KHR_SPIRV_1_4_EXTENSION_NAME,
@@ -166,6 +170,10 @@ namespace KGPU
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
             VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
         };
+
+        if (SDL_WasInit(SDL_INIT_VIDEO)) {
+            baselineExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        }
     
         for (auto* required : baselineExtensions) {
             if (!supportsExt(required)) {
@@ -205,7 +213,6 @@ namespace KGPU
         };
     
         KC::Array<const char*> enabledExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
             VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
             VK_KHR_SPIRV_1_4_EXTENSION_NAME,
@@ -213,6 +220,7 @@ namespace KGPU
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
             VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
         };
+        if (SDL_WasInit(SDL_INIT_VIDEO)) enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     
         // Feature structs
         VkPhysicalDeviceFeatures2 deviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
@@ -256,10 +264,14 @@ namespace KGPU
         meshShader.meshShader = VK_TRUE;
         meshShader.meshShaderQueries = VK_TRUE;
     
+        VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT md = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT };
+        md.mutableDescriptorType = true;
+
         // Build extension list + pNext chain
         void* nextChain = &vk13Features;
         vk13Features.pNext = &descriptorIndexing;
-        void** chainTail = &descriptorIndexing.pNext;
+        descriptorIndexing.pNext = &md;
+        void** chainTail = &md.pNext;
     
         // Check RT extensions
         bool hasRT = supportsExt(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME) &&

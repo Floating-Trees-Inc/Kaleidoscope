@@ -15,6 +15,6 @@ namespace Gfx
         static void EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::IBuffer* instanceBuffer, uint instanceCount);
         static void EnqueueBLASBuild(KGPU::IBLAS* blas);
         static void EnqueueTextureUploadRaw(const void* data, uint64 size, KGPU::ITexture* texture, bool bufferHasMips = true, KGPU::ICommandList* cmdList = nullptr);
-        static void EnqueueBufferUpload(const void* data, uint64 size, KGPU::IBuffer* buffer);
+        static void EnqueueBufferUpload(const void* data, uint64 size, KGPU::IBuffer* buffer, KGPU::ICommandList* cmdList = nullptr);
     };
 }

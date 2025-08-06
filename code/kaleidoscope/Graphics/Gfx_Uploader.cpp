@@ -184,7 +184,7 @@ namespace Gfx
         cmdList->Barrier(dstBarrierAfter);
     }
 
-    void Uploader::EnqueueBufferUpload(const void* data, uint64 size, KGPU::IBuffer* buffer)
+    void Uploader::EnqueueBufferUpload(const void* data, uint64 size, KGPU::IBuffer* buffer, KGPU::ICommandList* cmd)
     {
         KGPU::BufferDesc stagingBufferDesc = {};
         stagingBufferDesc.Size = size;
@@ -197,7 +197,7 @@ namespace Gfx
         stagingBuffer->Unmap();
 
         // Flush
-        KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
+        KGPU::ICommandList* cmdList = cmd ? cmd : CommandListRecycler::RequestCommandList();
         KGPU::BufferDesc dstDesc = buffer->GetDesc();
 
         KGPU::BufferBarrier dstBarrier(buffer);
@@ -237,6 +237,10 @@ namespace Gfx
         if (Any(dstDesc.Usage & KGPU::BufferUsage::kShaderWrite)) {
             dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kShaderWrite;
             dstBarrierAfter.DestStage = KGPU::PipelineStage::kAllGraphics;
+        }
+        if (Any(dstDesc.Usage & KGPU::BufferUsage::kIndirectCommands)) {
+            dstBarrierAfter.DestAccess = KGPU::ResourceAccess::kIndirectCommandRead;
+            dstBarrierAfter.DestStage = KGPU::PipelineStage::kDrawIndirect;
         }
 
         cmdList->Barrier(firstGroup);

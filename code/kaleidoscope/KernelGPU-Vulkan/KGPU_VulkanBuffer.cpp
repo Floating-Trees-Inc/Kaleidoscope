@@ -24,6 +24,7 @@ namespace KGPU
         if (Any(desc.Usage & BufferUsage::kShaderRead) || Any(desc.Usage & BufferUsage::kShaderWrite)) bufferInfo.usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
         if (Any(desc.Usage & BufferUsage::kAccelerationStructure)) bufferInfo.usage |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR;
         if (Any(desc.Usage & BufferUsage::kShaderBindingTable)) bufferInfo.usage |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
+        if (Any(desc.Usage & BufferUsage::kIndirectCommands)) bufferInfo.usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 
         if (mParentDevice->SupportsRaytracing()) {
             bufferInfo.usage |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;

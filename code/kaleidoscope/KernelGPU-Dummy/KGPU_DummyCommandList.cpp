@@ -118,6 +118,22 @@ namespace KGPU
     {
     }
 
+    void DummyCommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+    }
+
+    void DummyCommandList::DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+    }
+
+    void DummyCommandList::DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer)
+    {
+    }
+
+    void DummyCommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+    }
+
     void DummyCommandList::CopyBufferToBufferFull(IBuffer* dest, IBuffer* src)
     {
     }

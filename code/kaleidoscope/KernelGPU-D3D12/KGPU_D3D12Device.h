@@ -26,6 +26,14 @@
 
 namespace KGPU
 {
+    struct IndirectSignatures
+    {
+        ID3D12CommandSignature* DrawSignature;
+        ID3D12CommandSignature* DrawIndexedSignature;
+        ID3D12CommandSignature* DispatchSignature;
+        ID3D12CommandSignature* DrawMeshSignature;
+    };
+
     class D3D12Device : public IDevice
     {
     public:
@@ -53,6 +61,9 @@ namespace KGPU
         uint64 GetOptimalRowPitchAlignment() override { return D3D12_TEXTURE_DATA_PITCH_ALIGNMENT; }
         uint64 GetBufferImageGranularity() override { return D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT; }
         KGPU::ShaderBytecodeType GetTargetBytecode() override { return KGPU::ShaderBytecodeType::kDXIL; }
+
+        ID3D12RootSignature* GetGlobalRootSig() { return mGlobalRootSig; }
+        IndirectSignatures GetSignatures() { return mSignatures; }
     public:
         ID3D12Device14* GetDevice() { return mDevice; }
         IDXGIFactory6* GetFactory() { return mFactory; }
@@ -69,6 +80,9 @@ namespace KGPU
         D3D12BindlessManager* mManager;
         bool mSupportsRT = false;
         bool mSupportsMS = false;
+
+        IndirectSignatures mSignatures;
+        ID3D12RootSignature* mGlobalRootSig;
 
         uint64 CalculateAdapterScore(IDXGIAdapter1* adapter);
     };

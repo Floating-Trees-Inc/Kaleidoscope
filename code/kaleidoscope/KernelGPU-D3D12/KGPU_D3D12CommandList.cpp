@@ -244,7 +244,7 @@ namespace KGPU
         D3D12GraphicsPipeline* d3dPipeline = static_cast<D3D12GraphicsPipeline*>(pipeline);
 
         mList->SetPipelineState(d3dPipeline->GetPipelineState());
-        mList->SetGraphicsRootSignature(d3dPipeline->GetRootSignature());
+        mList->SetGraphicsRootSignature(mParentDevice->GetGlobalRootSig());
 
         if (pipeline->GetDesc().LineTopology) {
             mList->IASetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -329,7 +329,7 @@ namespace KGPU
     void D3D12CommandList::SetComputePipeline(IComputePipeline* pipeline)
     {
         mList->SetPipelineState(static_cast<D3D12ComputePipeline*>(pipeline)->GetPipelineState());
-        mList->SetComputeRootSignature(static_cast<D3D12ComputePipeline*>(pipeline)->GetRootSignature());
+        mList->SetComputeRootSignature(mParentDevice->GetGlobalRootSig());
     }
 
     void D3D12CommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)
@@ -357,9 +357,29 @@ namespace KGPU
         mList->DispatchMesh(x, y, z);
     }
 
+    void D3D12CommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+        mList->ExecuteIndirect(mParentDevice->GetSignatures().DrawSignature, maxDrawCount, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
+    }
+
+    void D3D12CommandList::DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+        mList->ExecuteIndirect(mParentDevice->GetSignatures().DrawIndexedSignature, maxDrawCount, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
+    }
+
+    void D3D12CommandList::DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer)
+    {
+        mList->ExecuteIndirect(mParentDevice->GetSignatures().DispatchSignature, 1, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
+    }
+
+    void D3D12CommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+        mList->ExecuteIndirect(mParentDevice->GetSignatures().DrawMeshSignature, maxDrawCount, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
+    }
+
     void D3D12CommandList::CopyBufferToBufferFull(IBuffer* dest, IBuffer* src)
     {
-        mList->CopyResource(static_cast<D3D12Buffer*>(dest)->GetResource(), static_cast<D3D12Buffer*>(src)->GetResource());
+        mList->CopyBufferRegion(static_cast<D3D12Buffer*>(dest)->GetResource(), 0, static_cast<D3D12Buffer*>(src)->GetResource(), 0, src->GetDesc().Size);
     }
 
     void D3D12CommandList::CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips)

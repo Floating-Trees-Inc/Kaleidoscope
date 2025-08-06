@@ -20,7 +20,6 @@ namespace KGPU
         ~D3D12GraphicsPipeline();
 
         ID3D12PipelineState* GetPipelineState() { return mPipelineState; }
-        ID3D12RootSignature* GetRootSignature() { return mRootSignature; }
 
     private:
         D3D12_COMPARISON_FUNC ToD3DCompareOp(DepthOperation op);
@@ -29,6 +28,5 @@ namespace KGPU
 
     private:
         ID3D12PipelineState* mPipelineState;
-        ID3D12RootSignature* mRootSignature;
     };
 }

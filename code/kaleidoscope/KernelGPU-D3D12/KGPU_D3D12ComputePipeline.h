@@ -20,9 +20,7 @@ namespace KGPU
         ~D3D12ComputePipeline();
 
         ID3D12PipelineState* GetPipelineState() { return mPipelineState; }
-        ID3D12RootSignature* GetRootSignature() { return mRootSignature; }
     private:
         ID3D12PipelineState* mPipelineState;
-        ID3D12RootSignature* mRootSignature;
     };
 }
