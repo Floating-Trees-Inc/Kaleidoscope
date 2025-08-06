@@ -23,6 +23,7 @@
 #include "KGPU_D3D12TLAS.h"
 #include "KGPU_D3D12BufferView.h"
 #include "KGPU_D3D12BindlessManager.h"
+#include "KGPU_D3D12MeshPipeline.h"
 
 namespace KGPU
 {
@@ -52,6 +53,7 @@ namespace KGPU
         IBLAS* CreateBLAS(BLASDesc desc) override;
         ITLAS* CreateTLAS() override;
         IBufferView* CreateBufferView(BufferViewDesc desc) override;
+        IMeshPipeline* CreateMeshPipeline(MeshPipelineDesc desc) override;
 
         Backend GetBackend() { return Backend::kD3D12; }
         bool SupportsRaytracing() { return mSupportsRT; }

@@ -37,6 +37,7 @@ end
 -- Build steps
 before_link(function (target)
     os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/")
+    os.cp("data/*", "$(builddir)/$(plat)/$(arch)/$(mode)/data/")
 end)
 
 -- Includes

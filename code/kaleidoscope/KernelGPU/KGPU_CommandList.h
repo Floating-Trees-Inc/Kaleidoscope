@@ -13,6 +13,7 @@
 #include "KGPU_ComputePipeline.h"
 #include "KGPU_BLAS.h"
 #include "KGPU_TLAS.h"
+#include "KGPU_MeshPipeline.h"
 
 #undef MemoryBarrier
 
@@ -186,6 +187,9 @@ namespace KGPU
     
         virtual void SetComputePipeline(IComputePipeline* pipeline) = 0;
         virtual void SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size) = 0;
+
+        virtual void SetMeshPipeline(IMeshPipeline* pipeline) = 0;
+        virtual void SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size) = 0;
     
         virtual void Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) = 0;
         virtual void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) = 0;

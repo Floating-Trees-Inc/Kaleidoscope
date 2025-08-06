@@ -39,6 +39,8 @@ namespace KDS
             const std::string pragmaVertex = "#pragma vertex";
             const std::string pragmaPixel = "#pragma pixel";
             const std::string pragmaCompute = "#pragma compute";
+            const std::string pragmaAmp = "#pragma amplification";
+            const std::string pragmaMesh = "#pragma mesh";
 
             if (KC::StringUtil::StartsWith(line, pragmaVertex)) {
                 KC::String funcName = line.substr(pragmaVertex.size());
@@ -46,7 +48,7 @@ namespace KDS
                 result.EntryPoints.push_back(EntryPointRecord{
                     KGPU::ShaderStage::kVertex,
                     funcName
-                 });
+                });
             }
             else if (KC::StringUtil::StartsWith(line, pragmaPixel)) {
                 KC::String funcName = line.substr(pragmaPixel.size());
@@ -62,7 +64,23 @@ namespace KDS
                 result.EntryPoints.push_back(EntryPointRecord{
                     KGPU::ShaderStage::kCompute,
                     funcName
-                 });
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaAmp)) {
+                KC::String funcName = line.substr(pragmaAmp.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kAmplification,
+                    funcName
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaMesh)) {
+                KC::String funcName = line.substr(pragmaMesh.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kMesh,
+                    funcName
+                });
             }
         }
 

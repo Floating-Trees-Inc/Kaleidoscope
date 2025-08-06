@@ -78,4 +78,9 @@ namespace KGPU
     {
         return KC_NEW(DummyBufferView, this, desc);
     }
+
+    IMeshPipeline* DummyDevice::CreateMeshPipeline(MeshPipelineDesc desc)
+    {
+        return KC_NEW(DummyMeshPipeline, this, desc);
+    }
 }

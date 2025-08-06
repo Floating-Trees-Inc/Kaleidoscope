@@ -1,15 +1,15 @@
 //
 // > Notice: Floating Trees Inc. @ 2025
-// > Create Time: 2025-07-15 22:12:13
+// > Create Time: 2025-08-06 23:42:26
 //
 
-#include "KGPU_VulkanGraphicsPipeline.h"
+#include "KGPU_VulkanMeshPipeline.h"
 #include "KGPU_VulkanDevice.h"
 #include "KGPU_VulkanTexture.h"
 
 namespace KGPU
 {
-    VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice* device, GraphicsPipelineDesc desc)
+    VulkanMeshPipeline::VulkanMeshPipeline(VulkanDevice* device, GraphicsPipelineDesc desc)
         : mParentDevice(device)
     {
         mDesc = desc;
@@ -182,13 +182,13 @@ namespace KGPU
         KD_WHATEVER("Created Vulkan graphics pipeline");
     }
     
-    VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
+    VulkanMeshPipeline::~VulkanMeshPipeline()
     {
         if (mPipeline) vkDestroyPipeline(mParentDevice->Device(), mPipeline, nullptr);
         if (mLayout) vkDestroyPipelineLayout(mParentDevice->Device(), mLayout, nullptr);
     }
 
-    VkCompareOp VulkanGraphicsPipeline::ToVkCompareOp(DepthOperation op)
+    VkCompareOp VulkanMeshPipeline::ToVkCompareOp(DepthOperation op)
     {
         switch (op)
         {
@@ -201,7 +201,7 @@ namespace KGPU
         }
     }
     
-    VkShaderStageFlagBits VulkanGraphicsPipeline::ShaderStageToVk(ShaderStage stage)
+    VkShaderStageFlagBits VulkanMeshPipeline::ShaderStageToVk(ShaderStage stage)
     {
         switch (stage)
         {
@@ -213,7 +213,7 @@ namespace KGPU
         }
     }
     
-    VkCullModeFlagBits VulkanGraphicsPipeline::ToVkCullMode(CullMode mode)
+    VkCullModeFlagBits VulkanMeshPipeline::ToVkCullMode(CullMode mode)
     {
         switch (mode)
         {
@@ -224,7 +224,7 @@ namespace KGPU
         }
     }
     
-    VkPolygonMode VulkanGraphicsPipeline::ToVkFillMode(FillMode mode)
+    VkPolygonMode VulkanMeshPipeline::ToVkFillMode(FillMode mode)
     {
         switch (mode)
         {

@@ -13,6 +13,7 @@
 #include "KGPU_D3D12ComputePipeline.h"
 #include "KGPU_D3D12BLAS.h"
 #include "KGPU_D3D12TLAS.h"
+#include "KGPU_D3D12MeshPipeline.h"
 
 #include <pix/pix3.h>
 
@@ -330,6 +331,19 @@ namespace KGPU
     {
         mList->SetPipelineState(static_cast<D3D12ComputePipeline*>(pipeline)->GetPipelineState());
         mList->SetComputeRootSignature(mParentDevice->GetGlobalRootSig());
+    }
+
+    void D3D12CommandList::SetMeshPipeline(IMeshPipeline* pipeline)
+    {
+        D3D12MeshPipeline* d3dPipeline = static_cast<D3D12MeshPipeline*>(pipeline);
+
+        mList->SetPipelineState(d3dPipeline->GetPipelineState());
+        mList->SetGraphicsRootSignature(mParentDevice->GetGlobalRootSig());
+    }
+
+    void D3D12CommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
+    {
+        mList->SetGraphicsRoot32BitConstants(0, size / 4, data, 0);
     }
 
     void D3D12CommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)

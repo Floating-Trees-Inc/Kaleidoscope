@@ -118,6 +118,50 @@ namespace Gfx
         sData.Entries[path] = std::move(entry);
     }
 
+    void ShaderManager::SubscribeMesh(const KC::String& path, const KGPU::MeshPipelineDesc& desc)
+    {
+        PipelineEntry entry;
+        entry.Type = PipelineType::kMesh;
+        entry.MeshDesc = desc;
+        entry.ShaderFile = path;
+        entry.Dependencies.push_back({
+            path,
+            KC::FileSystem::GetWriteTime(path)
+        });
+
+        KC::String source = KC::FileSystem::ReadWholeFile(path);
+        KDS::ParseResult result = KDS::Parser::ParseShaderSource(source);
+        
+        KDS::IncludeHandler includeHandler;
+        includeHandler.AddIncludePath("data");
+        includeHandler.AddIncludePath("data/rf/shaders");
+        includeHandler.AddIncludePath("data/kd/shaders");
+        includeHandler.AddIncludePath("data/sp/shaders");
+
+        KC::Array<KC::String> foundPaths;
+        source = includeHandler.ReplaceIncludes(result, source, foundPaths);
+        for (auto& dependencyPath : foundPaths) {
+            entry.Dependencies.push_back({
+                dependencyPath,
+                KC::FileSystem::GetWriteTime(dependencyPath)
+            });
+        }
+
+        entry.MeshDesc.PushConstantSize = 0;
+        for (auto& name : result.EntryPoints) {
+            entry.MeshDesc.Modules[name.Stage] = sData.Compiler->Compile(source, name.Name, name.Stage);
+            if (entry.MeshDesc.PushConstantSize == 0)
+                entry.MeshDesc.PushConstantSize = sData.ReflectionEngine->Reflect(entry.MeshDesc.Modules[name.Stage]).PushConstantSize;
+        }
+
+        if (entry.MeshPipeline) KC_DELETE(entry.MeshPipeline);
+        entry.MeshPipeline = Manager::GetDevice()->CreateMeshPipeline(entry.MeshDesc);
+
+        KD_INFO("Loaded shader %s", path.c_str());
+        
+        sData.Entries[path] = std::move(entry);
+    }
+
     KGPU::IGraphicsPipeline* ShaderManager::GetGraphics(const KC::String& path)
     {
         return sData.Entries[path].GraphicsPipeline;
@@ -126,6 +170,11 @@ namespace Gfx
     KGPU::IComputePipeline* ShaderManager::GetCompute(const KC::String& path)
     {
         return sData.Entries[path].ComputePipeline;
+    }
+
+    KGPU::IMeshPipeline* ShaderManager::GetMesh(const KC::String& path)
+    {
+        return sData.Entries[path].MeshPipeline;
     }
 
     void ShaderManager::ReloadPipelines()
@@ -189,6 +238,32 @@ namespace Gfx
                             if (entry.ComputePipeline) KC_DELETE(entry.ComputePipeline);
                             entry.ComputePipeline = Manager::GetDevice()->CreateComputePipeline(entry.ComputeDesc);
 
+                            KD_INFO("Loaded shader %s", path.c_str());
+                            break;
+                        }
+                        case PipelineType::kMesh: {
+                            KC::String source = KC::FileSystem::ReadWholeFile(path);
+                            KDS::ParseResult result = KDS::Parser::ParseShaderSource(source);
+
+                            KDS::IncludeHandler includeHandler;
+                            includeHandler.AddIncludePath("data");
+                            includeHandler.AddIncludePath("data/rf/shaders");
+                            includeHandler.AddIncludePath("data/kd/shaders");
+                            includeHandler.AddIncludePath("data/sp/shaders");
+
+                            KC::Array<KC::String> foundPaths;
+                            source = includeHandler.ReplaceIncludes(result, source, foundPaths);
+                            
+                            entry.MeshDesc.PushConstantSize = 0;
+                            for (auto& name : result.EntryPoints) {
+                                entry.MeshDesc.Modules[name.Stage] = sData.Compiler->Compile(source, name.Name, name.Stage);
+                                if (entry.MeshDesc.PushConstantSize == 0)
+                                    entry.MeshDesc.PushConstantSize = sData.ReflectionEngine->Reflect(entry.MeshDesc.Modules[name.Stage]).PushConstantSize;
+                            }
+                        
+                            if (entry.MeshPipeline) KC_DELETE(entry.MeshPipeline);
+                            entry.MeshPipeline = Manager::GetDevice()->CreateMeshPipeline(entry.MeshDesc);
+                        
                             KD_INFO("Loaded shader %s", path.c_str());
                             break;
                         }

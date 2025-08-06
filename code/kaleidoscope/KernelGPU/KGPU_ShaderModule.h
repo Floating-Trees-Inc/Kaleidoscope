@@ -31,8 +31,9 @@ namespace KGPU
         kVertex = 0,
         kPixel = 1,
         kCompute = 2,
-        kMax = 3
-        // Anything else is mental illness for now
+        kAmplification = 3,
+        kMesh = 4,
+        kMax = 5
     };
 
     struct ShaderModule

@@ -457,4 +457,9 @@ namespace KGPU
     {
         return KC_NEW(VulkanBufferView, this, desc);
     }
+
+    IMeshPipeline* VulkanDevice::CreateMeshPipeline(MeshPipelineDesc desc)
+    {
+        return KC_NEW(VulkanMeshPipeline, this, desc);
+    }
 }

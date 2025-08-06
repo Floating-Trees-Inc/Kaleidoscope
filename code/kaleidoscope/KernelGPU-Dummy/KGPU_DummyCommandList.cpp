@@ -102,6 +102,14 @@ namespace KGPU
     {
     }
 
+    void DummyCommandList::SetMeshPipeline(IMeshPipeline* pipeline)
+    {
+    }
+
+    void DummyCommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
+    {
+    }
+
     void DummyCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
     }

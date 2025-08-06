@@ -13,6 +13,7 @@
 #include "KGPU_VulkanComputePipeline.h"
 #include "KGPU_VulkanBLAS.h"
 #include "KGPU_VulkanTLAS.h"
+#include "KGPU_VulkanMeshPipeline.h"
 
 namespace KGPU
 {
@@ -406,6 +407,22 @@ namespace KGPU
         VulkanComputePipeline* vkPipeline = static_cast<VulkanComputePipeline*>(pipeline);
 
         vkCmdPushConstants(mCmdBuffer, vkPipeline->GetLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, size, data);
+    }
+
+    void VulkanCommandList::SetMeshPipeline(IMeshPipeline* pipeline)
+    {
+        VkDescriptorSet set = mParentDevice->GetBindlessManager()->GetSet();
+        VulkanMeshPipeline* vkPipeline = static_cast<VulkanMeshPipeline*>(pipeline);
+
+        vkCmdBindPipeline(mCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline->GetPipeline());
+        vkCmdBindDescriptorSets(mCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline->GetLayout(), 0, 1, &set, 0, nullptr);
+    }
+
+    void VulkanCommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
+    {
+        VulkanMeshPipeline* vkPipeline = static_cast<VulkanMeshPipeline*>(pipeline);
+
+        vkCmdPushConstants(mCmdBuffer, vkPipeline->GetLayout(), VK_SHADER_STAGE_ALL_GRAPHICS, 0, size, data);
     }
 
     void VulkanCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)

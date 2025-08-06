@@ -19,6 +19,7 @@
 #include "KGPU_DummyBLAS.h"
 #include "KGPU_DummyTLAS.h"
 #include "KGPU_DummyBufferView.h"
+#include "KGPU_DummyMeshPipeline.h"
 
 namespace KGPU
 {
@@ -40,6 +41,7 @@ namespace KGPU
         IBLAS* CreateBLAS(BLASDesc desc) override;
         ITLAS* CreateTLAS() override;
         IBufferView* CreateBufferView(BufferViewDesc desc) override;
+        IMeshPipeline* CreateMeshPipeline(MeshPipelineDesc desc) override;
 
         Backend GetBackend() { return Backend::kDummy; }
 

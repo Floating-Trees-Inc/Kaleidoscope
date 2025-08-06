@@ -20,16 +20,19 @@ namespace Gfx
 
         static void SubscribeGraphics(const KC::String& path, const KGPU::GraphicsPipelineDesc& desc);
         static void SubscribeCompute(const KC::String& path);
+        static void SubscribeMesh(const KC::String& path, const KGPU::MeshPipelineDesc& desc);
 
         static KGPU::IGraphicsPipeline* GetGraphics(const KC::String& path);
         static KGPU::IComputePipeline* GetCompute(const KC::String& path);
+        static KGPU::IMeshPipeline* GetMesh(const KC::String& path);
 
         static void ReloadPipelines();
     private:
         enum class PipelineType
         {
             kGraphics,
-            kCompute
+            kCompute,
+            kMesh
         };
 
         struct FileWatch
@@ -49,6 +52,9 @@ namespace Gfx
 
             KGPU::IGraphicsPipeline* GraphicsPipeline = nullptr;
             KGPU::GraphicsPipelineDesc GraphicsDesc = {};
+
+            KGPU::IMeshPipeline* MeshPipeline = nullptr;
+            KGPU::MeshPipelineDesc MeshDesc = {};
         };
 
         static struct Data {

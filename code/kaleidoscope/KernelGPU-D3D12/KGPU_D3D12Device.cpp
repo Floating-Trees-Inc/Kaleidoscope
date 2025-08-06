@@ -301,6 +301,11 @@ namespace KGPU
         return KC_NEW(D3D12BufferView, this, desc);
     }
 
+    IMeshPipeline* D3D12Device::CreateMeshPipeline(MeshPipelineDesc desc)
+    {
+        return KC_NEW(D3D12MeshPipeline, this, desc);
+    }
+
     uint64 D3D12Device::CalculateAdapterScore(IDXGIAdapter1* adapter)
     {
         ID3D12Device* device;

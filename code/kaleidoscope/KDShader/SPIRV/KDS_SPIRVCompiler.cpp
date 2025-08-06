@@ -23,6 +23,10 @@ namespace KDS
                 return "ps_6_6";
             case KGPU::ShaderStage::kCompute:
                 return "cs_6_6";
+            case KGPU::ShaderStage::kAmplification:
+                return "as_6_6";
+            case KGPU::ShaderStage::kMesh:
+                return "ms_6_6";
             default: return "cs_6_6";
         }
         return "cs6_6";

@@ -36,15 +36,20 @@ namespace KGPU
 
         void ClearColor(ITextureView* view, float r, float g, float b) override;
 
-        void SetGraphicsPipeline(IGraphicsPipeline* pipeline) override;
         void SetViewport(float width, float height, float topLeftX, float topLeftY) override;
         void SetScissor(int left, int top, int right, int bottom) override;
         void SetRenderSize(float width, float height) override;
         void SetVertexBuffer(IBuffer* buffer, uint64 offset = 0) override;
         void SetIndexBuffer(IBuffer* buffer) override;
+
+        void SetGraphicsPipeline(IGraphicsPipeline* pipeline) override;
         void SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size) override;
+        
         void SetComputePipeline(IComputePipeline* pipeline) override;
         void SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size) override;
+
+        void SetMeshPipeline(IMeshPipeline* pipeline) override;
+        void SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size) override;
 
         void Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) override;
         void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) override;
