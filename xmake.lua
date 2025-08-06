@@ -5,33 +5,33 @@
 
 add_rules("mode.debug", "mode.release", "mode.releasedbg")
 set_rundir(".")
-set_languages("c++20")
+set_languages("c++20", { public = true })
 
 -- Platform
 if is_plat("windows") then
-    add_defines("KD_WINDOWS", "USE_PIX")
+    add_defines("KD_WINDOWS", "USE_PIX", { public = true })
 elseif is_plat("linux") then
-    add_defines("KD_LINUX")
+    add_defines("KD_LINUX", { public = true })
 else
-    add_defines("KD_MAC")
+    add_defines("KD_MAC", { public = true })
 end
 
 -- Config
-add_defines("GLM_FORCE_DEPTH_ZERO_TO_ONE")
+add_defines("GLM_FORCE_DEPTH_ZERO_TO_ONE", { public = true })
 if is_mode("debug") then
-    add_defines("KD_DEBUG")
-    set_symbols("debug")
-    set_optimize("none")
+    add_defines("KD_DEBUG", { public = true })
+    set_symbols("debug", { public = true })
+    set_optimize("none", { public = true })
 elseif is_mode("releasedbg") then
-    add_defines("KD_RELEASE")
-    set_symbols("debug")
-    set_optimize("fastest")
-    set_strip("all")
+    add_defines("KD_RELEASE", { public = true })
+    set_symbols("debug", { public = true })
+    set_optimize("fastest", { public = true })
+    set_strip("all", { public = true })
 else
-    add_defines("KD_RETAIL")
-    set_symbols("hidden")
-    set_optimize("fastest")
-    set_strip("all")
+    add_defines("KD_RETAIL", { public = true })
+    set_symbols("hidden", { public = true })
+    set_optimize("fastest", { public = true })
+    set_strip("all", { public = true })
 end
 
 -- Build steps
@@ -42,4 +42,3 @@ end)
 -- Includes
 includes("thirdparty")
 includes("code/kaleidoscope")
-includes("code/demo_app")
