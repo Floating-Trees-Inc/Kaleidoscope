@@ -1,4 +1,16 @@
 {
+    "MeshTriangle": {
+        "goldenPath": "tests/golden/MeshTriangleGolden.png",
+        "magmaPath": "tests/MeshTriangleMagma.png",
+        "outputPath": "tests/MeshTriangle.png",
+        "result": true
+    },
+    "MeshTriangleIndirect": {
+        "goldenPath": "tests/golden/MeshTriangleIndirectGolden.png",
+        "magmaPath": "tests/MeshTriangleIndirectMagma.png",
+        "outputPath": "tests/MeshTriangleIndirect.png",
+        "result": true
+    },
     "SimpleCompute": {
         "goldenPath": "tests/golden/SimpleComputeGolden.png",
         "magmaPath": "tests/SimpleComputeMagma.png",
