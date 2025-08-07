@@ -39,6 +39,8 @@ void ConvertOutput(const float* linearRGB, uint8* rgba8, int width, int height)
 
 KD_MAIN
 {
+    bool success = false;
+
     KC::ScopedContext ctx;
     CODE_BLOCK("Run Tests") {
         auto& tests = KGPUT::GetTests();
@@ -90,11 +92,13 @@ KD_MAIN
         KD_INFO("-------------------------------------");
         KD_INFO("TESTS PASSED: %d/%d", testPassed, testCount);
         KD_INFO("-------------------------------------");
+
+        if (testPassed == testCount) success = true;
     
         KC::String string = json.dump(4);
         KC::FileStream out("data/kd/test_report.json", KOS::FileOpenMode::kWrite | KOS::FileOpenMode::kOverwrite);
         out.Write(string);
         out.Close();
     }
-    return 0;
+    return !success;
 }
