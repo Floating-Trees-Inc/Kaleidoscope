@@ -83,4 +83,9 @@ namespace KGPU
     {
         return KC_NEW(DummyMeshPipeline, this, desc);
     }
+
+    IRaytracingPipeline* DummyDevice::CreateRaytracingPipeline(RaytracingPipelineDesc desc)
+    {
+        return KC_NEW(DummyRaytracingPipeline, this, desc);   
+    }
 }

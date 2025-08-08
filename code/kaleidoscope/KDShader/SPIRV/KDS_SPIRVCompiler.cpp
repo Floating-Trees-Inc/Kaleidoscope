@@ -27,6 +27,12 @@ namespace KDS
                 return "as_6_6";
             case KGPU::ShaderStage::kMesh:
                 return "ms_6_6";
+            case KGPU::ShaderStage::kRayGeneration:
+            case KGPU::ShaderStage::kClosestHit:
+            case KGPU::ShaderStage::kAnyHit:
+            case KGPU::ShaderStage::kMiss:
+            case KGPU::ShaderStage::kIntersection:
+                return "lib6_6";
             default: return "cs_6_6";
         }
         return "cs6_6";

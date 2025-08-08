@@ -70,7 +70,7 @@ namespace Gfx
                       tm->tm_hour, tm->tm_min, tm->tm_sec, 
                       static_cast<int>(ms.count()));
         
-        std::string screenshotPath = "screenshots/Screenshot_" + std::string(timestamp) + ".png";
+        KC::String screenshotPath = "screenshots/Screenshot_" + KC::String(timestamp) + ".png";
         
         // Write
         uint8* pixels = (uint8*)sData.ReadbackBuffer->Map();

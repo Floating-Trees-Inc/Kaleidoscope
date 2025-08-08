@@ -46,7 +46,7 @@ KD_MAIN
         auto& tests = KGPUT::GetTests();
         nlohmann::json json;
 
-        auto StripDataPrefix = [](const KC::String& path) -> std::string {
+        auto StripDataPrefix = [](const KC::String& path) -> KC::String {
             const KC::String prefix = "data/kd/";
             if (path.rfind(prefix, 0) == 0) { // starts with "Data/"
                 return path.substr(prefix.length());

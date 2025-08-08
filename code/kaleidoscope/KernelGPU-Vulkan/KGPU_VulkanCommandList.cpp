@@ -14,6 +14,7 @@
 #include "KGPU_VulkanBLAS.h"
 #include "KGPU_VulkanTLAS.h"
 #include "KGPU_VulkanMeshPipeline.h"
+#include "KGPU_VulkanRaytracingPipeline.h"
 
 namespace KGPU
 {
@@ -422,7 +423,28 @@ namespace KGPU
     {
         VulkanMeshPipeline* vkPipeline = static_cast<VulkanMeshPipeline*>(pipeline);
 
-        vkCmdPushConstants(mCmdBuffer, vkPipeline->GetLayout(), VK_SHADER_STAGE_ALL_GRAPHICS, 0, size, data);
+        vkCmdPushConstants(mCmdBuffer, vkPipeline->GetLayout(), VK_SHADER_STAGE_MESH_BIT_EXT | VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, size, data);
+    }
+
+    void VulkanCommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
+    {
+        VkDescriptorSet set = mParentDevice->GetBindlessManager()->GetSet();
+        VulkanRaytracingPipeline* vkPipeline = static_cast<VulkanRaytracingPipeline*>(pipeline);
+        
+        vkCmdBindPipeline(mCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, vkPipeline->GetPipeline());
+        vkCmdBindDescriptorSets(mCmdBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, vkPipeline->GetLayout(), 0, 1, &set, 0, nullptr);
+    }
+
+    void VulkanCommandList::SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size)
+    {
+        VulkanRaytracingPipeline* vkPipeline = static_cast<VulkanRaytracingPipeline*>(pipeline);
+
+        auto shaderStage = VK_SHADER_STAGE_RAYGEN_BIT_KHR |
+                           VK_SHADER_STAGE_ANY_HIT_BIT_KHR |
+                           VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR |
+                           VK_SHADER_STAGE_INTERSECTION_BIT_KHR |
+                           VK_SHADER_STAGE_MISS_BIT_KHR;
+        vkCmdPushConstants(mCmdBuffer, vkPipeline->GetLayout(), shaderStage, 0, size, data);
     }
 
     void VulkanCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
@@ -444,6 +466,27 @@ namespace KGPU
     {
         vkCmdDrawMeshTasksEXT(mCmdBuffer, x, y, z);
     }
+    
+    void VulkanCommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)
+    {
+        auto* rtPipeline = static_cast<VulkanRaytracingPipeline*>(pipeline);
+
+        auto rayGenRegion = rtPipeline->GetRayGenRegion();
+        auto missRegion = rtPipeline->GetMissRegion();
+        auto hitRegion = rtPipeline->GetHitRegion();
+        auto callableRegion = rtPipeline->GetCallableRegion();
+
+        vkCmdTraceRaysKHR(
+            mCmdBuffer,
+            &rayGenRegion,
+            &missRegion,
+            &hitRegion,
+            &callableRegion,
+            width,
+            height,
+            depth
+        );
+    }
 
     void VulkanCommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
@@ -457,7 +500,7 @@ namespace KGPU
         else vkCmdDrawIndexedIndirectCount(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, 68);
     }
 
-    void VulkanCommandList::DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer)
+    void VulkanCommandList::DispatchIndirect(IBuffer* buffer, uint offset)
     {
         vkCmdDispatchIndirect(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset);
     }

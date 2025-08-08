@@ -110,6 +110,14 @@ namespace KGPU
     {
     }
 
+    void DummyCommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
+    {
+    }
+
+    void DummyCommandList::SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size)
+    {
+    }
+
     void DummyCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
     }
@@ -126,6 +134,10 @@ namespace KGPU
     {
     }
 
+    void DummyCommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)
+    {
+    }
+
     void DummyCommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
     }
@@ -134,7 +146,7 @@ namespace KGPU
     {
     }
 
-    void DummyCommandList::DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer)
+    void DummyCommandList::DispatchIndirect(IBuffer* buffer, uint offset)
     {
     }
 

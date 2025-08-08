@@ -28,12 +28,17 @@ namespace KGPU
 
     enum class ShaderStage : uint32
     {
-        kVertex = 0,
-        kPixel = 1,
-        kCompute = 2,
-        kAmplification = 3,
-        kMesh = 4,
-        kMax = 5
+        kVertex,
+        kPixel,
+        kCompute,
+        kAmplification,
+        kMesh,
+        kRayGeneration,
+        kClosestHit,
+        kMiss,
+        kIntersection,
+        kAnyHit,
+        kMax
     };
 
     struct ShaderModule

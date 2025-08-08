@@ -21,6 +21,7 @@
 #include "KGPU_VulkanBufferView.h"
 #include "KGPU_VulkanBindlessManager.h"
 #include "KGPU_VulkanMeshPipeline.h"
+#include "KGPU_VulkanRaytracingPipeline.h"
 
 #include <vk_mem_alloc.h>
 #include <volk.h>
@@ -46,6 +47,7 @@ namespace KGPU
         ITLAS* CreateTLAS() override;
         IBufferView* CreateBufferView(BufferViewDesc desc) override;
         IMeshPipeline* CreateMeshPipeline(MeshPipelineDesc desc) override;
+        IRaytracingPipeline* CreateRaytracingPipeline(RaytracingPipelineDesc desc) override;
 
         Backend GetBackend() { return Backend::kVulkan; }
         bool SupportsRaytracing() { return mSupportsRT; }

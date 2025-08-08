@@ -50,14 +50,18 @@ namespace KGPU
         void SetMeshPipeline(IMeshPipeline* pipeline) override;
         void SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size) override;
 
+        void SetRaytracingPipeline(IRaytracingPipeline* pipeline) override;
+        void SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size) override;
+
         void Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) override;
         void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) override;
         void Dispatch(uint x, uint y, uint z) override;
         void DispatchMesh(uint x, uint y, uint z) override;
+        void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) override;
 
         void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
         void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
-        void DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer = nullptr) override;
+        void DispatchIndirect(IBuffer* buffer, uint offset) override;
         void DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
 
         void CopyBufferToBufferFull(IBuffer* dest, IBuffer* src) override;

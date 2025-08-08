@@ -21,7 +21,7 @@ namespace KDS
             }
 
             // --- Handle #include ---
-            const std::string includeMacro = "#include \"";
+            const KC::String includeMacro = "#include \"";
 
             KC::String includePath;
             if (KC::StringUtil::StartsWith(line, includeMacro)) {
@@ -36,11 +36,16 @@ namespace KDS
             }
 
             // --- Handle #pragma ---
-            const std::string pragmaVertex = "#pragma vertex";
-            const std::string pragmaPixel = "#pragma pixel";
-            const std::string pragmaCompute = "#pragma compute";
-            const std::string pragmaAmp = "#pragma amplification";
-            const std::string pragmaMesh = "#pragma mesh";
+            const KC::String pragmaVertex = "#pragma vertex";
+            const KC::String pragmaPixel = "#pragma pixel";
+            const KC::String pragmaCompute = "#pragma compute";
+            const KC::String pragmaAmp = "#pragma amplification";
+            const KC::String pragmaMesh = "#pragma mesh";
+            const KC::String pragmaRayGen = "#pragma raygen";
+            const KC::String pragmaClosestHit = "#pragma closesthit";
+            const KC::String pragmaMiss = "#pragma miss";
+            const KC::String pragmaIntersection = "#pragma intersection";
+            const KC::String pragmaAnyHit = "#pragma anyhit";
 
             if (KC::StringUtil::StartsWith(line, pragmaVertex)) {
                 KC::String funcName = line.substr(pragmaVertex.size());
@@ -79,6 +84,46 @@ namespace KDS
                 KC::StringUtil::Trim(funcName);
                 result.EntryPoints.push_back(EntryPointRecord{
                     KGPU::ShaderStage::kMesh,
+                    funcName
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaRayGen)) {
+                KC::String funcName = line.substr(pragmaRayGen.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kRayGeneration,
+                    funcName
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaClosestHit)) {
+                KC::String funcName = line.substr(pragmaClosestHit.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kClosestHit,
+                    funcName
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaMiss)) {
+                KC::String funcName = line.substr(pragmaMiss.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kMiss,
+                    funcName
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaIntersection)) {
+                KC::String funcName = line.substr(pragmaIntersection.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kIntersection,
+                    funcName
+                });
+            }
+            else if (KC::StringUtil::StartsWith(line, pragmaAnyHit)) {
+                KC::String funcName = line.substr(pragmaAnyHit.size());
+                KC::StringUtil::Trim(funcName);
+                result.EntryPoints.push_back(EntryPointRecord{
+                    KGPU::ShaderStage::kAnyHit,
                     funcName
                 });
             }

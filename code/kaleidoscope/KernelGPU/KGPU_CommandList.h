@@ -14,6 +14,7 @@
 #include "KGPU_BLAS.h"
 #include "KGPU_TLAS.h"
 #include "KGPU_MeshPipeline.h"
+#include "KGPU_RaytracingPipeline.h"
 
 #undef MemoryBarrier
 
@@ -190,17 +191,21 @@ namespace KGPU
 
         virtual void SetMeshPipeline(IMeshPipeline* pipeline) = 0;
         virtual void SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size) = 0;
+
+        virtual void SetRaytracingPipeline(IRaytracingPipeline* pipeline) = 0;
+        virtual void SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size) = 0;
     
         virtual void Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) = 0;
         virtual void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) = 0;
         virtual void Dispatch(uint x, uint y, uint z) = 0;
         virtual void DispatchMesh(uint x, uint y, uint z) = 0;
+        virtual void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) = 0;
 
         virtual void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
         virtual void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
-        virtual void DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer = nullptr) = 0;
+        virtual void DispatchIndirect(IBuffer* buffer, uint offset) = 0;
         virtual void DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
-    
+
         virtual void CopyBufferToBufferFull(IBuffer* dest, IBuffer* src) = 0;
         virtual void CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips = true) = 0;
         virtual void CopyTextureToBuffer(IBuffer* dest, ITexture* src) = 0;

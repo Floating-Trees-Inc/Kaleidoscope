@@ -14,6 +14,7 @@
 #include "KGPU_D3D12BLAS.h"
 #include "KGPU_D3D12TLAS.h"
 #include "KGPU_D3D12MeshPipeline.h"
+#include "KGPU_D3D12RaytracingPipeline.h"
 
 #include <pix/pix3.h>
 
@@ -346,6 +347,19 @@ namespace KGPU
         mList->SetGraphicsRoot32BitConstants(0, size / 4, data, 0);
     }
 
+    void D3D12CommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
+    {
+        D3D12RaytracingPipeline* pipe = static_cast<D3D12RaytracingPipeline*>(pipeline);
+
+        mList->SetPipelineState1(pipe->GetPipelineState());
+        mList->SetComputeRootSignature(mParentDevice->GetGlobalRootSig());
+    }
+
+    void D3D12CommandList::SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size)
+    {
+        mList->SetComputeRoot32BitConstants(0, size / 4, data, 0);
+    }
+
     void D3D12CommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)
     {
         mList->SetComputeRoot32BitConstants(0, size / 4, data, 0);
@@ -371,6 +385,24 @@ namespace KGPU
         mList->DispatchMesh(x, y, z);
     }
 
+    void D3D12CommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)
+    {
+        uint64 address = static_cast<D3D12RaytracingPipeline*>(pipeline)->GetSBT()->GetAddress();
+
+        D3D12_DISPATCH_RAYS_DESC desc = {};
+        desc.Width = width;
+        desc.Height = height;
+        desc.Depth = depth;
+        desc.RayGenerationShaderRecord.StartAddress = address;
+        desc.RayGenerationShaderRecord.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        desc.MissShaderTable.StartAddress = address + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        desc.MissShaderTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        desc.HitGroupTable.StartAddress = address + (2 * D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+        desc.HitGroupTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        
+        mList->DispatchRays(&desc);
+    }
+
     void D3D12CommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
         mList->ExecuteIndirect(mParentDevice->GetSignatures().DrawSignature, maxDrawCount, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
@@ -381,9 +413,9 @@ namespace KGPU
         mList->ExecuteIndirect(mParentDevice->GetSignatures().DrawIndexedSignature, maxDrawCount, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
     }
 
-    void D3D12CommandList::DispatchIndirect(IBuffer* buffer, uint offset, IBuffer* countBuffer)
+    void D3D12CommandList::DispatchIndirect(IBuffer* buffer, uint offset)
     {
-        mList->ExecuteIndirect(mParentDevice->GetSignatures().DispatchSignature, 1, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, countBuffer ? static_cast<D3D12Buffer*>(countBuffer)->GetResource() : nullptr, 0);
+        mList->ExecuteIndirect(mParentDevice->GetSignatures().DispatchSignature, 1, static_cast<D3D12Buffer*>(buffer)->GetResource(), offset, nullptr, 0);
     }
 
     void D3D12CommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)

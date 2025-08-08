@@ -14,6 +14,7 @@
 namespace KC
 {
     using String = std::string;
+    using WString = std::wstring;
 
     namespace StringUtil
     {

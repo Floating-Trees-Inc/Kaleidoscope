@@ -169,7 +169,7 @@ namespace KDA
         cgltf_scene* scene = data->scene;
 
         MeshNode rootNode = {};
-        rootNode.Name = "Root Node " + std::string(path);
+        rootNode.Name = "Root Node " + KC::String(path);
         rootNode.ParentIndex = -1;
         result.Nodes.push_back(rootNode);
 

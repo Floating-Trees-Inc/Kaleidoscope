@@ -306,6 +306,11 @@ namespace KGPU
         return KC_NEW(D3D12MeshPipeline, this, desc);
     }
 
+    IRaytracingPipeline* D3D12Device::CreateRaytracingPipeline(RaytracingPipelineDesc desc)
+    {
+        return KC_NEW(D3D12RaytracingPipeline, this, desc);
+    }
+
     uint64 D3D12Device::CalculateAdapterScore(IDXGIAdapter1* adapter)
     {
         ID3D12Device* device;

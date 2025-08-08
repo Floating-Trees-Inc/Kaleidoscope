@@ -462,4 +462,9 @@ namespace KGPU
     {
         return KC_NEW(VulkanMeshPipeline, this, desc);
     }
+
+    IRaytracingPipeline* VulkanDevice::CreateRaytracingPipeline(RaytracingPipelineDesc desc)
+    {
+        return KC_NEW(VulkanRaytracingPipeline, this, desc);
+    }
 }

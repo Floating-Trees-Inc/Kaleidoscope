@@ -22,6 +22,7 @@
 #include "KGPU_TLAS.h"
 #include "KGPU_BufferView.h"
 #include "KGPU_MeshPipeline.h"
+#include "KGPU_RaytracingPipeline.h"
 
 namespace KGPU
 {
@@ -44,6 +45,7 @@ namespace KGPU
         virtual ITLAS* CreateTLAS() = 0;
         virtual IBufferView* CreateBufferView(BufferViewDesc desc) = 0;
         virtual IMeshPipeline* CreateMeshPipeline(MeshPipelineDesc desc) = 0;
+        virtual IRaytracingPipeline* CreateRaytracingPipeline(RaytracingPipelineDesc desc) = 0;
         
         virtual Backend GetBackend() = 0;
         virtual bool SupportsRaytracing() { return false; };
