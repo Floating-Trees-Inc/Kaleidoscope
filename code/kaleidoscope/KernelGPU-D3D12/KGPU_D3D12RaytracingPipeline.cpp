@@ -15,14 +15,8 @@ namespace KGPU
         ShaderModule* miss = nullptr;
         ShaderModule* intersection = nullptr;
         ShaderModule* raygen = nullptr;
-    
-        // Keep these around so their pointers stay valid
-        KC::Array<KC::WString> exportNames;
-        KC::Array<D3D12_EXPORT_DESC> exportDescs;
-        KC::Array<D3D12_DXIL_LIBRARY_DESC> dxilLibraries;
-        KC::Array<D3D12_STATE_SUBOBJECT> subObjects;
-    
-        // 1. Setup shader exports and libraries
+
+        // Find all shader stages
         for (auto& stage : desc.Modules) {
             switch (stage.Stage) {
                 case ShaderStage::kRayGeneration: raygen = &stage; break;
@@ -32,13 +26,33 @@ namespace KGPU
                 case ShaderStage::kIntersection: intersection = &stage; break;
                 default: KD_WARN("Unknown shader stage"); break;
             }
-        
-            // Convert to wide string (important: must persist)
-            KC::WString wideName = MULTIBYTE_TO_UNICODE(stage.Entry.c_str());
-            exportNames.push_back(wideName);
-        
+        }
+
+        // Validate mandatory shaders
+        if (!raygen || !miss) {
+            KD_ERROR("Raytracing pipeline requires both ray generation and miss shaders!");
+            return;
+        }
+
+        // Store everything that must stay alive until after CreateStateObject
+        KC::Array<KC::WString> exportNames;
+        KC::Array<KC::WString> importNames; // for closest hit, any hit, etc.
+        KC::Array<D3D12_EXPORT_DESC> exportDescs;
+        KC::Array<D3D12_DXIL_LIBRARY_DESC> dxilLibraries;
+        KC::Array<D3D12_STATE_SUBOBJECT> subObjects;
+            
+        // Reserve up front to avoid reallocation invalidating pointers
+        exportNames.reserve(desc.Modules.size());
+        exportDescs.reserve(desc.Modules.size());
+        dxilLibraries.reserve(desc.Modules.size());
+        subObjects.reserve(desc.Modules.size() + 4); // shader stages + hit group + shader cfg + global sig + pipeline cfg
+            
+        for (auto& stage : desc.Modules) {
+            // Persist wide string
+            exportNames.push_back(MULTIBYTE_TO_UNICODE(stage.Entry.c_str()));
+            
             D3D12_EXPORT_DESC exportDesc = {};
-            exportDesc.Name = exportNames.back().c_str(); // pointer must be stable
+            exportDesc.Name = exportNames.back().c_str(); // safe: exportNames is stable
             exportDesc.ExportToRename = nullptr;
             exportDesc.Flags = D3D12_EXPORT_FLAG_NONE;
             exportDescs.push_back(exportDesc);
@@ -47,30 +61,56 @@ namespace KGPU
             library.DXILLibrary.BytecodeLength = stage.Data.size();
             library.DXILLibrary.pShaderBytecode = stage.Data.data();
             library.NumExports = 1;
-            library.pExports = &exportDescs.back();
-        
+            library.pExports = &exportDescs.back(); // safe: exportDescs is stable
             dxilLibraries.push_back(library);
         
-            D3D12_STATE_SUBOBJECT librarySubobject = {};
-            librarySubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
-            librarySubobject.pDesc = &dxilLibraries.back();
-            subObjects.push_back(librarySubobject);
+            D3D12_STATE_SUBOBJECT subobject = {};
+            subobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+            subobject.pDesc = &dxilLibraries.back(); // safe: dxilLibraries is stable
+            subObjects.push_back(subobject);
+        
+            // Save the pointer to the shader stage (optional, if needed later)
+            switch (stage.Stage) {
+                case ShaderStage::kRayGeneration: raygen = &stage; break;
+                case ShaderStage::kMiss: miss = &stage; break;
+                case ShaderStage::kAnyHit: anyHit = &stage; break;
+                case ShaderStage::kClosestHit: closestHit = &stage; break;
+                case ShaderStage::kIntersection: intersection = &stage; break;
+                default: KD_WARN("Unknown shader stage"); break;
+            }
+        
+            // Also keep import names alive if you'll use them later in hit group
+            importNames.push_back(exportNames.back());
         }
     
         // 2. Hit group
+        KC::Array<KC::WString> importClosestHitW, importAnyHitW, importIntersectionW;
+            
         KC::WString hitGroupName = L"HitGroup";
-    
+            
         D3D12_HIT_GROUP_DESC hitGroup = {};
         hitGroup.HitGroupExport = hitGroupName.c_str();
-        hitGroup.Type = intersection ? D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE : D3D12_HIT_GROUP_TYPE_TRIANGLES;
-        if (closestHit) hitGroup.ClosestHitShaderImport = MULTIBYTE_TO_UNICODE(closestHit->Entry.c_str());
-        if (anyHit) hitGroup.AnyHitShaderImport = MULTIBYTE_TO_UNICODE(anyHit->Entry.c_str());
-        if (intersection) hitGroup.IntersectionShaderImport = MULTIBYTE_TO_UNICODE(intersection->Entry.c_str());
-    
-        subObjects.push_back({
-            D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP,
-            &hitGroup
-        });
+        hitGroup.Type = intersection ? D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE
+                                     : D3D12_HIT_GROUP_TYPE_TRIANGLES;
+            
+        if (closestHit) {
+            importClosestHitW.push_back(MULTIBYTE_TO_UNICODE(closestHit->Entry.c_str()));
+            hitGroup.ClosestHitShaderImport = importClosestHitW.back().c_str();
+        }
+        if (anyHit) {
+            importAnyHitW.push_back(MULTIBYTE_TO_UNICODE(anyHit->Entry.c_str()));
+            hitGroup.AnyHitShaderImport = importAnyHitW.back().c_str();
+        }
+        if (intersection) {
+            importIntersectionW.push_back(MULTIBYTE_TO_UNICODE(intersection->Entry.c_str()));
+            hitGroup.IntersectionShaderImport = importIntersectionW.back().c_str();
+        }
+        
+        D3D12_STATE_SUBOBJECT hitGroupSO = {};
+        hitGroupSO.Type  = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
+        hitGroupSO.pDesc = &hitGroup;
+        subObjects.push_back(hitGroupSO);
+
     
         // 3. Shader config
         D3D12_RAYTRACING_SHADER_CONFIG shaderCfg = {};
@@ -130,8 +170,10 @@ namespace KGPU
     
         writeId(MULTIBYTE_TO_UNICODE(raygen->Entry.c_str()));
         writeId(MULTIBYTE_TO_UNICODE(miss->Entry.c_str()));
-        writeId(hitGroupName.c_str());
-    
+        if (closestHit || anyHit || intersection) {
+            writeId(hitGroupName.c_str());
+        }
+
         mSBT->Unmap(0, 0);
         props->Release();
     }

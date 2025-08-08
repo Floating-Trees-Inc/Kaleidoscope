@@ -25,6 +25,8 @@ namespace Gfx
             switch (entry.Type) {
             case PipelineType::kGraphics: KC_DELETE(entry.GraphicsPipeline); break;
             case PipelineType::kCompute: KC_DELETE(entry.ComputePipeline); break;
+            case PipelineType::kMesh: KC_DELETE(entry.MeshPipeline); break;
+            case PipelineType::kRaytracing: KC_DELETE(entry.RaytracingPipeline); break;
             }
         }
         sData.Entries.clear();
@@ -120,6 +122,9 @@ namespace Gfx
 
     void ShaderManager::SubscribeMesh(const KC::String& path, const KGPU::MeshPipelineDesc& desc)
     {
+        if (!Manager::GetDevice()->SupportsMeshShaders())
+            return;
+
         PipelineEntry entry;
         entry.Type = PipelineType::kMesh;
         entry.MeshDesc = desc;
@@ -162,6 +167,51 @@ namespace Gfx
         sData.Entries[path] = std::move(entry);
     }
 
+    void ShaderManager::SubscribeRaytracing(const KC::String& path, const KGPU::RaytracingPipelineDesc& desc)
+    {
+        if (!Manager::GetDevice()->SupportsRaytracing())
+            return;
+
+        PipelineEntry entry;
+        entry.Type = PipelineType::kRaytracing;
+        entry.RaytracingDesc = desc;
+        entry.ShaderFile = path;
+        entry.Dependencies.push_back({
+            path,
+            KC::FileSystem::GetWriteTime(path)
+        });
+
+        KC::String source = KC::FileSystem::ReadWholeFile(path);
+        KDS::ParseResult result = KDS::Parser::ParseShaderSource(source);
+        
+        KDS::IncludeHandler includeHandler;
+        includeHandler.AddIncludePath("data");
+        includeHandler.AddIncludePath("data/rf/shaders");
+        includeHandler.AddIncludePath("data/kd/shaders");
+        includeHandler.AddIncludePath("data/sp/shaders");
+
+        KC::Array<KC::String> foundPaths;
+        source = includeHandler.ReplaceIncludes(result, source, foundPaths);
+        for (auto& dependencyPath : foundPaths) {
+            entry.Dependencies.push_back({
+                dependencyPath,
+                KC::FileSystem::GetWriteTime(dependencyPath)
+            });
+        }
+
+        entry.RaytracingDesc.Modules.clear();
+        for (auto& name : result.EntryPoints) {
+            entry.RaytracingDesc.Modules.push_back(sData.Compiler->Compile(source, name.Name, name.Stage));
+        }
+
+        if (entry.RaytracingPipeline) KC_DELETE(entry.RaytracingPipeline);
+        entry.RaytracingPipeline = Manager::GetDevice()->CreateRaytracingPipeline(entry.RaytracingDesc);
+
+        KD_INFO("Loaded shader %s", path.c_str());
+        
+        sData.Entries[path] = std::move(entry);
+    }
+
     KGPU::IGraphicsPipeline* ShaderManager::GetGraphics(const KC::String& path)
     {
         return sData.Entries[path].GraphicsPipeline;
@@ -174,7 +224,18 @@ namespace Gfx
 
     KGPU::IMeshPipeline* ShaderManager::GetMesh(const KC::String& path)
     {
+        if (!Manager::GetDevice()->SupportsMeshShaders())
+            return nullptr;
+
         return sData.Entries[path].MeshPipeline;
+    }
+
+    KGPU::IRaytracingPipeline* ShaderManager::GetRaytracing(const KC::String& path)
+    {
+        if (!Manager::GetDevice()->SupportsRaytracing())
+            return nullptr;
+        
+        return sData.Entries[path].RaytracingPipeline;
     }
 
     void ShaderManager::ReloadPipelines()
@@ -263,6 +324,30 @@ namespace Gfx
                         
                             if (entry.MeshPipeline) KC_DELETE(entry.MeshPipeline);
                             entry.MeshPipeline = Manager::GetDevice()->CreateMeshPipeline(entry.MeshDesc);
+                        
+                            KD_INFO("Loaded shader %s", path.c_str());
+                            break;
+                        }
+                        case PipelineType::kRaytracing: {
+                            KC::String source = KC::FileSystem::ReadWholeFile(path);
+                            KDS::ParseResult result = KDS::Parser::ParseShaderSource(source);
+                                            
+                            KDS::IncludeHandler includeHandler;
+                            includeHandler.AddIncludePath("data");
+                            includeHandler.AddIncludePath("data/rf/shaders");
+                            includeHandler.AddIncludePath("data/kd/shaders");
+                            includeHandler.AddIncludePath("data/sp/shaders");
+                                            
+                            KC::Array<KC::String> foundPaths;
+                            source = includeHandler.ReplaceIncludes(result, source, foundPaths);
+                        
+                            entry.RaytracingDesc.Modules.clear();
+                            for (auto& name : result.EntryPoints) {
+                                entry.RaytracingDesc.Modules.push_back(sData.Compiler->Compile(source, name.Name, name.Stage));
+                            }
+                        
+                            if (entry.RaytracingPipeline) KC_DELETE(entry.RaytracingPipeline);
+                            entry.RaytracingPipeline = Manager::GetDevice()->CreateRaytracingPipeline(entry.RaytracingDesc);
                         
                             KD_INFO("Loaded shader %s", path.c_str());
                             break;

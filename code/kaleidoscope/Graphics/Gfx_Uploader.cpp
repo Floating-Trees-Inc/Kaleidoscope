@@ -17,9 +17,9 @@ namespace Gfx
         uint64 RowPitch;
     };
 
-    void Uploader::EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::IBuffer* instanceBuffer, uint instanceCount)
+    void Uploader::EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::IBuffer* instanceBuffer, uint instanceCount, KGPU::ICommandList* cmd)
     {
-        KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
+        KGPU::ICommandList* cmdList = cmd ? cmd : CommandListRecycler::RequestCommandList();
 
         KGPU::BufferBarrier beforeBarrier(tlas->GetMemory());
         beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
@@ -38,9 +38,9 @@ namespace Gfx
         cmdList->Barrier(afterBarrier);
     }
 
-    void Uploader::EnqueueBLASBuild(KGPU::IBLAS* blas)
+    void Uploader::EnqueueBLASBuild(KGPU::IBLAS* blas, KGPU::ICommandList* cmd)
     {
-        KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
+        KGPU::ICommandList* cmdList = cmd ? cmd : CommandListRecycler::RequestCommandList();
 
         KGPU::BufferBarrier beforeBarrier(blas->GetMemory());
         beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;

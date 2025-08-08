@@ -11,6 +11,18 @@
         "outputPath": "tests/MeshTriangleIndirect.png",
         "result": true
     },
+    "RayPipelineTriangle": {
+        "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
+        "magmaPath": "tests/RayPipelineTriangleMagma.png",
+        "outputPath": "tests/RayPipelineTriangle.png",
+        "result": false
+    },
+    "RayQueryTriangle": {
+        "goldenPath": "tests/golden/RayQueryTriangleGolden.png",
+        "magmaPath": "tests/RayQueryTriangleMagma.png",
+        "outputPath": "tests/RayQueryTriangle.png",
+        "result": true
+    },
     "SimpleCompute": {
         "goldenPath": "tests/golden/SimpleComputeGolden.png",
         "magmaPath": "tests/SimpleComputeMagma.png",

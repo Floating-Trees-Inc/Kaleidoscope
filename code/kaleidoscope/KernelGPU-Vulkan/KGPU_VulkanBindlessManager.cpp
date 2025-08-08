@@ -44,21 +44,39 @@ namespace KGPU
         cbvSrvUavBinding.binding = 0;
         cbvSrvUavBinding.descriptorType = VK_DESCRIPTOR_TYPE_MUTABLE_EXT;
         cbvSrvUavBinding.descriptorCount = MAX_BINDLESS_RESOURCES;
-        cbvSrvUavBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
+        cbvSrvUavBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS
+                                    | VK_SHADER_STAGE_COMPUTE_BIT
+                                    | VK_SHADER_STAGE_RAYGEN_BIT_KHR
+                                    | VK_SHADER_STAGE_MISS_BIT_KHR
+                                    | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR
+                                    | VK_SHADER_STAGE_ANY_HIT_BIT_KHR
+                                    | VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
         cbvSrvUavBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutBinding samplerBinding = {};
         samplerBinding.binding = 1;
         samplerBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
         samplerBinding.descriptorCount = MAX_BINDLESS_SAMPLERS;
-        samplerBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
+        samplerBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS
+                                    | VK_SHADER_STAGE_COMPUTE_BIT
+                                    | VK_SHADER_STAGE_RAYGEN_BIT_KHR
+                                    | VK_SHADER_STAGE_MISS_BIT_KHR
+                                    | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR
+                                    | VK_SHADER_STAGE_ANY_HIT_BIT_KHR
+                                    | VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
         samplerBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutBinding asBinding = {};
         asBinding.binding = 2;
         asBinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
         asBinding.descriptorCount = MAX_BINDLESS_AS;
-        asBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS | VK_SHADER_STAGE_COMPUTE_BIT;
+        asBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS
+                                    | VK_SHADER_STAGE_COMPUTE_BIT
+                                    | VK_SHADER_STAGE_RAYGEN_BIT_KHR
+                                    | VK_SHADER_STAGE_MISS_BIT_KHR
+                                    | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR
+                                    | VK_SHADER_STAGE_ANY_HIT_BIT_KHR
+                                    | VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
         asBinding.pImmutableSamplers = nullptr;
 
         KC::Array<VkDescriptorSetLayoutBinding> bindings = { cbvSrvUavBinding, samplerBinding, asBinding };

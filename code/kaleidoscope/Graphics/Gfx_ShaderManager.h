@@ -21,10 +21,12 @@ namespace Gfx
         static void SubscribeGraphics(const KC::String& path, const KGPU::GraphicsPipelineDesc& desc);
         static void SubscribeCompute(const KC::String& path);
         static void SubscribeMesh(const KC::String& path, const KGPU::MeshPipelineDesc& desc);
+        static void SubscribeRaytracing(const KC::String& path, const KGPU::RaytracingPipelineDesc& desc);
 
         static KGPU::IGraphicsPipeline* GetGraphics(const KC::String& path);
         static KGPU::IComputePipeline* GetCompute(const KC::String& path);
         static KGPU::IMeshPipeline* GetMesh(const KC::String& path);
+        static KGPU::IRaytracingPipeline* GetRaytracing(const KC::String& path);
 
         static void ReloadPipelines();
     private:
@@ -32,7 +34,8 @@ namespace Gfx
         {
             kGraphics,
             kCompute,
-            kMesh
+            kMesh,
+            kRaytracing
         };
 
         struct FileWatch
@@ -55,6 +58,9 @@ namespace Gfx
 
             KGPU::IMeshPipeline* MeshPipeline = nullptr;
             KGPU::MeshPipelineDesc MeshDesc = {};
+
+            KGPU::IRaytracingPipeline* RaytracingPipeline = nullptr;
+            KGPU::RaytracingPipelineDesc RaytracingDesc = {};
         };
 
         static struct Data {

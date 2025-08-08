@@ -21,7 +21,7 @@ namespace KGPU
         BLASDesc(IBuffer* v, IBuffer* b)
             : VertexBuffer(v), IndexBuffer(b), Static(true)
         {
-            VertexCount = v->GetDesc().Size / v->GetDesc().Size;
+            VertexCount = v->GetDesc().Size / v->GetDesc().Stride;
             IndexCount = b->GetDesc().Size / b->GetDesc().Stride;
         }
     };

@@ -124,7 +124,8 @@ namespace KGPU
 
         // --- Shader Binding Table (SBT) ---
         uint groupCount = (uint)groups.size();
-        uint handleSizeAligned = 32;
+        uint handleSize = 32;
+        uint handleSizeAligned = 64;
         uint groupSize = handleSizeAligned;
         uint sbtSize = groupCount * groupSize;
 
@@ -136,7 +137,7 @@ namespace KGPU
 
         void* data = mSBT->Map();
         for (uint i = 0; i < groupCount; ++i)
-            memcpy(static_cast<char*>(data) + i * groupSize, handles.data() + i * handleSizeAligned, handleSizeAligned);
+            memcpy(static_cast<char*>(data) + i * groupSize, handles.data() + i * handleSize, handleSize);
         mSBT->Unmap();
 
         // Bind SBT regions

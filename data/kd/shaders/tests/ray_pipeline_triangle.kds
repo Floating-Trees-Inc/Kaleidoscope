@@ -1,0 +1,61 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-08-08 21:25:15
+//
+
+#include "kd/shaders/common/bindless.kds"
+
+#pragma raygen RayGeneration
+#pragma closesthit ClosestHit
+#pragma miss Miss
+
+struct PushConstants
+{
+    uint OutputID;
+    uint RayWorldID;
+    uint2 Pad;
+};
+PUSH_CONSTANTS(PushConstants, Push);
+
+struct Payload
+{
+    float4 Color;
+};
+
+[shader("raygeneration")]
+void RayGeneration()
+{
+    RaytracingAccelerationStructure world = LoadRaytracingWorld(Push.RayWorldID);
+    RWTexture2D<float4> output = ResourceDescriptorHeap[Push.OutputID];
+
+    float2 lerpValues = DispatchRaysIndex().xy / DispatchRaysDimensions().xy;
+    float3 rayDir = float3(0, 0, 1);
+    float3 rayOrigin = float3(
+        lerp(-1.0f, 1.0f, lerpValues.x),
+        lerp(-1.0f, 1.0f, lerpValues.y),
+        0.0f
+    );
+
+    RayDesc ray;
+    ray.Origin = rayOrigin;
+    ray.Direction = rayDir;
+    ray.TMin = 0.001;
+    ray.TMax = 10000.0;
+
+    Payload payload;
+    TraceRay(world, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+
+    output[DispatchRaysIndex().xy] = payload.Color;
+}
+
+[shader("miss")]
+void Miss(inout Payload payload)
+{
+    payload.Color = float4(0, 0, 0, 1);
+}
+
+[shader("closesthit")]
+void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
+{
+    payload.Color = float4(1 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.x, attrib.barycentrics.y, 1.0f);
+}

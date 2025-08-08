@@ -32,7 +32,7 @@ namespace KDS
             case KGPU::ShaderStage::kAnyHit:
             case KGPU::ShaderStage::kMiss:
             case KGPU::ShaderStage::kIntersection:
-                return "lib6_6";
+                return "lib_6_6";
             default: return "cs_6_6";
         }
         return "cs6_6";

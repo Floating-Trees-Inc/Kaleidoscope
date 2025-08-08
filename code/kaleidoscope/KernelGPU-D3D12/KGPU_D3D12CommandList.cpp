@@ -395,9 +395,9 @@ namespace KGPU
         desc.Depth = depth;
         desc.RayGenerationShaderRecord.StartAddress = address;
         desc.RayGenerationShaderRecord.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-        desc.MissShaderTable.StartAddress = address + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        desc.MissShaderTable.StartAddress = address + D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
         desc.MissShaderTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-        desc.HitGroupTable.StartAddress = address + (2 * D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+        desc.HitGroupTable.StartAddress = address + (2 * D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
         desc.HitGroupTable.SizeInBytes = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
         
         mList->DispatchRays(&desc);

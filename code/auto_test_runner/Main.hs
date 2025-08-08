@@ -31,9 +31,7 @@ runTest (Test name cmd) = do
       putStrLn $ green ++ "[PASS] " ++ name ++ reset
       return True
     ExitFailure code -> do
-      putStrLn $ red ++ "[FAIL] " ++ name ++ " (code " ++ show code ++ ")" ++ reset
-      putStrLn out
-      putStrLn err
+      putStrLn $ red ++ "[FAIL] " ++ name ++ reset
       return False
 
 main :: IO ()
