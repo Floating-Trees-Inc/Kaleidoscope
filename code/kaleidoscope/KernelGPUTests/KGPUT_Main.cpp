@@ -18,6 +18,15 @@ float SRGBToLinear(uint8 srgb)
     return (c <= 0.04045f) ? (c / 12.92f) : powf((c + 0.055f) / 1.055f, 2.4f);
 }
 
+uint8 LinearToRGBA8(float linear)
+{
+    linear = std::clamp(linear, 0.0f, 1.0f);
+    float srgb = (linear <= 0.0031308f)
+        ? (12.92f * linear)
+        : (1.055f * powf(linear, 1.0f / 2.4f) - 0.055f);
+    return static_cast<uint8>(std::round(srgb * 255.0f));
+}
+
 void ConvertFLIP(const uint8* rgba8, float* linearRGB, int width, int height)
 {
     for (int i = 0; i < width * height; ++i) {
@@ -30,9 +39,9 @@ void ConvertFLIP(const uint8* rgba8, float* linearRGB, int width, int height)
 void ConvertOutput(const float* linearRGB, uint8* rgba8, int width, int height)
 {
     for (int i = 0; i < width * height; ++i) {
-        rgba8[i * 4 + 0] = linearRGB[i * 3 + 0] / 255.0f;
-        rgba8[i * 4 + 1] = linearRGB[i * 3 + 1] / 255.0f;
-        rgba8[i * 4 + 2] = linearRGB[i * 3 + 2] / 255.0f;
+        rgba8[i * 4 + 0] = LinearToRGBA8(linearRGB[i * 3 + 0]);
+        rgba8[i * 4 + 1] = LinearToRGBA8(linearRGB[i * 3 + 1]);
+        rgba8[i * 4 + 2] = LinearToRGBA8(linearRGB[i * 3 + 2]);
         rgba8[i * 4 + 3] = 255;
     }
 }

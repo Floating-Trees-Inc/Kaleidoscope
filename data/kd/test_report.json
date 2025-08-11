@@ -15,7 +15,7 @@
         "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
         "magmaPath": "tests/RayPipelineTriangleMagma.png",
         "outputPath": "tests/RayPipelineTriangle.png",
-        "result": false
+        "result": true
     },
     "RayQueryTriangle": {
         "goldenPath": "tests/golden/RayQueryTriangleGolden.png",

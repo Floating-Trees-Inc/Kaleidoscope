@@ -129,7 +129,7 @@ namespace KGPU
         uint groupSize = handleSizeAligned;
         uint sbtSize = groupCount * groupSize;
 
-        mSBT = device->CreateBuffer(KGPU::BufferDesc(sbtSize, groupSize, KGPU::BufferUsage::kShaderBindingTable));
+        mSBT = device->CreateBuffer(KGPU::BufferDesc(sbtSize, groupSize, KGPU::BufferUsage::kShaderBindingTable | KGPU::BufferUsage::kConstant));
 
         // Write shader handles into SBT
         KC::Array<uint8> handles(sbtSize);
@@ -155,6 +155,10 @@ namespace KGPU
         mHitRegion.stride = groupSize;
 
         mCallableRegion = {}; // unused for now
+
+        for (VkShaderModule module : vkShaderModules) {
+            vkDestroyShaderModule(mParentDevice->Device(), module, nullptr);
+        }
     }
 
     VulkanRaytracingPipeline::~VulkanRaytracingPipeline()

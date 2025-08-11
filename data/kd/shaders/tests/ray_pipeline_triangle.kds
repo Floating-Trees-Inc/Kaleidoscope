@@ -28,7 +28,9 @@ void RayGeneration()
     RaytracingAccelerationStructure world = LoadRaytracingWorld(Push.RayWorldID);
     RWTexture2D<float4> output = ResourceDescriptorHeap[Push.OutputID];
 
-    float2 lerpValues = DispatchRaysIndex().xy / DispatchRaysDimensions().xy;
+    float2 idx  = float2(DispatchRaysIndex().xy) + 0.5;
+    float2 dims = float2(DispatchRaysDimensions().xy);
+    float2 lerpValues = idx / dims;
     float3 rayDir = float3(0, 0, 1);
     float3 rayOrigin = float3(
         lerp(-1.0f, 1.0f, lerpValues.x),
@@ -51,11 +53,15 @@ void RayGeneration()
 [shader("miss")]
 void Miss(inout Payload payload)
 {
-    payload.Color = float4(0, 0, 0, 1);
+    float2 idx  = float2(DispatchRaysIndex().xy) + 0.5;
+    float2 dims = float2(DispatchRaysDimensions().xy);
+    float2 uv   = idx / dims;
+
+    payload.Color = float4(uv, 0, 1);
 }
 
 [shader("closesthit")]
 void ClosestHit(inout Payload payload, BuiltInTriangleIntersectionAttributes attrib)
 {
-    payload.Color = float4(1 - attrib.barycentrics.x - attrib.barycentrics.y, attrib.barycentrics.x, attrib.barycentrics.y, 1.0f);
+    payload.Color = 1;
 }

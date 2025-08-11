@@ -18,7 +18,7 @@ namespace KGPU
     IDevice* IDevice::Create(bool debug)
     {
 #if KD_WINDOWS
-        return KC_NEW(D3D12Device, debug);
+        return KC_NEW(VulkanDevice, debug);
 #else
         return KC_NEW(DummyDevice, debug);
 #endif
