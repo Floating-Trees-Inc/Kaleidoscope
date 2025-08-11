@@ -41,6 +41,6 @@ namespace KGPU
         VkStridedDeviceAddressRegionKHR mHitRegion = {};
         VkStridedDeviceAddressRegionKHR mCallableRegion = {};
 
-        IBuffer* mSBT;
+        IBuffer* mSBT = nullptr;
     };
 }
