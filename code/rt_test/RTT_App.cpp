@@ -157,7 +157,6 @@ namespace RTT
     void App::Run()
     {
         while (mWindow->IsOpen()) {
-
             CODE_BLOCK("Reset") {
                 KI::InputSystem::Reset();
             }
@@ -262,5 +261,6 @@ namespace RTT
                 Gfx::ShaderManager::ReloadPipelines();
             }
         }
+        mCommandQueue->Wait();
     }
 }
