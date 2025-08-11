@@ -15,6 +15,7 @@ includes("KernelGPU")
 includes("KernelGPUTests")
 includes("KernelInput")
 includes("KernelOSTests")
+includes("KernelSound")
 includes("Physics")
 includes("KernelOS")
 includes("ToolImGui")
@@ -26,6 +27,11 @@ if is_plat("windows") then
     includes("KernelGPU-Vulkan")
 elseif is_plat("linux") then
     includes("KernelGPU-Vulkan")
+end
+
+-- Audio backends
+if is_plat("windows") or is_plat("macos") or is_plat("linux") then
+    includes("KernelSound-SokolAudio")
 end
 
 --
@@ -45,5 +51,6 @@ target("Kaleidoscope")
              "KDAsset",
              "Physics",
              "Effects",
+             "KernelSound",
              { public = true })
     add_includedirs(".", { public = true })

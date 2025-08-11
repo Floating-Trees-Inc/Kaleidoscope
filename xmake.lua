@@ -43,4 +43,4 @@ end)
 -- Includes
 includes("thirdparty")
 includes("code/kaleidoscope")
-includes("code/rt_test")
+-- includes("code/samples")

@@ -3,7 +3,7 @@
 -- > Create Time: 2025-07-26 00:23:26
 --
 
-target("RTT")
+target("RaytracingSimple")
     set_kind("binary")
     
     add_files("**.cpp")

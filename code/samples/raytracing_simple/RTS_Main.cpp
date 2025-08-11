@@ -4,13 +4,13 @@
 //
 
 #include <KernelCore/KC_Context.h>
-#include "RTT_App.h"
+#include "RTS_App.h"
 
 KD_MAIN
 {
     KC::ScopedContext ctx;
     CODE_BLOCK("Start") {
-        RTT::App app;
+        RTS::App app;
         app.Run();
     }
 }
