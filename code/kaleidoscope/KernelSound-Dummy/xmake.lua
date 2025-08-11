@@ -3,14 +3,9 @@
 -- > Create Time: 2025-08-11 21:34:04
 --
 
-target("KernelSound")
+target("KernelSound-Dummy")
     set_kind("static")
     set_group("Kaleidoscope")
 
     add_files("*.cpp")
     add_headerfiles("*.h")
-
-    add_deps("KernelSound-Dummy")
-    if is_plat("windows") or is_plat("macos") or is_plat("linux") then
-        add_deps("KernelSound-SokolAudio")
-    end
