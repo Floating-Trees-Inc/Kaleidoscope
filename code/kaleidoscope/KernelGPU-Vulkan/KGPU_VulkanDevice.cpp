@@ -168,7 +168,8 @@ namespace KGPU
             VK_KHR_SPIRV_1_4_EXTENSION_NAME,
             VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-            VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
+            VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
+            VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME
         };
 
         if (SDL_WasInit(SDL_INIT_VIDEO)) {
@@ -219,18 +220,17 @@ namespace KGPU
             VK_EXT_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME,
             VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
             VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
+            VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME
         };
         if (SDL_WasInit(SDL_INIT_VIDEO)) enabledExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     
         // Feature structs
         VkPhysicalDeviceFeatures2 deviceFeatures2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-        VkPhysicalDeviceFeatures baseFeatures = {};
-        baseFeatures.multiDrawIndirect = VK_TRUE;
-        baseFeatures.drawIndirectFirstInstance = VK_TRUE;
-        baseFeatures.tessellationShader = VK_TRUE;
-        baseFeatures.depthClamp = VK_TRUE;
-        baseFeatures.fillModeNonSolid = VK_TRUE;
-        deviceFeatures2.features = baseFeatures;
+        deviceFeatures2.features.multiDrawIndirect = VK_TRUE;
+        deviceFeatures2.features.drawIndirectFirstInstance = VK_TRUE;
+        deviceFeatures2.features.tessellationShader = VK_TRUE;
+        deviceFeatures2.features.depthClamp = VK_TRUE;
+        deviceFeatures2.features.fillModeNonSolid = VK_TRUE;
     
         // Common features
         VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexing = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES };
@@ -244,6 +244,12 @@ namespace KGPU
         vk13Features.dynamicRendering = VK_TRUE;
         vk13Features.shaderDemoteToHelperInvocation = VK_TRUE;
         vk13Features.synchronization2 = VK_TRUE;
+
+        VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT md = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT };
+        md.mutableDescriptorType = true;
+
+        VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR derivatives = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR };
+        derivatives.computeDerivativeGroupQuads = VK_TRUE;
     
         // Optional RT + Mesh Shader features
         VkPhysicalDeviceAccelerationStructureFeaturesKHR accel = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR };
@@ -263,15 +269,14 @@ namespace KGPU
         VkPhysicalDeviceMeshShaderFeaturesEXT meshShader = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
         meshShader.meshShader = VK_TRUE;
         meshShader.meshShaderQueries = VK_TRUE;
-    
-        VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT md = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT };
-        md.mutableDescriptorType = true;
 
         // Build extension list + pNext chain
-        void* nextChain = &vk13Features;
+        void* nextChain = &deviceFeatures2;
+        deviceFeatures2.pNext = &vk13Features;
         vk13Features.pNext = &descriptorIndexing;
         descriptorIndexing.pNext = &md;
-        void** chainTail = &md.pNext;
+        md.pNext = &derivatives;
+        void** chainTail = &derivatives.pNext;
     
         // Check RT extensions
         bool hasRT = supportsExt(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME) &&

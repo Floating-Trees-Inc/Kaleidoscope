@@ -662,13 +662,13 @@ namespace KGPU
         VkImage dstImage = static_cast<VulkanTexture*>(dst)->Image();
 
         VkImageCopy copyRegion = {};
-        copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.srcSubresource.aspectMask = srcDesc.Format == TextureFormat::kD32_FLOAT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         copyRegion.srcSubresource.mipLevel = 0;
         copyRegion.srcSubresource.baseArrayLayer = 0;
         copyRegion.srcSubresource.layerCount = 1;
         copyRegion.srcOffset = { 0, 0, 0 };
 
-        copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.dstSubresource.aspectMask = dstDesc.Format == TextureFormat::kD32_FLOAT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
         copyRegion.dstSubresource.mipLevel = 0;
         copyRegion.dstSubresource.baseArrayLayer = 0;
         copyRegion.dstSubresource.layerCount = 1;
