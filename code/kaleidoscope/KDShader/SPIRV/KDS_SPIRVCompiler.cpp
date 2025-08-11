@@ -98,6 +98,7 @@ namespace KDS
         args.push_back(L"-fspv-extension=SPV_KHR_ray_query");
         args.push_back(L"-fspv-extension=SPV_KHR_shader_draw_parameters");
         args.push_back(L"-fspv-extension=SPV_EXT_demote_to_helper_invocation");
+        args.push_back(L"-fspv-extension=SPV_KHR_compute_shader_derivatives");
         args.push_back(L"-fspv-target-env=vulkan1.3");
         args.push_back(L"-fvk-use-scalar-layout");
         args.push_back(L"-fvk-bind-resource-heap");
