@@ -15,10 +15,17 @@
 
 namespace KGPU
 {
-    IDevice* IDevice::Create(bool debug)
+    IDevice* IDevice::Create(bool debug, Backend backend)
     {
 #if KD_WINDOWS
-        return KC_NEW(VulkanDevice, debug);
+        switch (backend)
+        {
+            case Backend::kAuto: return KC_NEW(D3D12Device, debug);
+            case Backend::kD3D12: return KC_NEW(D3D12Device, debug);
+            case Backend::kVulkan: return KC_NEW(VulkanDevice, debug);
+            case Backend::kDummy: return KC_NEW(DummyDevice, debug);
+            default: return nullptr;
+        }
 #else
         return KC_NEW(DummyDevice, debug);
 #endif

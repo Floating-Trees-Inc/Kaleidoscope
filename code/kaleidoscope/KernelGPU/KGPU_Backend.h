@@ -9,6 +9,7 @@ namespace KGPU
 {
     enum class Backend
     {
+        kAuto,
         // Null
         kDummy,
 

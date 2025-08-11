@@ -29,7 +29,7 @@ namespace KGPU
     class IDevice
     {
     public:
-        static IDevice* Create(bool debug);
+        static IDevice* Create(bool debug, Backend backend = Backend::kAuto);
         virtual ~IDevice() = default;
 
         virtual ISurface* CreateSurface(KOS::IWindow* window, ICommandQueue* graphicsQueue) = 0;
