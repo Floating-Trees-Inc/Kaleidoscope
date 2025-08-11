@@ -23,7 +23,7 @@ namespace KGPU
         ID3D12StateObject* GetPipelineState() { return mPipelineState; }
         IBuffer* GetSBT() { return mSBT; }
     private:
-        ID3D12StateObject* mPipelineState;
-        IBuffer* mSBT;
+        ID3D12StateObject* mPipelineState = nullptr;
+        IBuffer* mSBT = nullptr;
     };
 }
