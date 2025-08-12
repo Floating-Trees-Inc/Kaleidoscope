@@ -5,6 +5,7 @@
 
 target("RaytracingSimple")
     set_kind("binary")
+    set_group("Samples")
     
     add_files("**.cpp")
     add_headerfiles("**.h")

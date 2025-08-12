@@ -5,8 +5,8 @@
 
 target("Mixer")
     set_kind("binary")
+    set_group("Samples")
     
     add_files("**.cpp")
-    add_headerfiles("**.h")
     add_includedirs(".")
     add_deps("Kaleidoscope")
