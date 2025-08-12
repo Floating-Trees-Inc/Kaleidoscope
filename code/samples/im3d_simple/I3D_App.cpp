@@ -24,7 +24,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <imgui.h>
+#include <im3d.h>
 
 namespace I3D
 {
@@ -66,7 +66,7 @@ namespace I3D
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("RTT app ready!");
+        KD_INFO("Im3D app ready!");
     }
 
     App::~App()
@@ -111,6 +111,15 @@ namespace I3D
                 CODE_BLOCK("Draw Triangle") {
                     KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true) }, {});
 
+                    ToolIm3D::DrawInfo drawInfo;
+                    drawInfo.DeltaTime = 0.0f;
+                    drawInfo.CommandList = cmdList;
+                    drawInfo.Width = mWidth;
+                    drawInfo.Height = mHeight;
+                    drawInfo.ViewMatrix = glm::mat4(1.0f);
+                    drawInfo.ProjMatrix = glm::mat4(1.0f);
+                    drawInfo.FOVRadians = glm::radians(90.0f);
+
                     cmdList->Barrier(KGPU::TextureBarrier(
                         texture,
                         KGPU::ResourceAccess::kNone,
@@ -121,7 +130,9 @@ namespace I3D
                     ));
                     cmdList->BeginRendering(renderBegin);
                     
-
+                    ToolIm3D::Manager::Begin(drawInfo);
+                    Im3d::DrawSphere(Im3d::Vec3(0.0f, 0.0f, 0.0f), 2.0f);
+                    ToolIm3D::Manager::End(drawInfo);
 
                     cmdList->EndRendering();
                     cmdList->Barrier(KGPU::TextureBarrier(

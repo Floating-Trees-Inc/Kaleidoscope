@@ -67,7 +67,7 @@ namespace IG
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("RTT app ready!");
+        KD_INFO("ImGui app ready!");
     }
 
     App::~App()

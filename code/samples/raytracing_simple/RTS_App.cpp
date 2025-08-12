@@ -106,7 +106,7 @@ namespace RTS
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("RTT app ready!");
+        KD_INFO("RT app ready!");
     }
 
     App::~App()

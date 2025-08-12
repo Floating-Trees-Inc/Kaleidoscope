@@ -57,7 +57,7 @@ namespace Tri
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("RTT app ready!");
+        KD_INFO("Triangle app ready!");
     }
 
     App::~App()

@@ -8,8 +8,12 @@
 #include <Graphics/Gfx_ShaderManager.h>
 #include <Graphics/Gfx_Manager.h>
 
+#include <im3d.h>
+
 namespace ToolIm3D
 {
+    Manager::Data Manager::sData;
+
     void Manager::Initialize()
     {
         auto device = Gfx::Manager::GetDevice();
@@ -32,5 +36,17 @@ namespace ToolIm3D
 
     void Manager::Shutdown()
     {
+        if (sData.VertexBufferView) KC_DELETE(sData.VertexBufferView);
+        if (sData.VertexBuffer) KC_DELETE(sData.VertexBuffer);
+    }
+
+    void Manager::Begin(DrawInfo& info)
+    {
+        Im3d::NewFrame();
+    }
+
+    void Manager::End(DrawInfo& info)
+    {
+        Im3d::EndFrame();
     }
 }
