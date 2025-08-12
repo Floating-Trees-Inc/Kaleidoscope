@@ -32,7 +32,7 @@ namespace FX
         KGPU::GraphicsPipelineDesc desc;
         desc.CullMode = KGPU::CullMode::kNone;
         desc.DepthEnabled = false;
-        desc.LineTopology = true;
+        desc.Topology = KGPU::PrimitiveTopology::kLines;
         desc.FillMode = KGPU::FillMode::kWireframe;
         desc.RenderTargetFormats.push_back(KGPU::TextureFormat::kR8G8B8A8_UNORM);
 

@@ -21,7 +21,9 @@ namespace KGPU
 
         ID3D12PipelineState* GetPipelineState() { return mPipelineState; }
 
+        static D3D_PRIMITIVE_TOPOLOGY ToD3DTopology(PrimitiveTopology topology);
     private:
+        D3D12_PRIMITIVE_TOPOLOGY_TYPE ToD3DTopologyType(PrimitiveTopology topology);
         D3D12_COMPARISON_FUNC ToD3DCompareOp(DepthOperation op);
         D3D12_CULL_MODE ToD3DCullMode(CullMode mode);
         D3D12_FILL_MODE ToD3DFillMode(FillMode mode);

@@ -45,7 +45,7 @@ namespace KGPU
         Desc.RasterizerState.CullMode = ToD3DCullMode(desc.CullMode);
         Desc.RasterizerState.DepthClipEnable = false;
         Desc.RasterizerState.FrontCounterClockwise = desc.CounterClockwise;
-        Desc.PrimitiveTopologyType = desc.LineTopology ? D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE : D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         if (desc.DepthEnabled) {
             Desc.DepthStencilState.DepthEnable = true;
             if (desc.DepthWrite)

@@ -12,6 +12,13 @@
 
 namespace KGPU
 {
+    enum class PrimitiveTopology
+    {
+        kTriangles,
+        kLines,
+        kPoints
+    };
+
     enum class FillMode
     {
         kSolid,
@@ -39,7 +46,7 @@ namespace KGPU
         FillMode FillMode = FillMode::kSolid;
         CullMode CullMode = CullMode::kNone;
         bool CounterClockwise = true;
-        bool LineTopology = false;
+        PrimitiveTopology Topology = PrimitiveTopology::kTriangles;
     
         uint PushConstantSize = 0;
         

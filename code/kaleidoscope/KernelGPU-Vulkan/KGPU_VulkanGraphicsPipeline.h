@@ -23,6 +23,7 @@ namespace KGPU
         VkPipelineLayout GetLayout() const { return mLayout; }
 
     private:
+        VkPrimitiveTopology ToVkTopology(PrimitiveTopology topology);
         VkCompareOp ToVkCompareOp(DepthOperation op);
         VkCullModeFlagBits ToVkCullMode(CullMode mode);
         VkShaderStageFlagBits ShaderStageToVk(ShaderStage stage);

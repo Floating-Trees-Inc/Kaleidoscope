@@ -247,12 +247,7 @@ namespace KGPU
 
         mList->SetPipelineState(d3dPipeline->GetPipelineState());
         mList->SetGraphicsRootSignature(mParentDevice->GetGlobalRootSig());
-
-        if (pipeline->GetDesc().LineTopology) {
-            mList->IASetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-        } else {
-            mList->IASetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        }
+        mList->IASetPrimitiveTopology(D3D12GraphicsPipeline::ToD3DTopology(pipeline->GetDesc().Topology));
         if (pipeline->GetDesc().EnableBlend) {
             const float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
             mList->OMSetBlendFactor(blendFactor);

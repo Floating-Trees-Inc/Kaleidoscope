@@ -1,0 +1,54 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-08-12 11:10:00
+//
+
+#include "common/bindless.kds"
+
+#define ANTI_ALIASING 2.0F
+
+#pragma vertex VSMain
+#pragma pixel PSMain
+
+struct VertexOutput
+{
+    linear float4 Position : SV_Position;
+    linear float4 Color : COLOR;
+    linear float2 UV : TEXCOORD;
+    noperspective float Size : SIZE;
+    noperspective float EdgeDistance : EDGE_DISTANCE;
+};
+
+struct VertexInput
+{
+    float4 PositionSize : POSITION_SIZE;
+    float4 Color : COLOR;
+};
+
+struct PushConstants
+{
+    uint VertexBuffer;
+    uint Width;
+    uint Height;
+    uint Pad;
+
+    column_major float4x4 ViewProjMatrix;
+};
+PUSH_CONSTANTS(PushConstants, Push);
+
+VertexOutput VSMain(uint id : SV_VertexID)
+{
+    StructuredBuffer<VertexInput> vertices = ResourceDescriptorHeap[Push.VertexBuffer];
+    VertexInput input = vertices[id];
+
+    VertexOutput ret = (VertexOutput)0;
+    ret.Color = input.Color.abgr;
+    ret.Size = max(input.PositionSize.w, ANTI_ALIASING);
+    ret.Position = mul(Push.ViewProjMatrix, float4(input.PositionSize.xyz, 1.0f));
+    return ret;
+}
+
+float4 PSMain(VertexOutput input) : SV_Target
+{
+    return input.Color;
+}

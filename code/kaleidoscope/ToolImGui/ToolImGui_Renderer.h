@@ -26,7 +26,6 @@ namespace ToolImGui
 
         void Render(ImDrawData* data, KGPU::ICommandList* commandList, int frameIndex);
     private:
-        void CreatePipeline(KGPU::IDevice* device);
         void UpdateTexture(KGPU::IDevice* device, ImDrawData* data, KGPU::ICommandList* commandList);
 
     private:
@@ -40,8 +39,6 @@ namespace ToolImGui
         };
 
         KGPU::IDevice* mDevice = nullptr;
-
-        KGPU::IGraphicsPipeline* mPipeline = nullptr;
         KGPU::ISampler* mSampler = nullptr;
 
         KGPU::ITexture* mFontTexture = nullptr;

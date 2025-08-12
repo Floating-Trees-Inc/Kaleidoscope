@@ -18,6 +18,7 @@ includes("KernelOSTests")
 includes("KernelSound")
 includes("Physics")
 includes("KernelOS")
+includes("ToolIm3D")
 includes("ToolImGui")
 
 -- GPU backends
@@ -53,5 +54,6 @@ target("Kaleidoscope")
              "Physics",
              "Effects",
              "KernelSound",
+             "ToolIm3D",
              { public = true })
     add_includedirs(".", { public = true })

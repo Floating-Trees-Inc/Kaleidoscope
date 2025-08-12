@@ -8,6 +8,7 @@
 #include <KDShader/KDS_ShaderFile.h>
 #include <Graphics/Gfx_TempResourceStorage.h>
 #include <Graphics/Gfx_CommandListRecycler.h>
+#include <Graphics/Gfx_ShaderManager.h>
 
 #include <imgui.h>
 
@@ -16,7 +17,14 @@ namespace ToolImGui
     Renderer::Renderer(KGPU::IDevice* device)
         : mDevice(device)
     {
-        CreatePipeline(device);
+        KGPU::GraphicsPipelineDesc desc;
+        desc.CullMode = KGPU::CullMode::kNone;
+        desc.EnableBlend = true;
+        desc.FillMode = KGPU::FillMode::kSolid;
+        desc.RenderTargetFormats.push_back(device->GetSurfaceFormat());
+        Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/imgui.kds", desc);
+
+        mSampler = device->CreateSampler(KGPU::SamplerDesc(KGPU::SamplerAddress::kClamp, KGPU::SamplerFilter::kLinear, false));
 
         ImGuiIO& io = ImGui::GetIO();
         io.BackendRendererName = "imgui_impl_kd";
@@ -49,7 +57,6 @@ namespace ToolImGui
         KC_DELETE(mFontTextureView);
         KC_DELETE(mFontTexture);
         KC_DELETE(mSampler);
-        KC_DELETE(mPipeline);
     }
 
     void Renderer::Render(ImDrawData* data, KGPU::ICommandList* commandList, int frameIndex)
@@ -120,9 +127,10 @@ namespace ToolImGui
             mSampler->GetBindlessHandle()
         };
 
+        auto pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/imgui.kds");
         commandList->SetViewport(data->DisplaySize.x * data->FramebufferScale.x, data->DisplaySize.y * data->FramebufferScale.y, 0, 0);
         commandList->SetIndexBuffer(resource.mIndexBuffer);
-        commandList->SetGraphicsPipeline(mPipeline);
+        commandList->SetGraphicsPipeline(pipeline);
 
         // Render command list
         int global_vtx_offset = 0;
@@ -147,7 +155,7 @@ namespace ToolImGui
                 } else {
                     commandList->SetScissor(clip_min.x, clip_min.y, clip_max.x - clip_min.x, clip_max.y - clip_min.y);
                 }
-                commandList->SetGraphicsConstants(mPipeline, &push, sizeof(push));
+                commandList->SetGraphicsConstants(pipeline, &push, sizeof(push));
                 commandList->DrawIndexed(pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, 0, 0);
             }
             global_idx_offset += drawList->IdxBuffer.Size;
@@ -245,37 +253,5 @@ namespace ToolImGui
                 }
             }
         }
-    }
-
-    void Renderer::CreatePipeline(KGPU::IDevice* device)
-    {
-        // Pipeline
-        KDS::ICompiler* compiler = KDS::ICompiler::Create(device->GetTargetBytecode());
-        KDS::IReflectionEngine* reflectionEngine = KDS::IReflectionEngine::Create(device->GetTargetBytecode());
-
-        KDS::ShaderFile file(compiler, reflectionEngine, "data/kd/shaders/imgui.kds");
-
-        KC_DELETE(compiler);
-        KC_DELETE(reflectionEngine);
-
-        KGPU::GraphicsPipelineDesc desc;
-        desc.CounterClockwise = false;
-        desc.CullMode = KGPU::CullMode::kNone;
-        desc.DepthClampEnabled = false;
-        desc.DepthEnabled = false;
-        desc.DepthWrite = false;
-        desc.EnableBlend = true;
-        desc.FillMode = KGPU::FillMode::kSolid;
-        desc.LineTopology = false;
-        desc.ReflectInputLayout = false;
-        desc.RenderTargetFormats.push_back(device->GetSurfaceFormat());
-        desc.Modules[KGPU::ShaderStage::kVertex] = file.Get(KGPU::ShaderStage::kVertex);
-        desc.Modules[KGPU::ShaderStage::kPixel] = file.Get(KGPU::ShaderStage::kPixel);
-        desc.PushConstantSize = file.GetReflection().PushConstantSize;
-
-        mPipeline = device->CreateGraphicsPipeline(desc);
-
-        // Sampler
-        mSampler = device->CreateSampler(KGPU::SamplerDesc(KGPU::SamplerAddress::kClamp, KGPU::SamplerFilter::kLinear, false));
     }
 }

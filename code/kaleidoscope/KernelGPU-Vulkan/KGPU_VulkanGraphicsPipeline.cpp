@@ -40,7 +40,7 @@ namespace KGPU
         // Input assembly (basic)
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = desc.LineTopology ? VK_PRIMITIVE_TOPOLOGY_LINE_LIST : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        inputAssembly.topology = ToVkTopology(desc.Topology);
         inputAssembly.primitiveRestartEnable = VK_FALSE;
 
         // Rasterizer
@@ -188,6 +188,17 @@ namespace KGPU
         if (mLayout) vkDestroyPipelineLayout(mParentDevice->Device(), mLayout, nullptr);
     }
 
+    VkPrimitiveTopology VulkanGraphicsPipeline::ToVkTopology(PrimitiveTopology topology)
+    {
+        switch (topology)
+        {
+            case PrimitiveTopology::kLines: return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+            case PrimitiveTopology::kTriangles: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+            case PrimitiveTopology::kPoints: return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+            default: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        }
+    }
+
     VkCompareOp VulkanGraphicsPipeline::ToVkCompareOp(DepthOperation op)
     {
         switch (op)
@@ -207,6 +218,7 @@ namespace KGPU
         {
             case ShaderStage::kVertex: return VK_SHADER_STAGE_VERTEX_BIT;
             case ShaderStage::kPixel: return VK_SHADER_STAGE_FRAGMENT_BIT;
+            case ShaderStage::kGeometry: return VK_SHADER_STAGE_GEOMETRY_BIT;
             case ShaderStage::kMesh: return VK_SHADER_STAGE_MESH_BIT_EXT;
             case ShaderStage::kAmplification: return VK_SHADER_STAGE_TASK_BIT_EXT;
             default: return VK_SHADER_STAGE_ALL;

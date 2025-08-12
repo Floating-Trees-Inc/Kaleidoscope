@@ -23,6 +23,11 @@ namespace KGPU
         Desc.VS.BytecodeLength = vertexModule.Data.size();
         Desc.PS.pShaderBytecode = fragmentModule.Data.data();
         Desc.PS.BytecodeLength = fragmentModule.Data.size();
+        if (desc.Modules.find(ShaderStage::kGeometry) != desc.Modules.end()) {
+            ShaderModule& geometryModule = desc.Modules[ShaderStage::kGeometry];
+            Desc.GS.pShaderBytecode = geometryModule.Data.data();
+            Desc.GS.BytecodeLength = geometryModule.Data.size();
+        }
         for (int RTVIndex = 0; RTVIndex < desc.RenderTargetFormats.size(); RTVIndex++) {
             Desc.BlendState.RenderTarget[RTVIndex].SrcBlend = D3D12_BLEND_ONE;
             Desc.BlendState.RenderTarget[RTVIndex].DestBlend = D3D12_BLEND_ZERO;
@@ -41,7 +46,7 @@ namespace KGPU
         Desc.RasterizerState.CullMode = ToD3DCullMode(desc.CullMode);
         Desc.RasterizerState.DepthClipEnable = false;
         Desc.RasterizerState.FrontCounterClockwise = desc.CounterClockwise;
-        Desc.PrimitiveTopologyType = desc.LineTopology ? D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE : D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        Desc.PrimitiveTopologyType = ToD3DTopologyType(desc.Topology);
         if (desc.DepthEnabled) {
             Desc.DepthStencilState.DepthEnable = true;
             if (desc.DepthWrite)
@@ -80,6 +85,28 @@ namespace KGPU
     D3D12GraphicsPipeline::~D3D12GraphicsPipeline()
     {
         if (mPipelineState) mPipelineState->Release();
+    }
+
+    D3D_PRIMITIVE_TOPOLOGY D3D12GraphicsPipeline::ToD3DTopology(PrimitiveTopology topology)
+    {
+        switch (topology)
+        {
+            case PrimitiveTopology::kLines: return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+            case PrimitiveTopology::kTriangles: return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            case PrimitiveTopology::kPoints: return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+        }
+        return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    }
+
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE D3D12GraphicsPipeline::ToD3DTopologyType(PrimitiveTopology topology)
+    {
+        switch (topology)
+        {
+            case PrimitiveTopology::kLines: return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+            case PrimitiveTopology::kTriangles: return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+            case PrimitiveTopology::kPoints: return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+        }
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     }
     
     D3D12_COMPARISON_FUNC D3D12GraphicsPipeline::ToD3DCompareOp(DepthOperation op)
