@@ -31,6 +31,7 @@ namespace KGPU
         kVertex,
         kPixel,
         kCompute,
+        kGeometry, // Used ONLY for Im3D, I promise I swear on my life
         kAmplification,
         kMesh,
         kRayGeneration,

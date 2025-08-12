@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <string_view>
 
 #include "KC_Common.h"
 #include "KC_Array.h"
@@ -14,6 +15,7 @@
 namespace KC
 {
     using String = std::string;
+    using StringView = std::string_view;
     using WString = std::wstring;
 
     namespace StringUtil

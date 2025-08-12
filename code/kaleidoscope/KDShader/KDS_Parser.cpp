@@ -7,125 +7,88 @@
 
 namespace KDS
 {
+    struct PragmaRule
+    {
+        KC::StringView tag;
+        KGPU::ShaderStage stage;
+    };
+
+    static const PragmaRule PRAGMA_RULES[] = {
+        { "#pragma vertex",       KGPU::ShaderStage::kVertex },
+        { "#pragma pixel",        KGPU::ShaderStage::kPixel },
+        { "#pragma compute",      KGPU::ShaderStage::kCompute },
+        { "#pragma geometry",     KGPU::ShaderStage::kGeometry },
+        { "#pragma amplification",KGPU::ShaderStage::kAmplification },
+        { "#pragma mesh",         KGPU::ShaderStage::kMesh },
+        { "#pragma raygen",       KGPU::ShaderStage::kRayGeneration },
+        { "#pragma closesthit",   KGPU::ShaderStage::kClosestHit },
+        { "#pragma miss",         KGPU::ShaderStage::kMiss },
+        { "#pragma intersection", KGPU::ShaderStage::kIntersection },
+        { "#pragma anyhit",       KGPU::ShaderStage::kAnyHit },
+    };
+
+
     ParseResult Parser::ParseShaderSource(const KC::String& source)
     {
         ParseResult result = {};
         KC::Array<KC::String> lines = KC::StringUtil::ToLines(source);
 
-        for (size_t i = 0; i < lines.size(); i++) {
+        // Optional: prevent duplicate (stage, func) entries
+        struct Key { KGPU::ShaderStage s; KC::String f; };
+        auto make_key = [](KGPU::ShaderStage s, const KC::String& f) { return Key{ s, f }; };
+        KC::Array<Key> seen;
+
+        auto trim_view = [](KC::StringView s) {
+            auto not_space = [](unsigned char c) { return !std::isspace(c); };
+            while (!s.empty() && !not_space((unsigned char)s.front())) s.remove_prefix(1);
+            while (!s.empty() && !not_space((unsigned char)s.back()))  s.remove_suffix(1);
+            return s;
+        };
+
+        const KC::String includeMacro = "#include \"";
+
+        for (size_t i = 0; i < lines.size(); ++i) {
             KC::String line = lines[i];
             KC::StringUtil::Trim(line);
-
-            if (line.empty()) {
+            if (line.empty())
                 continue;
-            }
 
-            // --- Handle #include ---
-            const KC::String includeMacro = "#include \"";
+            if (auto p = line.find("//"); p != KC::String::npos)
+                line = line.substr(0, p), KC::StringUtil::Trim(line);
+            if (line.empty())
+                continue;
 
-            KC::String includePath;
             if (KC::StringUtil::StartsWith(line, includeMacro)) {
                 KC::String includeName = line.substr(includeMacro.size());
                 KC::StringUtil::Trim(includeName);
-                        
                 int last = includeName.find_last_of('\"');
                 if (last != KC::String::npos) {
                     includeName = includeName.substr(0, last);
                     result.Includes.push_back(KDS::IncludeRecord{ includeName, static_cast<int>(i) });
                 }
+                continue;
             }
 
-            // --- Handle #pragma ---
-            const KC::String pragmaVertex = "#pragma vertex";
-            const KC::String pragmaPixel = "#pragma pixel";
-            const KC::String pragmaCompute = "#pragma compute";
-            const KC::String pragmaAmp = "#pragma amplification";
-            const KC::String pragmaMesh = "#pragma mesh";
-            const KC::String pragmaRayGen = "#pragma raygen";
-            const KC::String pragmaClosestHit = "#pragma closesthit";
-            const KC::String pragmaMiss = "#pragma miss";
-            const KC::String pragmaIntersection = "#pragma intersection";
-            const KC::String pragmaAnyHit = "#pragma anyhit";
+            KC::StringView v = line;
+            for (const auto& r : PRAGMA_RULES) {
+                // starts_with
+                if (v.rfind(r.tag, 0) == 0) {
+                    KC::StringView funcView = trim_view(v.substr(r.tag.size()));
+                    if (!funcView.empty()) {
+                        KC::String func(funcView.data(), funcView.size());
 
-            if (KC::StringUtil::StartsWith(line, pragmaVertex)) {
-                KC::String funcName = line.substr(pragmaVertex.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kVertex,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaPixel)) {
-                KC::String funcName = line.substr(pragmaPixel.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kPixel,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaCompute)) {
-                KC::String funcName = line.substr(pragmaCompute.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kCompute,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaAmp)) {
-                KC::String funcName = line.substr(pragmaAmp.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kAmplification,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaMesh)) {
-                KC::String funcName = line.substr(pragmaMesh.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kMesh,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaRayGen)) {
-                KC::String funcName = line.substr(pragmaRayGen.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kRayGeneration,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaClosestHit)) {
-                KC::String funcName = line.substr(pragmaClosestHit.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kClosestHit,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaMiss)) {
-                KC::String funcName = line.substr(pragmaMiss.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kMiss,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaIntersection)) {
-                KC::String funcName = line.substr(pragmaIntersection.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kIntersection,
-                    funcName
-                });
-            }
-            else if (KC::StringUtil::StartsWith(line, pragmaAnyHit)) {
-                KC::String funcName = line.substr(pragmaAnyHit.size());
-                KC::StringUtil::Trim(funcName);
-                result.EntryPoints.push_back(EntryPointRecord{
-                    KGPU::ShaderStage::kAnyHit,
-                    funcName
-                });
+                        // Optional de-dupe while your pipeline stabilizes
+                        bool already = false;
+                        for (auto& k : seen) {
+                            if (k.s == r.stage && k.f == func) { already = true; break; }
+                        }
+                        if (!already) {
+                            result.EntryPoints.push_back(EntryPointRecord{ r.stage, func });
+                            seen.push_back(make_key(r.stage, func));
+                        }
+                    }
+                    break;
+                }
             }
         }
 
