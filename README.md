@@ -26,4 +26,13 @@ The mindset I have for this engine is to leave rendering and world management up
 - Graphics utilities (resource recycling)
 - Custom ImGui renderer
 - Basic access to the system sound buffer
-- Test suite for various engine modules, auto test runner written in Haskell
+- Test suite for various engine modules, auto test runner written in Haskell: ![](.github/test.png)
+
+## Samples
+
+| Samples | Screenshot |
+| -------- | ------- |
+| [Hello, Triangle](code/samples/triangle/) | ![](.github/s_tri.png) |
+| [Hello, Raytraced Triangle](code/samples/raytracing_simple/) | ![](.github/s_ray.png) |
+| [ImGui, Simple](code/samples/imgui_simple/) | ![](.github/s_gui.png) |
+| [Simple mixer](code/samples/mixer/) | (No screenshot) |

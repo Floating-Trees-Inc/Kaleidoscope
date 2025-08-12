@@ -5,29 +5,17 @@
 
 #include "RTS_App.h"
 
-#include <KernelOS/KOS_Window.h>
-#include <Graphics/Gfx_Manager.h>
-#include <KernelCore/KC_Timer.h>
-
-#include <ToolImGui/ToolImGui_Manager.h>
 #include <KernelInput/KI_InputSystem.h>
-#include <KDAsset/KDA_TextureLoader.h>
-#include <KDAsset/KDA_MeshLoader.h>
+
 #include <KDShader/KDS_Manager.h>
-#include <Effects/FX_DebugRenderer.h>
+
 #include <Graphics/Gfx_TempResourceStorage.h>
 #include <Graphics/Gfx_CommandListRecycler.h>
-#include <Graphics/Gfx_MeshPrimitive.h>
-#include <Graphics/Gfx_Material.h>
 #include <Graphics/Gfx_Manager.h>
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_ShaderManager.h>
-#include <Graphics/Gfx_Uploader.h>
 #include <Graphics/Gfx_ViewRecycler.h>
-#include <Graphics/Gfx_Skybox.h>
-#include <Graphics/Gfx_Mipmapper.h>
 #include <Graphics/Gfx_Uploader.h>
-#include <Graphics/Gfx_Screenshotter.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -57,13 +45,9 @@ namespace RTS
         CODE_BLOCK("Initialize systems") {
             KI::InputSystem::Initialize();
             KDS::Manager::Initialize();
-            ToolImGui::Manager::Initialize(mWindow, mDevice);
-            ToolImGui::Manager::BuildRenderer();
             Gfx::Manager::Initialize(mDevice, mCommandQueue);
             Gfx::ResourceManager::Initialize();
             Gfx::ShaderManager::Initialize();
-            Gfx::SkyboxCooker::Initialize();
-            Gfx::Mipmapper::Initialize();
         }
 
         CODE_BLOCK("Create resources") {
@@ -127,12 +111,13 @@ namespace RTS
 
     App::~App()
     {
-        ToolImGui::Manager::Shutdown();
         Gfx::TempResourceStorage::Clean();
         Gfx::ViewRecycler::Clean();
         Gfx::ShaderManager::Shutdown();
         Gfx::ResourceManager::Shutdown();
         Gfx::CommandListRecycler::Clean();
+        KDS::Manager::Shutdown();
+        KI::InputSystem::Shutdown();
 
         KC_DELETE(mInstanceBuffer);
         KC_DELETE(mVertexBuffer);
@@ -149,9 +134,6 @@ namespace RTS
         KC_DELETE(mDevice);
 
         KOS::Delete(mWindow);
-    
-        KDS::Manager::Shutdown();
-        KI::InputSystem::Shutdown();
     }
 
     void App::Run()

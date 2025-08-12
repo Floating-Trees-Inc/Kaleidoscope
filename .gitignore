@@ -10,3 +10,6 @@ kaleidoscope.txt
 
 # Images
 data/kd/tests/*.png
+
+# Config
+imgui.ini

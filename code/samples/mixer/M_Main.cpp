@@ -42,12 +42,13 @@ KD_MAIN
 {
     KC::ScopedContext ctx;
     CODE_BLOCK("Program") {
+        // Open sound device
         KS::IDevice* soundDevice = KS::IDevice::Create();
         KD_ASSERT_EQ(soundDevice->Open(MyRender, nullptr) == KS::Result::kOk, "Failed to open sound device!");
         
         KD_INFO("Starting sound mixer! Playing sound wave at 120hz. Press anything to stop");
         soundDevice->Start();
-        getchar();
+        getchar(); // Don't stop until key is pressed
         soundDevice->Stop();
         soundDevice->Close();
         KD_INFO("Stopped sound mixer!");

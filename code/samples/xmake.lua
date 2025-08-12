@@ -5,3 +5,5 @@
 
 includes("raytracing_simple")
 includes("mixer")
+includes("triangle")
+includes("imgui_simple")
