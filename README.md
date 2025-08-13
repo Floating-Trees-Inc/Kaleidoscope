@@ -24,7 +24,7 @@ The mindset I have for this engine is to leave rendering and world management up
 - Input system
 - Asset management
 - Graphics utilities (resource recycling)
-- Custom ImGui renderer
+- Custom ImGui/Im3D renderer
 - Basic access to the system sound buffer
 - Test suite for various engine modules, auto test runner written in Haskell: ![](.github/test.png)
 
@@ -35,4 +35,5 @@ The mindset I have for this engine is to leave rendering and world management up
 | [Hello, Triangle](code/samples/triangle/) | ![](.github/s_tri.png) |
 | [Hello, Raytraced Triangle](code/samples/raytracing_simple/) | ![](.github/s_ray.png) |
 | [ImGui, Simple](code/samples/imgui_simple/) | ![](.github/s_gui.png) |
+| [Im3D Example](code/samples/im3d_simple/) | ![](.github/s_im3d.png) |
 | [Simple mixer](code/samples/mixer/) | (No screenshot) |

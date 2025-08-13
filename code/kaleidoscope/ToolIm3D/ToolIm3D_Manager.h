@@ -33,12 +33,5 @@ namespace ToolIm3D
     
         static void Begin(BeginInfo& info);
         static void End(KGPU::ICommandList* cmdList, glm::mat4 viewProj);
-    private:
-        static struct Data {
-            uint VertexBufferSize;
-
-            KGPU::IBuffer* VertexBuffer;
-            KGPU::IBufferView* VertexBufferView;
-        } sData;
     };
 };

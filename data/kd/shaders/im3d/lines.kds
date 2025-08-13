@@ -4,6 +4,7 @@
 //
 
 #include "common/bindless.kds"
+#include "common/color.kds"
 
 #define ANTI_ALIASING 2.0F
 
@@ -23,7 +24,7 @@ struct VertexOutput
 struct VertexInput
 {
     float4 PositionSize : POSITION_SIZE;
-    float4 Color : COLOR;
+    uint Color : COLOR;
 };
 
 struct PushConstants
@@ -31,7 +32,7 @@ struct PushConstants
     uint VertexBuffer;
     uint Width;
     uint Height;
-    uint Pad;
+    uint VertexOffset;
 
     column_major float4x4 ViewProjMatrix;
 };
@@ -40,10 +41,12 @@ PUSH_CONSTANTS(PushConstants, Push);
 VertexOutput VSMain(uint id : SV_VertexID)
 {
     StructuredBuffer<VertexInput> vertices = ResourceDescriptorHeap[Push.VertexBuffer];
-    VertexInput input = vertices[id];
+    VertexInput input = vertices[id + Push.VertexOffset];
+    
+    float4 Color = UnpackColor(input.Color);
 
     VertexOutput ret = (VertexOutput)0;
-    ret.Color = input.Color.abgr;
+    ret.Color = Color.abgr;
     ret.Color.a *= smoothstep(0.0, 1.0, input.PositionSize.w / ANTI_ALIASING);
     ret.Size = max(input.PositionSize.w, ANTI_ALIASING);
     ret.Position = mul(Push.ViewProjMatrix, float4(input.PositionSize.xyz, 1.0f));
@@ -57,7 +60,7 @@ void GSMain(line VertexOutput input[2], inout TriangleStream<VertexOutput> outpu
     float2 pos1 = input[1].Position.xy / input[1].Position.w;
 
     float2 dir = pos0 - pos1;
-    dir = normalize(float2(dir.x, dir.y * Push.Width / Push.Height));
+    dir = normalize(float2(dir.x, dir.y * (Push.Width / Push.Height)));
     float2 tng0 = float2(-dir.y, dir.x);;
     float2 tng1 = tng0 * input[1].Size / float2(Push.Width, Push.Height);
     tng0 = tng0 * input[0].Size / float2(Push.Width, Push.Height);
@@ -77,7 +80,7 @@ void GSMain(line VertexOutput input[2], inout TriangleStream<VertexOutput> outpu
     // Line end
     ret.Size = input[1].Size;
     ret.Color = input[1].Color;
-    ret.UV = float2(0.0, 0.0);
+    ret.UV = float2(1.0, 1.0);
     ret.Position = float4((pos1 - tng1) * input[1].Position.w, input[1].Position.zw);
     ret.EdgeDistance = -input[1].Size;
     output.Append(ret);

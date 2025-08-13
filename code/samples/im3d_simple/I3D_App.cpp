@@ -24,8 +24,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <im3d.h>
-
 namespace I3D
 {
     App::App()
@@ -113,7 +111,7 @@ namespace I3D
                 cmdList->Begin();
 
                 CODE_BLOCK("Draw Triangle") {
-                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true) }, {});
+                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, glm::vec3(0.1f, 0.1f, 0.1f)) }, {});
 
                     ToolIm3D::BeginInfo beginInfo;
                     beginInfo.DeltaTime = dt;
@@ -134,9 +132,37 @@ namespace I3D
                         KGPU::ResourceLayout::kColorAttachment
                     ));
                     cmdList->BeginRendering(renderBegin);
+                    cmdList->SetRenderSize(mWidth, mHeight);
                     
                     ToolIm3D::Manager::Begin(beginInfo);
-                    Im3d::DrawSphere(Im3d::Vec3(0.0f, 0.0f, 0.0f), 2.0f);
+
+                    // Gizmo
+                    static Im3d::Mat4 transform(1.0f);
+                    mShouldUpdateCamera = !Im3d::Gizmo("Gizmo!", transform);
+
+                    // Draw shape
+                    Im3d::PushMatrix(transform);
+                    Im3d::DrawSphereFilled(Im3d::Vec3(0.0f, 0.0f, 0.0f), 1.0f);
+                    Im3d::PopMatrix();
+
+                    // Draw grid
+                    static int gridSize = 20;
+			        const float gridHalf = (float)gridSize * 0.5f;
+			        Im3d::SetAlpha(1.0f);
+			        Im3d::SetSize(3.0f);
+			        Im3d::BeginLines();
+			        	for (int x = 0; x <= gridSize; ++x)
+			        	{
+			        		Im3d::Vertex(-gridHalf, 0.0f, (float)x - gridHalf, Im3d::Color(0.0f, 0.0f, 0.0f));
+			        		Im3d::Vertex( gridHalf, 0.0f, (float)x - gridHalf, Im3d::Color(1.0f, 0.0f, 0.0f));
+			        	}
+			        	for (int z = 0; z <= gridSize; ++z)
+			        	{
+			        		Im3d::Vertex((float)z - gridHalf, 0.0f, -gridHalf,  Im3d::Color(0.0f, 0.0f, 0.0f));
+			        		Im3d::Vertex((float)z - gridHalf, 0.0f,  gridHalf,  Im3d::Color(0.0f, 0.0f, 1.0f));
+			        	}
+			        Im3d::End();
+
                     ToolIm3D::Manager::End(cmdList, mCamera.Projection() * mCamera.View());
 
                     cmdList->EndRendering();
@@ -161,7 +187,7 @@ namespace I3D
                     (void)event;
                 }
 
-                mCamera.Update(dt, mWidth, mHeight);
+                if (mShouldUpdateCamera) mCamera.Update(dt, mWidth, mHeight);
 
                 Gfx::ShaderManager::ReloadPipelines();
             }

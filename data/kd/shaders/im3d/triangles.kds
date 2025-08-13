@@ -4,6 +4,7 @@
 //
 
 #include "common/bindless.kds"
+#include "common/color.kds"
 
 #define ANTI_ALIASING 2.0F
 
@@ -22,7 +23,7 @@ struct VertexOutput
 struct VertexInput
 {
     float4 PositionSize : POSITION_SIZE;
-    float4 Color : COLOR;
+    uint Color : COLOR;
 };
 
 struct PushConstants
@@ -30,7 +31,7 @@ struct PushConstants
     uint VertexBuffer;
     uint Width;
     uint Height;
-    uint Pad;
+    uint VertexOffset;
 
     column_major float4x4 ViewProjMatrix;
 };
@@ -39,10 +40,12 @@ PUSH_CONSTANTS(PushConstants, Push);
 VertexOutput VSMain(uint id : SV_VertexID)
 {
     StructuredBuffer<VertexInput> vertices = ResourceDescriptorHeap[Push.VertexBuffer];
-    VertexInput input = vertices[id];
+    VertexInput input = vertices[id + Push.VertexOffset];
+
+    float4 Color = UnpackColor(input.Color);
 
     VertexOutput ret = (VertexOutput)0;
-    ret.Color = input.Color.abgr;
+    ret.Color = Color.abgr;
     ret.Size = max(input.PositionSize.w, ANTI_ALIASING);
     ret.Position = mul(Push.ViewProjMatrix, float4(input.PositionSize.xyz, 1.0f));
     return ret;

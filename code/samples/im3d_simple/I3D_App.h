@@ -11,6 +11,8 @@
 
 #include "I3D_Camera.h"
 
+#include <im3d.h>
+
 namespace I3D
 {
     class App
@@ -35,5 +37,6 @@ namespace I3D
     
         Camera mCamera;
         double mLast;
+        bool mShouldUpdateCamera;
     };
 }
