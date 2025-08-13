@@ -4,6 +4,8 @@
 --
 
 add_rules("mode.debug", "mode.release", "mode.releasedbg")
+add_runenvs("PATH", "dlls")
+
 set_rundir(".")
 set_languages("c++20", { public = true })
 
@@ -33,12 +35,6 @@ else
     set_optimize("fastest", { public = true })
     set_strip("all", { public = true })
 end
-
--- Build steps
-before_link(function (target)
-    os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/")
-    os.cp("data/*", "$(builddir)/$(plat)/$(arch)/$(mode)/data/")
-end)
 
 -- Includes
 includes("thirdparty")
