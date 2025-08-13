@@ -40,3 +40,8 @@ end
 includes("thirdparty")
 includes("code/kaleidoscope")
 includes("code/samples")
+
+-- Post build step
+before_run(function (target)
+    os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/dlls/")
+end)

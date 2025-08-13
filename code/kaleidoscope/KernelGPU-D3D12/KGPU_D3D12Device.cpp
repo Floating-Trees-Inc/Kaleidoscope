@@ -17,7 +17,7 @@ extern "C"
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
     __declspec(dllexport) extern const uint D3D12SDKVersion = 614;
-    __declspec(dllexport) extern const char* D3D12SDKPath = ".\\.\\";
+    __declspec(dllexport) extern const char* D3D12SDKPath = ".\\dlls\\.";
 }
 
 namespace KGPU
