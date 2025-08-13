@@ -61,7 +61,7 @@ namespace ToolImGui
 
     void Renderer::Render(ImDrawData* data, KGPU::ICommandList* commandList, int frameIndex)
     {
-        commandList->PushMarker("ToolImGui::Renderer::Render");
+        KGPU::ScopedMarker _(commandList, "ToolImGui::Renderer::Render");
         UpdateTexture(mDevice, data, commandList);
 
         FrameResource& resource = mFrameResources[frameIndex];
@@ -161,7 +161,6 @@ namespace ToolImGui
             global_idx_offset += drawList->IdxBuffer.Size;
             global_vtx_offset += drawList->VtxBuffer.Size;
         }
-        commandList->PopMarker();
     }
 
     void Renderer::UpdateTexture(KGPU::IDevice* device, ImDrawData* data, KGPU::ICommandList* commandList)

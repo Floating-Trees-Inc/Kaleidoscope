@@ -95,6 +95,10 @@ namespace I3D
     void App::Run()
     {
         while (mWindow->IsOpen()) {
+            double now = KC::GlobalTimer.ToSeconds();
+            double dt = now - mLast;
+            mLast = now;
+
             CODE_BLOCK("Reset") {
                 KI::InputSystem::Reset();
             }
@@ -111,14 +115,15 @@ namespace I3D
                 CODE_BLOCK("Draw Triangle") {
                     KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true) }, {});
 
-                    ToolIm3D::DrawInfo drawInfo;
-                    drawInfo.DeltaTime = 0.0f;
-                    drawInfo.CommandList = cmdList;
-                    drawInfo.Width = mWidth;
-                    drawInfo.Height = mHeight;
-                    drawInfo.ViewMatrix = glm::mat4(1.0f);
-                    drawInfo.ProjMatrix = glm::mat4(1.0f);
-                    drawInfo.FOVRadians = glm::radians(90.0f);
+                    ToolIm3D::BeginInfo beginInfo;
+                    beginInfo.DeltaTime = dt;
+                    beginInfo.Width = mWidth;
+                    beginInfo.Height = mHeight;
+                    beginInfo.ViewMatrix = mCamera.View();
+                    beginInfo.ProjMatrix = mCamera.Projection();
+                    beginInfo.FOVRadians = glm::radians(90.0f);
+                    beginInfo.Position = mCamera.Position();
+                    beginInfo.ForwardVector = mCamera.Forward();
 
                     cmdList->Barrier(KGPU::TextureBarrier(
                         texture,
@@ -130,9 +135,9 @@ namespace I3D
                     ));
                     cmdList->BeginRendering(renderBegin);
                     
-                    ToolIm3D::Manager::Begin(drawInfo);
+                    ToolIm3D::Manager::Begin(beginInfo);
                     Im3d::DrawSphere(Im3d::Vec3(0.0f, 0.0f, 0.0f), 2.0f);
-                    ToolIm3D::Manager::End(drawInfo);
+                    ToolIm3D::Manager::End(cmdList, mCamera.Projection() * mCamera.View());
 
                     cmdList->EndRendering();
                     cmdList->Barrier(KGPU::TextureBarrier(
@@ -155,6 +160,8 @@ namespace I3D
                 while (mWindow->PollEvents(&event)) {
                     (void)event;
                 }
+
+                mCamera.Update(dt, mWidth, mHeight);
 
                 Gfx::ShaderManager::ReloadPipelines();
             }

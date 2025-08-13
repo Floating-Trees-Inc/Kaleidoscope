@@ -9,6 +9,8 @@
 #include <Graphics/Gfx_Manager.h>
 #include <KernelCore/KC_Timer.h>
 
+#include "I3D_Camera.h"
+
 namespace I3D
 {
     class App
@@ -30,5 +32,8 @@ namespace I3D
         KGPU::ISurface* mSurface;
         KGPU::ICommandList* mLists[KGPU::FRAMES_IN_FLIGHT];
         KGPU::ISync* mFrameSync;
+    
+        Camera mCamera;
+        double mLast;
     };
 }

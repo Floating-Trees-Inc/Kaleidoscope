@@ -11,7 +11,7 @@
 
 namespace ToolIm3D
 {
-    struct DrawInfo
+    struct BeginInfo
     {
         uint Width;
         uint Height;
@@ -19,10 +19,10 @@ namespace ToolIm3D
         float DeltaTime;
         float FOVRadians;
 
-        KGPU::ICommandList* CommandList;
-
         glm::mat4 ViewMatrix;
         glm::mat4 ProjMatrix;
+        glm::vec3 ForwardVector;
+        glm::vec3 Position;
     };
 
     class Manager
@@ -31,8 +31,8 @@ namespace ToolIm3D
         static void Initialize();
         static void Shutdown();
     
-        static void Begin(DrawInfo& info);
-        static void End(DrawInfo& info);
+        static void Begin(BeginInfo& info);
+        static void End(KGPU::ICommandList* cmdList, glm::mat4 viewProj);
     private:
         static struct Data {
             uint VertexBufferSize;

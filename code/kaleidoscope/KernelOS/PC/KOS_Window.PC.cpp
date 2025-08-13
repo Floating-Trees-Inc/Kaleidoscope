@@ -53,9 +53,6 @@ namespace KOS
     
     void PCWindow::UpdateInputSystem(SDL_Event& event)
     {
-        // Mouse position
-        SDL_GetGlobalMouseState(&KI::InputSystem::Data.MousePosition.x, &KI::InputSystem::Data.MousePosition.y);
-
         // Key events
         if (event.type == SDL_EVENT_KEY_DOWN) {
             SDL_Keycode code = event.key.key;
@@ -67,7 +64,7 @@ namespace KOS
         }
 
         // Mouse events
-        auto mouseFlags = SDL_GetGlobalMouseState(nullptr, nullptr);
+        auto mouseFlags = SDL_GetMouseState(&KI::InputSystem::Data.MousePosition.x, &KI::InputSystem::Data.MousePosition.y);
         KI::InputSystem::Data.MouseStates[SDLToMouseButton(SDL_BUTTON_LEFT)] = (mouseFlags & SDL_BUTTON_MASK(SDL_BUTTON_LEFT));
         KI::InputSystem::Data.MouseStates[SDLToMouseButton(SDL_BUTTON_RIGHT)] = (mouseFlags & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT));
         KI::InputSystem::Data.MouseStates[SDLToMouseButton(SDL_BUTTON_MIDDLE)] = (mouseFlags & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE));
