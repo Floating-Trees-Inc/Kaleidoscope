@@ -25,7 +25,7 @@ The mindset I have for this engine is to leave rendering and world management up
 - Asset management
 - Graphics utilities (resource recycling)
 - Custom ImGui/Im3D renderer
-- Basic access to the system sound buffer
+- Access to the system sound buffer
 - Test suite for various engine modules, auto test runner written in Haskell: ![](.github/test.png)
 
 ## Samples

@@ -231,6 +231,7 @@ namespace KGPU
         deviceFeatures2.features.tessellationShader = VK_TRUE;
         deviceFeatures2.features.depthClamp = VK_TRUE;
         deviceFeatures2.features.fillModeNonSolid = VK_TRUE;
+        deviceFeatures2.features.geometryShader = VK_TRUE; // God forgive me
     
         // Common features
         VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexing = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES };
