@@ -149,11 +149,12 @@ namespace TDC
 
     void Console::Draw(float dt, int width, int height)
     {
+        bool justOpened = false;
         if (ImGui::IsKeyPressed(ImGuiKey_F11, false)) {
             sData.Opened = !sData.Opened;
             if (sData.Opened) {
                 sData.WantFocus = true;
-                ImGui::SetScrollHereY(1.0f); // Scroll to bottom when opening
+                justOpened = true;
             }
         }
 
@@ -191,6 +192,13 @@ namespace TDC
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
                     ImGui::TextColored(sData.Log[i].Color, sData.Log[i].Message.c_str());
             }
+
+            if (justOpened || sData.Activated) {
+                ImGui::SetScrollHereY(1.0f);
+                if (justOpened) justOpened = false;
+                if (sData.Activated) sData.Activated = false;
+            }
+
             ImGui::EndChild();
 
             ImGuiInputTextFlags itf =
@@ -203,13 +211,13 @@ namespace TDC
             ImGui::SetKeyboardFocusHere();
             bool activated = ImGui::InputText("##input", sData.Input, IM_ARRAYSIZE(sData.Input), itf, TextCallback, nullptr);
             if (activated) {
+                sData.Activated = true;
                 KC::String line = sData.Input;
                 if (!line.empty())
                     Execute(line);
                 sData.Input[0] = '\0';
                 sData.HistoryPos = -1;
                 gRequestCloseAC = true;
-                ImGui::SetScrollHereY(1.0f); // Scroll to bottom on input
             }
             
             if (gRequestOpenAC) {

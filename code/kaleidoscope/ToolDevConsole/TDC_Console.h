@@ -81,6 +81,7 @@ namespace TDC
             bool RequestCloseAC = false;
             int AcIndex = 0;
             KC::String LastToken;
+            bool Activated = false;
 
             KC::Array<KC::String> History;
             KC::Array<LogEntry> Log;
