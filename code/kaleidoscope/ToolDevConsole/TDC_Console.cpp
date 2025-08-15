@@ -142,7 +142,10 @@ namespace TDC
     {
         if (ImGui::IsKeyPressed(ImGuiKey_F11, false)) {
             sData.Opened = !sData.Opened;
-            if (sData.Opened) sData.WantFocus = true;
+            if (sData.Opened) {
+                sData.WantFocus = true;
+                ImGui::SetScrollHereY(1.0f); // Scroll to bottom when opening
+            }
         }
 
         const float kAnimDuration = 0.12f;
@@ -179,6 +182,8 @@ namespace TDC
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
                     ImGui::TextColored(sData.Log[i].Color, sData.Log[i].Message.c_str());
             }
+            if (sData.Opened)
+                ImGui::SetScrollHereY(1.0f);
             ImGui::EndChild();
 
             ImGuiInputTextFlags itf =
@@ -197,8 +202,9 @@ namespace TDC
                 sData.Input[0] = '\0';
                 sData.HistoryPos = -1;
                 gRequestCloseAC = true;
+                ImGui::SetScrollHereY(1.0f); // Scroll to bottom on input
             }
-
+            
             if (gRequestOpenAC) {
                 ImVec2 min = ImGui::GetItemRectMin();
                 ImVec2 size = ImGui::GetItemRectSize();

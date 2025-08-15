@@ -115,7 +115,7 @@ namespace KGPU
 
         CODE_BLOCK("Create Global Root Sig") {
             CD3DX12_ROOT_PARAMETER1 rootParameters[2];
-            rootParameters[0].InitAsConstants(120 / sizeof(uint), 0, 0, D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[0].InitAsConstants(144 / sizeof(uint), 0, 0, D3D12_SHADER_VISIBILITY_ALL);
             rootParameters[1].InitAsConstants(sizeof(uint), 1, 0, D3D12_SHADER_VISIBILITY_ALL);
 
             D3D12_ROOT_SIGNATURE_FLAGS rootSigFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
