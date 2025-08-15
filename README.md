@@ -36,4 +36,5 @@ The mindset I have for this engine is to leave rendering and world management up
 | [Hello, Raytraced Triangle](code/samples/raytracing_simple/) | ![](.github/s_ray.png) |
 | [ImGui, Simple](code/samples/imgui_simple/) | ![](.github/s_gui.png) |
 | [Im3D Example](code/samples/im3d_simple/) | ![](.github/s_im3d.png) |
+| [Dev Console](code/samples/dev_console/) | ![](.github/s_devc.png) |
 | [Simple mixer](code/samples/mixer/) | (No screenshot) |
