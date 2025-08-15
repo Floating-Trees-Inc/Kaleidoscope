@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdarg>
+#include <functional>
 
 #include "KC_Common.h"
 #include "KC_Array.h"
@@ -35,10 +36,16 @@ namespace KC
         void Error(const char* file, int line, const char* format, ...);
         void Fatal(const char* file, int line, const char* format, ...);
     
+        void HookCallback(const std::function<void(LogLevel level, const KC::String& message)>& function) {
+            mCallbacks.push_back(std::move(function));
+        }
+
         virtual void Output(LogLevel level, const String& format) = 0;
     private:
         String LevelToString(LogLevel level);
         String GetTimeString();
+
+        KC::Array<std::function<void(LogLevel level, const KC::String& message)>> mCallbacks;
     };
     
     class FileLogger : public ILogger

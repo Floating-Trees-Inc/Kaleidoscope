@@ -30,7 +30,7 @@ namespace IG
 {
     App::App()
     {
-        mWindow = KOS::IWindow::Create(mWidth, mHeight, "RT Test | Kaleidoscope 0.0.1");
+        mWindow = KOS::IWindow::Create(mWidth, mHeight, "ImGui | Kaleidoscope 0.0.1");
     
         CODE_BLOCK("Create RHI objects") {
             mDevice = KGPU::IDevice::Create(true);

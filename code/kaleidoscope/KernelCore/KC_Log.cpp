@@ -20,6 +20,9 @@ namespace KC {
 
         String out = StringUtil::Format("[%s] [%s] [%s:%d] %s", LevelToString(level).c_str(), GetTimeString().c_str(), file, line, buffer);
         Output(level, out);
+        for (auto& callback : mCallbacks) {
+            callback(level, out);
+        }
     }
 
     void ILogger::Whatever(const char* file, int line, const char* fmt, ...)

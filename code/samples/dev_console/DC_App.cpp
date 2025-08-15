@@ -3,9 +3,10 @@
 // > Create Time: 2025-07-26 00:23:26
 //
 
-#include "I3D_App.h"
+#include "DC_App.h"
 
-#include <ToolIm3D/ToolIm3D_Manager.h>
+#include <ToolImGui/ToolImGui_Manager.h>
+#include <ToolDevConsole/TDC_Console.h>
 #include <KernelInput/KI_InputSystem.h>
 #include <KDShader/KDS_Manager.h>
 #include <Graphics/Gfx_TempResourceStorage.h>
@@ -24,11 +25,14 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace I3D
+#include <imgui.h>
+
+namespace DC
 {
     App::App()
     {
-        mWindow = KOS::IWindow::Create(mWidth, mHeight, "Im3D | Kaleidoscope 0.0.1");
+        TDC::Console::Initialize();
+        mWindow = KOS::IWindow::Create(mWidth, mHeight, "Dev Console | Kaleidoscope 0.0.1");
     
         CODE_BLOCK("Create RHI objects") {
             mDevice = KGPU::IDevice::Create(true);
@@ -56,7 +60,13 @@ namespace I3D
             Gfx::ShaderManager::Initialize();
 
             // Initialize ImGui
-            ToolIm3D::Manager::Initialize();
+            ToolImGui::Manager::Initialize(mWindow, mDevice);
+            ToolImGui::Manager::BuildRenderer();
+
+            // Set variables
+            TDC::Console::AddVariable("Clear.Red", mClearRed);
+            TDC::Console::AddVariable("Clear.Green", mClearGreen);
+            TDC::Console::AddVariable("Clear.Blue", mClearBlue);
         }
 
         CODE_BLOCK("Finish start and go!") {
@@ -64,13 +74,13 @@ namespace I3D
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("Im3D app ready!");
+        KD_INFO("Dev Console app ready!");
     }
 
     App::~App()
     {
         // Shutdown relevant systems
-        ToolIm3D::Manager::Shutdown();
+        ToolImGui::Manager::Shutdown();
         Gfx::TempResourceStorage::Clean();
         Gfx::ViewRecycler::Clean();
         Gfx::ShaderManager::Shutdown();
@@ -96,9 +106,14 @@ namespace I3D
             double now = KC::GlobalTimer.ToSeconds();
             double dt = now - mLast;
             mLast = now;
+            ToolImGui::Manager::Begin();
 
             CODE_BLOCK("Reset") {
                 KI::InputSystem::Reset();
+            }
+
+            CODE_BLOCK("Update") {
+                TDC::Console::Draw(dt, mWidth, mHeight);
             }
 
             CODE_BLOCK("Render") {
@@ -111,17 +126,7 @@ namespace I3D
                 cmdList->Begin();
 
                 CODE_BLOCK("Draw Triangle") {
-                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, glm::vec3(0.1f, 0.1f, 0.1f)) }, {});
-
-                    ToolIm3D::BeginInfo beginInfo;
-                    beginInfo.DeltaTime = dt;
-                    beginInfo.Width = mWidth;
-                    beginInfo.Height = mHeight;
-                    beginInfo.ViewMatrix = mCamera.View();
-                    beginInfo.ProjMatrix = mCamera.Projection();
-                    beginInfo.FOVRadians = glm::radians(90.0f);
-                    beginInfo.Position = mCamera.Position();
-                    beginInfo.ForwardVector = mCamera.Forward();
+                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, glm::vec3(mClearRed, mClearGreen, mClearBlue)) }, {});
 
                     cmdList->Barrier(KGPU::TextureBarrier(
                         texture,
@@ -132,39 +137,7 @@ namespace I3D
                         KGPU::ResourceLayout::kColorAttachment
                     ));
                     cmdList->BeginRendering(renderBegin);
-                    cmdList->SetRenderSize(mWidth, mHeight);
-                    
-                    ToolIm3D::Manager::Begin(beginInfo);
-
-                    // Gizmo
-                    static Im3d::Mat4 transform(1.0f);
-                    mShouldUpdateCamera = !Im3d::Gizmo("Gizmo!", transform);
-
-                    // Draw shape
-                    Im3d::PushMatrix(transform);
-                    Im3d::DrawSphereFilled(Im3d::Vec3(0.0f, 0.0f, 0.0f), 1.0f);
-                    Im3d::PopMatrix();
-
-                    // Draw grid
-                    static int gridSize = 20;
-			        const float gridHalf = (float)gridSize * 0.5f;
-			        Im3d::SetAlpha(1.0f);
-			        Im3d::SetSize(3.0f);
-			        Im3d::BeginLines();
-			        	for (int x = 0; x <= gridSize; ++x)
-			        	{
-			        		Im3d::Vertex(-gridHalf, 0.0f, (float)x - gridHalf, Im3d::Color(0.0f, 0.0f, 0.0f));
-			        		Im3d::Vertex( gridHalf, 0.0f, (float)x - gridHalf, Im3d::Color(1.0f, 0.0f, 0.0f));
-			        	}
-			        	for (int z = 0; z <= gridSize; ++z)
-			        	{
-			        		Im3d::Vertex((float)z - gridHalf, 0.0f, -gridHalf,  Im3d::Color(0.0f, 0.0f, 0.0f));
-			        		Im3d::Vertex((float)z - gridHalf, 0.0f,  gridHalf,  Im3d::Color(0.0f, 0.0f, 1.0f));
-			        	}
-			        Im3d::End();
-
-                    ToolIm3D::Manager::End(cmdList, mCamera.Projection() * mCamera.View());
-
+                    ToolImGui::Manager::Render(cmdList, index);
                     cmdList->EndRendering();
                     cmdList->Barrier(KGPU::TextureBarrier(
                         texture,
@@ -184,10 +157,8 @@ namespace I3D
             CODE_BLOCK("Update") {
                 void* event;
                 while (mWindow->PollEvents(&event)) {
-                    (void)event;
+                    ToolImGui::Manager::Update(event);
                 }
-
-                if (mShouldUpdateCamera) mCamera.Update(dt, mWidth, mHeight);
 
                 Gfx::ShaderManager::ReloadPipelines();
             }

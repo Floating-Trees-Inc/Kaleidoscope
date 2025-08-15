@@ -18,6 +18,7 @@ includes("KernelOSTests")
 includes("KernelSound")
 includes("Physics")
 includes("KernelOS")
+includes("ToolDevConsole")
 includes("ToolIm3D")
 includes("ToolImGui")
 
@@ -55,5 +56,6 @@ target("Kaleidoscope")
              "Effects",
              "KernelSound",
              "ToolIm3D",
+             "ToolDevConsole",
              { public = true })
     add_includedirs(".", { public = true })
