@@ -98,6 +98,15 @@ namespace TDC
         });
     }
 
+    void Console::AddFunction(const KC::String& name, const std::function<void(const KC::String& args)>& fn)
+    {
+        ConsoleCommand cmd = {};
+        cmd.Name = name;
+        cmd.Type = ConsoleCommandType::kFunction;
+        cmd.Function = std::move(fn);
+        sData.Registry.push_back(cmd);
+    }
+
     void Console::AddVariable(const KC::String& name, int& i)
     {
         ConsoleCommand cmd = {};
@@ -182,8 +191,6 @@ namespace TDC
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
                     ImGui::TextColored(sData.Log[i].Color, sData.Log[i].Message.c_str());
             }
-            if (sData.Opened)
-                ImGui::SetScrollHereY(1.0f);
             ImGui::EndChild();
 
             ImGuiInputTextFlags itf =
@@ -355,7 +362,7 @@ namespace TDC
         switch (it->Type)
         {
             case ConsoleCommandType::kFunction: {
-                KD_WARN("Console commands are not supported yet!");
+                it->Function(args);
                 break;
             }
             case ConsoleCommandType::kVariable: {

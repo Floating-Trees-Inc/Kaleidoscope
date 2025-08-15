@@ -37,6 +37,9 @@ namespace TDC
         float* Float;
         KC::String* String;
         bool* Boolean;
+
+        // Functions
+        std::function<void(const KC::String& args)> Function;
     };
 
     struct LogEntry
@@ -55,6 +58,7 @@ namespace TDC
     public:
         static void Initialize();
 
+        static void AddFunction(const KC::String& name, const std::function<void(const KC::String& args)>& fn);
         static void AddVariable(const KC::String& name, int& i);
         static void AddVariable(const KC::String& name, float& f);
         static void AddVariable(const KC::String& name, KC::String& s);
