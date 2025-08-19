@@ -4,7 +4,6 @@
 --
 
 add_rules("mode.debug", "mode.release", "mode.releasedbg")
-add_runenvs("PATH", "dlls")
 
 set_rundir(".")
 set_languages("c++20", { public = true })
@@ -43,5 +42,5 @@ includes("code/samples")
 
 -- Post build step
 before_run(function (target)
-    os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/dlls/")
+    os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/")
 end)
