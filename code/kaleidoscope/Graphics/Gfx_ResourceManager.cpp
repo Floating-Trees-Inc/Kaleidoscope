@@ -156,6 +156,10 @@ namespace Gfx
             KGPU::TextureBarrier barrier(resource->Texture);
             barrier.SourceAccess = resource->LastAccess;
             barrier.SourceStage = resource->LastStage;
+            barrier.ArrayLayer = 0;
+            barrier.LayerCount = resource->Texture->GetDesc().Depth;
+            barrier.BaseMipLevel = 0;
+            barrier.LevelCount = resource->Texture->GetDesc().MipLevels;
             switch (type) {
                 case ImportType::kColorWrite: {
                     barrier.DestAccess = KGPU::ResourceAccess::kColorAttachmentWrite;
