@@ -10,6 +10,7 @@ target("imgui")
     add_files("include/*.cpp")
     add_headerfiles("include/*.h")
     add_includedirs("include", { public = true })
+    add_deps("font-awesome", { public = true })
 
     if is_plat("windows") then
         add_files("include/sdl3/*.cpp")

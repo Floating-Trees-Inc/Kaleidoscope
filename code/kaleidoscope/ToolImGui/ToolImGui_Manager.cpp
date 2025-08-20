@@ -7,6 +7,7 @@
 #include "ToolImGui_Input.h"
 
 #include <imgui.h>
+#include <fontawesome.h>
 #include <KernelInput/KI_InputSystem.h>
 
 namespace ToolImGui
@@ -26,7 +27,21 @@ namespace ToolImGui
         sData.Window = window;
         sData.Device = device;
 
-        io.FontDefault = io.Fonts->AddFontFromFileTTF("data/kd/fonts/font.ttf", 18);
+        ImFontConfig mergeConfig = {};
+        mergeConfig.MergeMode = true;
+
+        static const ImWchar rangesFixed[] = {
+            0x0020, 0x00FF, // Basic Latin + Latin Supplement
+            0x2026, 0x2026, // ellipsis
+            0
+        };
+        static const ImWchar rangesIcons[] = {
+            ICON_MIN_FA, ICON_MAX_FA,
+            0
+        };
+
+        io.Fonts->AddFontFromFileTTF("data/kd/fonts/font.ttf", 18, nullptr, rangesFixed);
+        io.Fonts->AddFontFromFileTTF("data/kd/fonts/fontawesome-webfont.ttf", 18, &mergeConfig, rangesIcons);
 
         Input::Initialize(window);
 

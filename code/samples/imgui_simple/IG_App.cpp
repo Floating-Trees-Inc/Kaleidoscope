@@ -25,6 +25,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <imgui.h>
+#include <fontawesome.h>
 
 namespace IG
 {
@@ -124,6 +125,9 @@ namespace IG
                     ToolImGui::Manager::Begin();
 
                     ImGui::ShowDemoWindow();
+                    ImGui::Begin(ICON_FA_THUMBS_UP " Font Awesome");
+                    ImGui::Text(ICON_FA_APPLE " Yo this is lowkey liiit");
+                    ImGui::End();
 
                     ToolImGui::Manager::Render(cmdList, index);
                     cmdList->EndRendering();
