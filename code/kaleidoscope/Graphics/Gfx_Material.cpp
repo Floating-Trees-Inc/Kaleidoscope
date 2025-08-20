@@ -56,13 +56,13 @@ namespace Gfx
             uploadTexture(albedo, mAlbedo.Texture);
         }
         if (!material.NormalPath.empty()) {
-            auto mr = KDA::TextureLoader::LoadFromFile(material.NormalPath, true);
+            auto mr = KDA::TextureLoader::LoadFromFile(material.NormalPath, false);
             mNormal.Texture = device->CreateTexture(mr.ToTextureDesc());
             mNormal.View = device->CreateTextureView(KGPU::TextureViewDesc(mNormal.Texture, KGPU::TextureViewType::kShaderRead));
             uploadTexture(mr, mNormal.Texture);
         }
         if (!material.MetallicRoughnessPath.empty()) {
-            auto mr = KDA::TextureLoader::LoadFromFile(material.MetallicRoughnessPath, true);
+            auto mr = KDA::TextureLoader::LoadFromFile(material.MetallicRoughnessPath, false);
             mMetallicRoughness.Texture = device->CreateTexture(mr.ToTextureDesc());
             mMetallicRoughness.View = device->CreateTextureView(KGPU::TextureViewDesc(mMetallicRoughness.Texture, KGPU::TextureViewType::kShaderRead));
             uploadTexture(mr, mMetallicRoughness.Texture);
