@@ -15,6 +15,7 @@ namespace KGPU
         case TextureFormat::kR8G8B8A8_sRGB:      return 4;
         case TextureFormat::kB8G8R8A8_UNORM:     return 4;
         case TextureFormat::kR16G16B16A16_FLOAT: return 8; // 2 bytes * 4 channels
+        case TextureFormat::kR32G32B32A32_FLOAT: return 16;
         case TextureFormat::kR16G16B16A16_UNORM: return 8;
         case TextureFormat::kR32_FLOAT:          return 4; // single float
         case TextureFormat::kD32_FLOAT:          return 4; // depth 32-bit float

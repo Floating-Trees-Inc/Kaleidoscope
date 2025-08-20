@@ -84,6 +84,7 @@ namespace KGPU
             case TextureFormat::kB8G8R8A8_UNORM: return VK_FORMAT_B8G8R8A8_UNORM;
             case TextureFormat::kD32_FLOAT: return VK_FORMAT_D32_SFLOAT;
             case TextureFormat::kR16G16B16A16_FLOAT: return VK_FORMAT_R16G16B16A16_SFLOAT;
+            case TextureFormat::kR32G32B32A32_FLOAT: return VK_FORMAT_R32G32B32A32_SFLOAT;
             case TextureFormat::kR16G16B16A16_UNORM: return VK_FORMAT_R16G16B16A16_UNORM;
             case TextureFormat::kR32_FLOAT: return VK_FORMAT_R32_SFLOAT;
             case TextureFormat::kBC7_UNORM: return VK_FORMAT_BC7_UNORM_BLOCK;

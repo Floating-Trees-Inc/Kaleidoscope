@@ -67,11 +67,11 @@ namespace KDA
             }
             case TextureType::UncompressedFloatImage: {
                 int channels = 0;
-                uint16* data = stbi_load_16(path.c_str(), &result.Width, &result.Height, &channels, STBI_rgb_alpha);
+                float* data = stbi_loadf(path.c_str(), &result.Width, &result.Height, &channels, STBI_rgb_alpha);
                 KD_ASSERT_EQ(data, "Failed to load stbi data!");
 
-                result.Bytes.resize(result.Width * result.Height * 4 * sizeof(uint16));
-                result.Format = KGPU::TextureFormat::kR16G16B16A16_UNORM;
+                result.Bytes.resize(result.Width * result.Height * 4 * sizeof(float));
+                result.Format = KGPU::TextureFormat::kR32G32B32A32_FLOAT;
                 memcpy(result.Bytes.data(), data, result.Bytes.size());
                 stbi_image_free(data);
                 return result;
