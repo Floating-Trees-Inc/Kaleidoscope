@@ -341,7 +341,7 @@ namespace TDC
 
     void Console::Execute(const KC::String& line)
     {
-        sData.Log.push_back(LogEntry(KC::String("> " + line), ImColor(0xFF000000)));
+        sData.Log.push_back(LogEntry(KC::String("> " + line), ImColor(0xFFFFFFFF)));
         sData.History.emplace_back(line);
 
         uint64 sp = line.find_first_of(" \t");
@@ -363,7 +363,7 @@ namespace TDC
         }
 
         if (it == sData.Registry.end()) {
-            sData.Log.emplace_back("Unknown command.");
+            sData.Log.emplace_back(LogEntry("Unknown command.", ImColor(0xFFFFFFFF)));
             return;
         }
 
