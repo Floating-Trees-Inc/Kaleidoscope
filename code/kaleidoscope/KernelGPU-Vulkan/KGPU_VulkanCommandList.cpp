@@ -123,14 +123,16 @@ namespace KGPU
             .srcAccessMask       = TranslateAccessFlagsToVk(barrier.SourceAccess),
             .dstStageMask        = TranslatePipelineStageToVk(barrier.DestStage),
             .dstAccessMask       = TranslateAccessFlagsToVk(barrier.DestAccess),
-            .oldLayout           = TranslateLayoutToVk(barrier.Texture->GetLayout()),
-            .newLayout           = barrier.NewLayout == (ResourceLayout)123456789 ? TranslateLayoutToVk(vkTexture->GetLayout(barrier.BaseMipLevel)) : TranslateLayoutToVk(barrier.NewLayout),
+            .oldLayout           = barrier.SourceLayout == (ResourceLayout)123456789 ? TranslateLayoutToVk(vkTexture->GetLayout(barrier.BaseMipLevel)) : TranslateLayoutToVk(barrier.SourceLayout),
+            .newLayout           = TranslateLayoutToVk(barrier.NewLayout),
             .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
             .image               = vkTexture->Image(),
             .subresourceRange    = range
         };
-        barrier.Texture->SetLayout(barrier.NewLayout, barrier.BaseMipLevel);
+        for (int i = barrier.BaseMipLevel; i < barrier.BaseMipLevel + barrier.LevelCount; i++) {
+            barrier.Texture->SetLayout(barrier.NewLayout, i);
+        }
 
         const VkDependencyInfo dependencyInfo = {
             .sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
@@ -232,14 +234,16 @@ namespace KGPU
                 .srcAccessMask       = TranslateAccessFlagsToVk(barrier.SourceAccess),
                 .dstStageMask        = TranslatePipelineStageToVk(barrier.DestStage),
                 .dstAccessMask       = TranslateAccessFlagsToVk(barrier.DestAccess),
-                .oldLayout           = TranslateLayoutToVk(barrier.Texture->GetLayout()),
-                .newLayout           = barrier.NewLayout == (ResourceLayout)123456789 ? TranslateLayoutToVk(vkTexture->GetLayout(barrier.BaseMipLevel)) : TranslateLayoutToVk(barrier.NewLayout),
+                .oldLayout           = barrier.SourceLayout == (ResourceLayout)123456789 ? TranslateLayoutToVk(vkTexture->GetLayout(barrier.BaseMipLevel)) : TranslateLayoutToVk(barrier.SourceLayout),
+                .newLayout           = TranslateLayoutToVk(barrier.NewLayout),
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .image               = vkTexture->Image(),
                 .subresourceRange    = range
             };
-            barrier.Texture->SetLayout(barrier.NewLayout, barrier.BaseMipLevel);
+            for (int i = barrier.BaseMipLevel; i < barrier.BaseMipLevel + barrier.LevelCount; i++) {
+                barrier.Texture->SetLayout(barrier.NewLayout, i);
+            }
         
             imageBarriers.push_back(imageBarrier);
         }

@@ -32,8 +32,13 @@ namespace KGPU
             createInfo.subresourceRange.baseMipLevel = viewDesc.ViewMip;
             createInfo.subresourceRange.levelCount = 1;
         }
-        createInfo.subresourceRange.baseArrayLayer = viewDesc.ArrayLayer == VIEW_ALL_MIPS ? 0 : viewDesc.ArrayLayer;
-        createInfo.subresourceRange.layerCount = viewDesc.ArrayLayer == VIEW_ALL_MIPS ? desc.Depth : 1;
+        if (viewDesc.ArrayLayer == VIEW_ALL_MIPS) {
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = desc.Depth;
+        } else {
+            createInfo.subresourceRange.baseArrayLayer = viewDesc.ArrayLayer;
+            createInfo.subresourceRange.layerCount = 1;   
+        }
 
         VkResult result = vkCreateImageView(mParentDevice->Device(), &createInfo, nullptr, &mImageView);
         KD_ASSERT_EQ(result == VK_SUCCESS, "Failed to create Vulkan image view!");

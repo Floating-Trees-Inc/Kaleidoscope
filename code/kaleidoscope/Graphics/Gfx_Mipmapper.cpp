@@ -60,7 +60,7 @@ namespace Gfx
             writeBarrier.LevelCount = 1;
             writeBarrier.SourceAccess = KGPU::ResourceAccess::kNone;
             writeBarrier.DestAccess = KGPU::ResourceAccess::kShaderWrite;
-            writeBarrier.SourceStage = KGPU::PipelineStage::kTopOfPipe;
+            writeBarrier.SourceStage = KGPU::PipelineStage::kNone;
             writeBarrier.DestStage = KGPU::PipelineStage::kComputeShader;
             writeBarrier.NewLayout = KGPU::ResourceLayout::kGeneral;
             WriteBarriers.push_back(writeBarrier);

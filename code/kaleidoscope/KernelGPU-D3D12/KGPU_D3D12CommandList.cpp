@@ -99,8 +99,7 @@ namespace KGPU
         texBarrier.AccessBefore = ToD3D12BarrierAccess(barrier.SourceAccess);
         texBarrier.AccessAfter = ToD3D12BarrierAccess(barrier.DestAccess);
         if (barrier.SourceLayout == (ResourceLayout)123456789) {
-            ResourceLayout layout = barrier.Texture->GetLayout(barrier.BaseMipLevel);
-            texBarrier.LayoutBefore = ToD3D12BarrierLayout(layout);
+            texBarrier.LayoutBefore = ToD3D12BarrierLayout(barrier.Texture->GetLayout(barrier.BaseMipLevel));
         }
         else {
             texBarrier.LayoutBefore = ToD3D12BarrierLayout(barrier.SourceLayout);
@@ -112,7 +111,6 @@ namespace KGPU
         texBarrier.Subresources.NumArraySlices = barrier.LayerCount;
         texBarrier.Subresources.FirstPlane = 0;
         texBarrier.Subresources.NumPlanes = 1;
-        barrier.Texture->SetLayout(barrier.NewLayout, barrier.BaseMipLevel);
 
         D3D12_BARRIER_GROUP group = {};
         group.Type = D3D12_BARRIER_TYPE_TEXTURE;
@@ -120,6 +118,10 @@ namespace KGPU
         group.pTextureBarriers = &texBarrier;
 
         mList->Barrier(1, &group);
+
+        for (int i = barrier.BaseMipLevel; i < barrier.BaseMipLevel + barrier.LevelCount; i++) {
+            barrier.Texture->SetLayout(barrier.NewLayout, i);
+        }
     }
 
 
@@ -237,7 +239,9 @@ namespace KGPU
         mList->Barrier(barriers.size(), barriers.data());
 
         for (const TextureBarrier& barrier : barrierGroup.TextureBarriers) {
-            barrier.Texture->SetLayout(barrier.NewLayout);
+            for (int i = barrier.BaseMipLevel; i < barrier.BaseMipLevel + barrier.LevelCount; i++) {
+                barrier.Texture->SetLayout(barrier.NewLayout, i);
+            }
         }
     }
 

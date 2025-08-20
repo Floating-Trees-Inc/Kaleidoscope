@@ -105,15 +105,15 @@ namespace Gfx
         return *sData.Resources[name];
     }
 
-    Resource& ResourceManager::Import(const KC::String& name, KGPU::ICommandList* list, ImportType type)
+    Resource& ResourceManager::Import(const KC::String& name, KGPU::ICommandList* list, ImportType type, int mip)
     {
         Resource* resource = sData.Resources[name];
         switch (resource->Type)
         {
         case ResourceType::kBuffer: {
             KGPU::BufferBarrier barrier(resource->Buffer);
-            barrier.SourceAccess = resource->LastAccess;
-            barrier.SourceStage = resource->LastStage;
+            barrier.SourceAccess = resource->LastAccess[0];
+            barrier.SourceStage = resource->LastStage[0];
 
             switch (type) {
                 case ImportType::kColorWrite: {
@@ -146,20 +146,116 @@ namespace Gfx
                 }
             }
 
-            resource->LastAccess = barrier.DestAccess,
-            resource->LastStage = barrier.DestStage;
+            resource->LastAccess[0] = barrier.DestAccess,
+            resource->LastStage[0] = barrier.DestStage;
 
             list->Barrier(barrier);
             break;
         }
         case ResourceType::kTexture: {
+            if (mip == -1) {
+                // First, collect groups of mips with different states
+                struct MipGroup {
+                    KGPU::ResourceAccess access;
+                    KGPU::PipelineStage stage;
+                    KC::Array<int> mips;
+                };
+                KC::Array<MipGroup> groups;
+
+                int mipLevels = resource->Texture->GetDesc().MipLevels;
+                for (int i = 0; i < mipLevels; i++) {
+                    bool found = false;
+                    for (auto& group : groups) {
+                        if (group.access == resource->LastAccess[i] && 
+                            group.stage == resource->LastStage[i]) {
+                            group.mips.push_back(i);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        MipGroup newGroup = {
+                            resource->LastAccess[i],
+                            resource->LastStage[i],
+                            {i}
+                        };
+                        groups.push_back(newGroup);
+                    }
+                }
+
+                // If we have more than one group, we need intermediate barriers
+                if (groups.size() > 1) {
+                    for (const auto& group : groups) {
+                        KGPU::TextureBarrier barrier(resource->Texture);
+                        barrier.SourceAccess = group.access;
+                        barrier.SourceStage = group.stage;
+                        barrier.ArrayLayer = 0;
+                        barrier.LayerCount = resource->Texture->GetDesc().Depth;
+                        
+                        // Set specific mip range for this group
+                        barrier.BaseMipLevel = group.mips[0];
+                        barrier.LevelCount = group.mips.size();
+
+                        // Set destination state based on ImportType
+                        switch (type) {
+                            case ImportType::kColorWrite: {
+                                barrier.DestAccess = KGPU::ResourceAccess::kColorAttachmentWrite;
+                                barrier.DestStage = KGPU::PipelineStage::kColorAttachmentOutput;
+                                barrier.NewLayout = KGPU::ResourceLayout::kColorAttachment;
+                                break;
+                            }
+                            case ImportType::kDepthWrite: {
+                                barrier.DestAccess = KGPU::ResourceAccess::kDepthStencilWrite;
+                                barrier.DestStage = KGPU::PipelineStage::kEarlyFragmentTests;
+                                barrier.NewLayout = KGPU::ResourceLayout::kDepthStencilWrite;
+                                break;
+                            }
+                            case ImportType::kShaderRead: {
+                                barrier.DestAccess = KGPU::ResourceAccess::kShaderRead;
+                                barrier.DestStage = KGPU::PipelineStage::kAllGraphics;
+                                barrier.NewLayout = KGPU::ResourceLayout::kReadOnly;
+                                break;
+                            }
+                            case ImportType::kShaderWrite: {
+                                barrier.DestAccess = KGPU::ResourceAccess::kShaderWrite;
+                                barrier.DestStage = KGPU::PipelineStage::kAllGraphics;
+                                barrier.NewLayout = KGPU::ResourceLayout::kGeneral;
+                                break;
+                            }
+                            case ImportType::kTransferSource: {
+                                barrier.DestAccess = KGPU::ResourceAccess::kTransferRead;
+                                barrier.DestStage = KGPU::PipelineStage::kCopy;
+                                barrier.NewLayout = KGPU::ResourceLayout::kTransferSrc;
+                                break;
+                            }
+                            case ImportType::kTransferDest: {
+                                barrier.DestAccess = KGPU::ResourceAccess::kTransferWrite;
+                                barrier.DestStage = KGPU::PipelineStage::kCopy;
+                                barrier.NewLayout = KGPU::ResourceLayout::kTransferDst;
+                                break;
+                            }
+                        }
+
+                        list->Barrier(barrier);
+                    }
+                }
+            }
+
+            // Now proceed with the main barrier
             KGPU::TextureBarrier barrier(resource->Texture);
-            barrier.SourceAccess = resource->LastAccess;
-            barrier.SourceStage = resource->LastStage;
+            
+            // Handle full mip range or specific mip
+            int baseMip = (mip == -1) ? 0 : mip;
+            int mipCount = (mip == -1) ? resource->Texture->GetDesc().MipLevels : 1;
+            
+            // For mip -1, we can now safely use the target state as source state
+            barrier.SourceAccess = resource->LastAccess[baseMip];
+            barrier.SourceStage = resource->LastStage[baseMip];
             barrier.ArrayLayer = 0;
             barrier.LayerCount = resource->Texture->GetDesc().Depth;
-            barrier.BaseMipLevel = 0;
-            barrier.LevelCount = resource->Texture->GetDesc().MipLevels;
+            barrier.BaseMipLevel = baseMip;
+            barrier.LevelCount = mipCount;
+
             switch (type) {
                 case ImportType::kColorWrite: {
                     barrier.DestAccess = KGPU::ResourceAccess::kColorAttachmentWrite;
@@ -199,8 +295,11 @@ namespace Gfx
                 }
             }
 
-            resource->LastAccess = barrier.DestAccess,
-            resource->LastStage = barrier.DestStage;
+            // Update state for affected mip levels
+            for (int i = baseMip; i < baseMip + mipCount; i++) {
+                resource->LastAccess[i] = barrier.DestAccess;
+                resource->LastStage[i] = barrier.DestStage;
+            }
 
             list->Barrier(barrier);
             break;

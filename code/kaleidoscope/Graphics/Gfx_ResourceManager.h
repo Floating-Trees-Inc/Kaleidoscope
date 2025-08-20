@@ -31,9 +31,13 @@ namespace Gfx
         KGPU::ITexture* Texture = nullptr;
         KGPU::ISampler* Sampler = nullptr;
 
-        KGPU::ResourceAccess LastAccess = KGPU::ResourceAccess::kNone;
-        KGPU::PipelineStage LastStage = KGPU::PipelineStage::kNone;
+        KC::Array<KGPU::ResourceAccess> LastAccess;
+        KC::Array<KGPU::PipelineStage> LastStage;
 
+        Resource() {
+            LastAccess.resize(16, KGPU::ResourceAccess::kNone);
+            LastStage.resize(16, KGPU::PipelineStage::kNone);
+        }
         ~Resource();
     };
 
@@ -59,7 +63,7 @@ namespace Gfx
         static void CreateSampler(const KC::String& name, KGPU::SamplerDesc desc);
 
         static Resource& Get(const KC::String& name);
-        static Resource& Import(const KC::String& name, KGPU::ICommandList* list, ImportType type);
+        static Resource& Import(const KC::String& name, KGPU::ICommandList* list, ImportType type, int mip = -1);
     private:
         static struct Data {
             KC::HashMap<KC::String, Resource*> Resources;
