@@ -177,7 +177,13 @@ namespace KGPU
             texBarrier.SyncAfter = ToD3D12BarrierSync(barrier.DestStage);
             texBarrier.AccessBefore = ToD3D12BarrierAccess(barrier.SourceAccess);
             texBarrier.AccessAfter = ToD3D12BarrierAccess(barrier.DestAccess);
-            texBarrier.LayoutBefore = ToD3D12BarrierLayout(barrier.Texture->GetLayout());
+            if (barrier.SourceLayout == (ResourceLayout)123456789) {
+                ResourceLayout layout = barrier.Texture->GetLayout(barrier.BaseMipLevel);
+                texBarrier.LayoutBefore = ToD3D12BarrierLayout(layout);
+            }
+            else {
+                texBarrier.LayoutBefore = ToD3D12BarrierLayout(barrier.SourceLayout);
+            }
             texBarrier.LayoutAfter = ToD3D12BarrierLayout(barrier.NewLayout);
             texBarrier.Subresources.IndexOrFirstMipLevel = barrier.BaseMipLevel;
             texBarrier.Subresources.NumMipLevels = barrier.LevelCount;
