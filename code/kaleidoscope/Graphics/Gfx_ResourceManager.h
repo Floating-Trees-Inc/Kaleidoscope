@@ -35,6 +35,8 @@ namespace Gfx
         KC::Array<KGPU::PipelineStage> LastStage;
 
         Resource() {
+            memset(RingBuffer, 0, sizeof(KGPU::IBuffer*) * KGPU::FRAMES_IN_FLIGHT);
+            memset(RingBufferViews, 0, sizeof(KGPU::IBufferView*) * KGPU::FRAMES_IN_FLIGHT);
             LastAccess.resize(16, KGPU::ResourceAccess::kNone);
             LastStage.resize(16, KGPU::PipelineStage::kNone);
         }
