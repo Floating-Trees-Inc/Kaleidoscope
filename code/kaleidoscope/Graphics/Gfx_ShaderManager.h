@@ -28,7 +28,7 @@ namespace Gfx
         static KGPU::IMeshPipeline* GetMesh(const KC::String& path);
         static KGPU::IRaytracingPipeline* GetRaytracing(const KC::String& path);
 
-        static void ReloadPipelines();
+        static void ReloadPipelines(bool force = false);
     private:
         enum class PipelineType
         {

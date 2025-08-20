@@ -177,7 +177,7 @@ namespace TDC
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoBringToFrontOnFocus;
+            ImGuiWindowFlags_NoNav;
 
         if (ImGui::Begin("##DevConsole", nullptr, flags)) {
             if (t > 0.2f) {
@@ -230,8 +230,9 @@ namespace TDC
                 if (sData.AcIndex >= (int)sData.Candidates.size()) sData.AcIndex = (int)sData.Candidates.size() - 1;
             } else if (ImGui::IsPopupOpen("##ac")) {
                 ImVec2 min = ImGui::GetItemRectMin();
+                ImVec2 max = ImGui::GetItemRectMax();
                 ImVec2 size = ImGui::GetItemRectSize();
-                ImGui::SetNextWindowPos(ImVec2(min.x, min.y + size.y));
+                ImGui::SetNextWindowPos(ImVec2(min.x, max.y + size.y));
             }
 
             if (ImGui::IsPopupOpen("##ac")) {
