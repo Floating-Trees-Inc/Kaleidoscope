@@ -20,6 +20,8 @@ namespace Gfx
 
     void SkyboxCooker::GenerateSkybox(Skybox& sky, const KC::String& path)
     {
+        sky.Path = path;
+
         // Load image
         KDA::Texture texture = KDA::TextureLoader::LoadFromFile(path);
         KGPU::ITexture* inputTex = TempResourceStorage::CreateTexture(texture.ToTextureDesc());
