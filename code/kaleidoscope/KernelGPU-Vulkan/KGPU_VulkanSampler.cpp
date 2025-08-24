@@ -55,7 +55,7 @@ namespace KGPU
             .anisotropyEnable       = VK_FALSE,
             .maxAnisotropy          = 1.0f,
             .compareEnable          = desc.Comparison,
-            .compareOp              = VK_COMPARE_OP_LESS_EQUAL,
+            .compareOp              = VK_COMPARE_OP_LESS_OR_EQUAL,
             .minLod                 = 0.0f,
             .maxLod                 = desc.UseMips ? VK_LOD_CLAMP_NONE : 0.0f,
             .borderColor            = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
