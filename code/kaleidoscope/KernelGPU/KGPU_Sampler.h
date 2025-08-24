@@ -30,10 +30,11 @@ namespace KGPU
         SamplerAddress Address;
         SamplerFilter Filter;
         bool UseMips = false;
+        bool Comparison = false;
     
         SamplerDesc() = default;
-        SamplerDesc(SamplerAddress a, SamplerFilter f, bool m)
-            : Address(a), Filter(f), UseMips(m) {}
+        SamplerDesc(SamplerAddress a, SamplerFilter f, bool m, bool c)
+            : Address(a), Filter(f), UseMips(m), Comparison(c) {}
     };
     
     class ISampler

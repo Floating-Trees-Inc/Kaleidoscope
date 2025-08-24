@@ -263,7 +263,7 @@ namespace KGPU
         samplerDesc.AddressW = samplerDesc.AddressV;
         samplerDesc.Filter = TranslateD3DFilter(desc.Filter);
         samplerDesc.MaxAnisotropy = 16;
-        samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+        samplerDesc.ComparisonFunc = desc.Comparison ? D3D12_COMPARISON_FUNC_LESS : D3D12_COMPARISON_FUNC_NEVER;
         samplerDesc.MinLOD = 0.0f;
         samplerDesc.MaxLOD = desc.UseMips ? D3D12_FLOAT32_MAX : 1.0f;
         samplerDesc.MipLODBias = 0.0f;
