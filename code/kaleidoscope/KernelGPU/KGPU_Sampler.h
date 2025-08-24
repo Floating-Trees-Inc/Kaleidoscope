@@ -33,7 +33,7 @@ namespace KGPU
         bool Comparison = false;
     
         SamplerDesc() = default;
-        SamplerDesc(SamplerAddress a, SamplerFilter f, bool m, bool c)
+        SamplerDesc(SamplerAddress a, SamplerFilter f, bool m = false, bool c = false)
             : Address(a), Filter(f), UseMips(m), Comparison(c) {}
     };
     
