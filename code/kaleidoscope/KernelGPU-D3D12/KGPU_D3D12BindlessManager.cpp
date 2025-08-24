@@ -261,7 +261,7 @@ namespace KGPU
         samplerDesc.AddressU = TranslateD3DAddress(desc.Address);
         samplerDesc.AddressV = samplerDesc.AddressU;
         samplerDesc.AddressW = samplerDesc.AddressV;
-        samplerDesc.Filter = TranslateD3DFilter(desc.Filter);
+        samplerDesc.Filter = TranslateD3DFilter(desc.Filter, desc.Comparison);
         samplerDesc.MaxAnisotropy = 16;
         samplerDesc.ComparisonFunc = desc.Comparison ? D3D12_COMPARISON_FUNC_LESS_EQUAL : D3D12_COMPARISON_FUNC_NEVER;
         samplerDesc.MinLOD = 0.0f;
@@ -360,13 +360,13 @@ namespace KGPU
         }
     }
     
-    D3D12_FILTER D3D12BindlessManager::TranslateD3DFilter(SamplerFilter filter)
+    D3D12_FILTER D3D12BindlessManager::TranslateD3DFilter(SamplerFilter filter, bool comparison)
     {
         switch (filter)
         {
-            case SamplerFilter::kLinear:  return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-            case SamplerFilter::kNearest: return D3D12_FILTER_MIN_MAG_MIP_POINT;
-            default:                         return D3D12_FILTER_MIN_MAG_MIP_LINEAR; // Fallback
+            case SamplerFilter::kLinear:  return !comparison ? D3D12_FILTER_MIN_MAG_MIP_LINEAR : D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+            case SamplerFilter::kNearest: return !comparison ? D3D12_FILTER_MIN_MAG_MIP_POINT : D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+            default:                      return !comparison ? D3D12_FILTER_MIN_MAG_MIP_LINEAR : D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // Fallback
         }
     }
 }

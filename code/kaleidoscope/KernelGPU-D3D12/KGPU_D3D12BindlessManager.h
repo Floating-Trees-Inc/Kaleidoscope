@@ -62,7 +62,7 @@ namespace KGPU
 
     private:
         D3D12_TEXTURE_ADDRESS_MODE TranslateD3DAddress(SamplerAddress address);
-        D3D12_FILTER TranslateD3DFilter(SamplerFilter filter);
+        D3D12_FILTER TranslateD3DFilter(SamplerFilter filter, bool c);
 
     private:
         D3D12Device* mParentDevice;
