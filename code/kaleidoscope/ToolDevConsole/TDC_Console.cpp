@@ -190,7 +190,7 @@ namespace TDC
             clipper.Begin((int)sData.Log.size());
             while (clipper.Step()) {
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
-                    ImGui::TextColored(sData.Log[i].Color, sData.Log[i].Message.c_str());
+                    ImGui::TextColored(sData.Log[i].Color, "%s", sData.Log[i].Message.c_str());
             }
 
             if (justOpened || sData.Activated) {

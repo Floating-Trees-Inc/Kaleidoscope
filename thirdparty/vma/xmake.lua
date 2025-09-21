@@ -4,13 +4,14 @@
 --
 
 target("vma")
-    set_kind("static")
     set_group("Third Party")
-
     add_deps("volk")
 
     if is_plat("windows") or is_plat("linux") then
+        set_kind("static")
         add_files("*.cpp")
         add_headerfiles("*.h")
         add_includedirs(".", { public = true })
+    else
+        set_kind("headeronly")
     end

@@ -11,3 +11,9 @@ target("catch2")
     add_headerfiles("code/**.hpp")
     add_includedirs("code/", { public = true })
 
+    if is_plat("windows") then
+        add_defines("CATCH_PLATFORM_WINDOWS")
+    elseif is_plat("mac") then
+        add_defines("CATCH_PLATFORM_MAC")
+    end
+

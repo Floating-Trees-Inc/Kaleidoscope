@@ -156,6 +156,8 @@ namespace Phys
                             case JPH::EPhysicsUpdateError::ContactConstraintsFull:
                                 errorMsg = "contact constraints full";
                                 break;
+                            case JPH::EPhysicsUpdateError::None:
+                                break;
                         }
                         KD_ERROR("Physics error: %s", errorMsg);
                     }

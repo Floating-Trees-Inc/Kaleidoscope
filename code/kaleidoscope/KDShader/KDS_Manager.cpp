@@ -13,12 +13,14 @@ namespace KDS
 
     void Manager::Initialize()
     {
+#ifdef KD_WINDOWS
         sDynLib = KC_NEW(KOS::DynLib, DXC_DLL);
+#endif
     }
 
     void Manager::Shutdown()
     {
-        KC_DELETE(sDynLib);
+        if (sDynLib) KC_DELETE(sDynLib);
     }
 
     KOS::DynLib* Manager::GetDynLib()

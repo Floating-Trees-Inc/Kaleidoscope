@@ -17,7 +17,11 @@
 #ifndef CATCH_USER_CONFIG_HPP_INCLUDED
 #define CATCH_USER_CONFIG_HPP_INCLUDED
 
-#define CATCH_CONFIG_COLOUR_WIN32
+#ifdef KD_WINDOWS
+    #define CATCH_CONFIG_COLOUR_WIN32
+#elif defined(KD_MAC)
+    #define CATCH_CONFIG_COLOUR_ANSI
+#endif
 
 // ------
 // Overridable compilation flags,

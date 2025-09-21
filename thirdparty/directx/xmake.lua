@@ -4,7 +4,7 @@
 --
 
 target("directx")
-    set_kind("static")
+    set_kind("headeronly")
     set_group("Third Party")
 
     add_headerfiles("Include/Agility/**.h")

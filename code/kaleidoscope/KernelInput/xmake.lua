@@ -10,3 +10,4 @@ target("KernelInput")
     add_files("*.cpp")
     add_headerfiles("*.h")
     add_deps("glm")
+    add_includedirs("../KernelOS/") -- trust me bro it's for MacOS bullshit

@@ -12,7 +12,7 @@ target("imgui")
     add_includedirs("include", { public = true })
     add_deps("font-awesome", { public = true })
 
-    if is_plat("windows") then
+    if is_plat("windows") or is_plat("mac") then
         add_files("include/sdl3/*.cpp")
         add_headerfiles("include/sdl3/*.h")
         add_deps("sdl3")

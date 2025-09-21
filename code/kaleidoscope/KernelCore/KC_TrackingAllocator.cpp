@@ -52,7 +52,7 @@ namespace KC
         }
 
         for (auto& [ptr, data] : mTrackedAllocations) {
-            printf("Leak of %zu bytes at %s:%d\n", data.Size, data.File.c_str(), data.Line);
+            printf("Leak of %llu bytes at %s:%d\n", data.Size, data.File.c_str(), data.Line);
         }
     }
 }

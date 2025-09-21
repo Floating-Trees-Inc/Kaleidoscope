@@ -3,8 +3,6 @@
 // > Create Time: 2025-08-11 21:40:08
 //
 
-#pragma once
-
 #include <KernelCore/KC_Context.h>
 #include <KernelOS/KOS_Window.h>
 #include <KernelSound/KS_Device.h>

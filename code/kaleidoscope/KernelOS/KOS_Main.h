@@ -7,6 +7,6 @@
 
 #if defined(KD_WINDOWS)
     #include "Windows/KOS_Main.Windows.h"
-#else
-    #define KD_MAIN int main()
+#elif defined(KD_MAC)
+    #include "Mac/KOS_Main.Mac.h"
 #endif

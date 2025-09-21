@@ -35,17 +35,25 @@ namespace KC
     template<>
     inline uint64 StringConvert(const wchar_t* source, char* destination, int size)
     {
+#ifdef KD_MAC
+        return wcstombs(destination, source, size);
+#elif defined(KD_MAC)
         uint64 converted = 0;
         wcstombs_s(&converted, destination, size, source, size);
         return converted;
+#endif
     }
     
     template<>
     inline uint64 StringConvert(const char* source, wchar_t* destination, int size)
     {
+#ifdef KD_MAC
+        return mbstowcs(destination, source, size);
+#elif defined(KD_MAC)
         uint64 converted = 0;
-    	mbstowcs_s(&converted, destination, size, source, size);
-    	return converted;
+        mbstowcs_s(&converted, destination, size, source, size);
+        return converted;
+#endif
     }
     
     template<typename CharSource, typename CharDest>

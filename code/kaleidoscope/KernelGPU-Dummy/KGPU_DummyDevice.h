@@ -45,7 +45,7 @@ namespace KGPU
         IMeshPipeline* CreateMeshPipeline(MeshPipelineDesc desc) override;
         IRaytracingPipeline* CreateRaytracingPipeline(RaytracingPipelineDesc desc) override;
 
-        Backend GetBackend() { return Backend::kDummy; }
+        Backend GetBackend() override { return Backend::kDummy; }
 
         TextureFormat GetSurfaceFormat() override { return TextureFormat::kR8G8B8A8_UNORM; }
         uint64 GetOptimalRowPitchAlignment() override { return 256; }

@@ -20,9 +20,10 @@ const char* testReflect = R"(
 )";
 
 TEST_CASE("include", "[KDS::ReflectionEngine]") {
-    KGPU::ShaderBytecodeType type;
 #if KD_WINDOWS
-    type = KGPU::ShaderBytecodeType::kDXIL;
+    KGPU::ShaderBytecodeType type = KGPU::ShaderBytecodeType::kDXIL;
+#elif KD_MAC
+    KGPU::ShaderBytecodeType type = KGPU::ShaderBytecodeType::kMetalLib;
 #endif
     KDS::ICompiler* compiler = KDS::ICompiler::Create(type);
     KGPU::ShaderModule module = compiler->Compile(testReflect, "CSMain", KGPU::ShaderStage::kCompute);

@@ -8,7 +8,7 @@ target("KernelOS")
     set_group("Kaleidoscope")
 
     add_headerfiles("*.h")
-    add_includedirs(".")
+    add_includedirs(".", { public = true })
 
     add_deps("sdl3")
 
@@ -20,5 +20,12 @@ target("KernelOS")
         add_headerfiles("PC/*.h")
 
         add_syslinks("kernel32", "user32")
+        add_deps("KernelInput")
+    elseif is_plat("macosx") then
+        add_files("PC/*.cpp")
+
+        add_headerfiles("PC/*.h")
+        add_headerfiles("Mac/*.h")
+        
         add_deps("KernelInput")
     end

@@ -9,3 +9,4 @@ target("KernelSound-Dummy")
 
     add_files("*.cpp")
     add_headerfiles("*.h")
+    add_deps("KernelCore")

@@ -9,9 +9,10 @@
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("include", "[KDS::ShaderFile]") {
-    KGPU::ShaderBytecodeType type;
-#ifdef KD_WINDOWS
-    type = KGPU::ShaderBytecodeType::kDXIL;
+#if KD_WINDOWS
+    KGPU::ShaderBytecodeType type = KGPU::ShaderBytecodeType::kDXIL;
+#elif KD_MAC
+    KGPU::ShaderBytecodeType type = KGPU::ShaderBytecodeType::kMetalLib;
 #endif
     KDS::ICompiler* compiler = KDS::ICompiler::Create(type);
     KDS::IReflectionEngine* engine = KDS::IReflectionEngine::Create(type);

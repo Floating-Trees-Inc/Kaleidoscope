@@ -18,6 +18,8 @@ const char* testCompute = R"(
 TEST_CASE("include", "[KDS::Compiler]") {
 #if KD_WINDOWS
     KGPU::ShaderBytecodeType type = KGPU::ShaderBytecodeType::kDXIL;
+#elif KD_MAC
+    KGPU::ShaderBytecodeType type = KGPU::ShaderBytecodeType::kMetalLib;
 #endif
 
     KDS::ICompiler* compiler = KDS::ICompiler::Create(type);

@@ -9,4 +9,4 @@ target("Physics")
 
     add_files("*.cpp")
     add_headerfiles("*.h")
-    add_deps("jolt")
+    add_deps("jolt", "KernelCore")

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#ifdef KD_WINDOWS
-    #include "Windows/KOS_DirectionAllocation.Windows.h"
+#ifndef KD_PS5
+    #include "PC/KOS_DirectionAllocation.PC.h"
 #endif
 
 #include <memory>

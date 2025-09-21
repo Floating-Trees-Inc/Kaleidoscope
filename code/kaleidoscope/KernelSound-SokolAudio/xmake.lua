@@ -9,4 +9,4 @@ target("KernelSound-SokolAudio")
 
     add_files("*.cpp")
     add_headerfiles("*.h")
-    add_deps("sokol")
+    add_deps("sokol", "KernelCore")
