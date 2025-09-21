@@ -1,6 +1,6 @@
 # Kaleidoscope
 
-Kaleidoscope is the internal game engine used to make games at Floating Trees. Built from the ground up by @AmelieHeinrich.
+Kaleidoscope is the internal game engine used to make my own games. Built from the ground up by @AmelieHeinrich.
 
 ## Building and running
 
@@ -10,8 +10,7 @@ To run: `xmake run {target}`, target can be your app (for instance, demo_app)
 
 ## Notes
 
-This engine is **Windows only** for now. More platforms may be added in the future however, MacOS being one of my priorities.
-The mindset I have for this engine is to leave rendering and world management up to the game. Kaleidoscope is just here to provide the tools to help -- but the way you make and render your game or program is up to you.
+This engine is **Windows/MacOS only** for now. More platforms may be added in the future however, consoles in priority.
 
 ## Projects using Kaleidoscope
 
@@ -20,7 +19,7 @@ The mindset I have for this engine is to leave rendering and world management up
 
 ## Features
 
-- RHI with D3D12/Vulkan support. Has bindless, raytracing, mesh shaders, indirect commands
+- RHI with D3D12/Vulkan support (Metal WIP). Has bindless, raytracing, mesh shaders, indirect commands
 - Input system
 - Asset management
 - Graphics utilities (resource recycling)
