@@ -23,6 +23,7 @@ target("KernelOS")
         add_deps("KernelInput")
     elseif is_plat("macosx") then
         add_files("PC/*.cpp")
+        add_files("Mac/*.cpp")
 
         add_headerfiles("PC/*.h")
         add_headerfiles("Mac/*.h")

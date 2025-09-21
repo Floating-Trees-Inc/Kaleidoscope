@@ -84,6 +84,8 @@ namespace KOS
     {
 #if defined(KD_WINDOWS)
         return SDL_GetPointerProperty(SDL_GetWindowProperties(mWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+#else
+        return nullptr;
 #endif
     }
 

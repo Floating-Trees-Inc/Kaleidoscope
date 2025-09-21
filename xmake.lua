@@ -15,6 +15,7 @@ elseif is_plat("linux") then
     add_defines("KD_LINUX", { public = true })
 else
     add_defines("KD_MAC", { public = true })
+    add_rpathdirs("dlls/mac")
 end
 
 -- Config
@@ -42,5 +43,7 @@ includes("code/samples")
 
 -- Post build step
 before_run(function (target)
-    os.cp("dlls/*", "$(builddir)/$(plat)/$(arch)/$(mode)/")
+    if is_plat("windows") then
+        os.cp("dlls/windows/*", "$(builddir)/$(plat)/$(arch)/$(mode)/")
+    end
 end)

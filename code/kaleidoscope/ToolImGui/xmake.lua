@@ -14,6 +14,6 @@ target("ToolImGui")
     add_deps("imgui", { public = true })
     add_deps("KernelOS", "KernelCore", "KernelGPU", "KDShader", "Graphics", "KernelInput")
 
-    if is_plat("windows") then
+    if is_plat("windows") or is_plat("macosx") then
         add_files("PC/*.cpp")
     end

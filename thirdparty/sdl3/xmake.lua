@@ -13,4 +13,7 @@ target("sdl3")
     
     if is_plat("windows") then
         add_syslinks("SDL3.lib", { public = true })
+    elseif is_plat("macosx") then
+        add_frameworkdirs("framework", { public = true })
+        add_frameworks("SDL3", { public = true })
     end

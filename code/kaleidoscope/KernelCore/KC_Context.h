@@ -73,12 +73,12 @@ namespace KC
 }
 
 #ifndef KD_RETAIL
-    #define KD_INFO(fmt, ...)         KC::Context::sContext.logger->Info(__FILE__, __LINE__, fmt, __VA_ARGS__)
-    #define KD_WARN(fmt, ...)         KC::Context::sContext.logger->Warn(__FILE__, __LINE__, fmt, __VA_ARGS__)
-    #define KD_ERROR(fmt, ...)        KC::Context::sContext.logger->Error(__FILE__, __LINE__, fmt, __VA_ARGS__)
-    #define KD_FATAL(fmt, ...)        KC::Context::sContext.logger->Fatal(__FILE__, __LINE__, fmt, __VA_ARGS__)
+    #define KD_INFO(fmt, ...)         KC::Context::sContext.logger->Info(__FILE__, __LINE__, fmt, ##__VA_ARGS__)
+    #define KD_WARN(fmt, ...)         KC::Context::sContext.logger->Warn(__FILE__, __LINE__, fmt, ##__VA_ARGS__)
+    #define KD_ERROR(fmt, ...)        KC::Context::sContext.logger->Error(__FILE__, __LINE__, fmt, ##__VA_ARGS__)
+    #define KD_FATAL(fmt, ...)        KC::Context::sContext.logger->Fatal(__FILE__, __LINE__, fmt, ##__VA_ARGS__)
     #if defined(KD_DEBUG)
-        #define KD_WHATEVER(fmt, ...) KC::Context::sContext.logger->Whatever(__FILE__, __LINE__, fmt, __VA_ARGS__)
+        #define KD_WHATEVER(fmt, ...) KC::Context::sContext.logger->Whatever(__FILE__, __LINE__, fmt, ##__VA_ARGS__)
     #else
         #define KD_WHATEVER(fmt, ...)
     #endif

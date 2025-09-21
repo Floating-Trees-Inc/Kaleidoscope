@@ -35,7 +35,7 @@ namespace KOS
 
         bool IsOpen() const;
     private:
-#if KD_WINDOWS
+#if (KD_WINDOWS || KD_MAC)
         void* mHandle;
 #endif
     };
