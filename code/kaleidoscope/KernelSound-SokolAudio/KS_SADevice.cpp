@@ -34,6 +34,8 @@ namespace KS
 
        saudio_setup(&desc);
        if (!saudio_isvalid()) return Result::kError;
+       
+       KD_INFO("Initialized SokolAudio driver");
        return Result::kOk;
     }
 

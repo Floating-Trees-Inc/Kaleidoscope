@@ -11,6 +11,6 @@ target("KernelSound")
     add_headerfiles("*.h")
 
     add_deps("KernelSound-Dummy", "KernelCore")
-    if is_plat("windows") or is_plat("macos") or is_plat("linux") then
+    if is_plat("windows") or is_plat("macosx") or is_plat("linux") then
         add_deps("KernelSound-SokolAudio")
     end

@@ -33,7 +33,7 @@ end
 
 -- Audio backends
 includes("KernelSound-Dummy")
-if is_plat("windows") or is_plat("macos") or is_plat("linux") then
+if is_plat("windows") or is_plat("macosx") or is_plat("linux") then
     includes("KernelSound-SokolAudio")
 end
 

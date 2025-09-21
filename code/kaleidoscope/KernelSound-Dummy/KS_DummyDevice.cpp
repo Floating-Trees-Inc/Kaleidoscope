@@ -9,7 +9,8 @@ namespace KS
 {
     Result DummyDevice::Open(RenderFn fn, void* u)
     {
-       return Result::kOk;
+        KD_INFO("Initialized dummy sound driver");
+        return Result::kOk;
     }
 
     Result DummyDevice::Start()

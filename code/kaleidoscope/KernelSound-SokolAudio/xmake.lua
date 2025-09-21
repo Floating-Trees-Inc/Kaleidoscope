@@ -10,3 +10,7 @@ target("KernelSound-SokolAudio")
     add_files("*.cpp")
     add_headerfiles("*.h")
     add_deps("sokol", "KernelCore")
+
+    if is_plat("macosx") then
+        add_frameworks("AudioToolbox")
+    end

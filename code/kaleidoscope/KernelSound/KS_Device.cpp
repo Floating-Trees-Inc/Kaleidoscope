@@ -5,7 +5,7 @@
 
 #include "KS_Device.h"
 
-#if (KD_WINDOWS || KD_LINUX || KD_MACOS || KD_IOS || KD_ANDROID)
+#if (KD_WINDOWS || KD_LINUX || KD_MAC || KD_IOS || KD_ANDROID)
     #include <KernelSound-SokolAudio/KS_SADevice.h>
 #else
     #include <KernelSound-Dummy/KS_DummyDevice.h>
@@ -15,7 +15,7 @@ namespace KS
 {
     IDevice* IDevice::Create()
     {
-#if (KD_WINDOWS || KD_LINUX || KD_MACOS || KD_IOS || KD_ANDROID)
+#if (KD_WINDOWS || KD_LINUX || KD_MAC || KD_IOS || KD_ANDROID)
         return KC_NEW(SokolAudioDevice);
 #else
         return KC_NEW(DummyDevice);
