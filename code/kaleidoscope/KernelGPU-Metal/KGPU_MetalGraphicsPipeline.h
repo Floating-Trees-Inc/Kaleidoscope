@@ -1,0 +1,20 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-15 22:11:40
+//
+
+#pragma once
+
+#include <KernelGPU/KGPU_GraphicsPipeline.h>
+
+namespace KGPU
+{
+    class MetalDevice;
+
+    class MetalGraphicsPipeline : public IGraphicsPipeline
+    {
+    public:
+        MetalGraphicsPipeline(MetalDevice* device, GraphicsPipelineDesc desc);
+        ~MetalGraphicsPipeline();
+    };
+}

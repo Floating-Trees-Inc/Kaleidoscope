@@ -29,6 +29,8 @@ if is_plat("windows") then
     includes("KernelGPU-Vulkan")
 elseif is_plat("linux") then
     includes("KernelGPU-Vulkan")
+elseif is_plat("macosx") then
+    includes("KernelGPU-Metal")
 end
 
 -- Audio backends
