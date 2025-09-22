@@ -37,7 +37,7 @@ namespace KC
     {
 #ifdef KD_MAC
         return wcstombs(destination, source, size);
-#elif defined(KD_MAC)
+#elif defined(KD_WINDOWS)
         uint64 converted = 0;
         wcstombs_s(&converted, destination, size, source, size);
         return converted;
@@ -49,7 +49,7 @@ namespace KC
     {
 #ifdef KD_MAC
         return mbstowcs(destination, source, size);
-#elif defined(KD_MAC)
+#elif defined(KD_WINDOWS)
         uint64 converted = 0;
         mbstowcs_s(&converted, destination, size, source, size);
         return converted;

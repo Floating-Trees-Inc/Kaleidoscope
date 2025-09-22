@@ -20,7 +20,7 @@ namespace KGPUT
     {
         TestData data;
 
-        data.Device = KGPU::IDevice::Create(true);
+        data.Device = KGPU::IDevice::Create(false);
         data.CommandQueue = data.Device->CreateCommandQueue(KGPU::CommandQueueType::kGraphics);
 
         KGPU::TextureDesc renderDesc = {};

@@ -12,8 +12,7 @@ target("volk")
         add_headerfiles("*.h")
         add_files("*.cpp")
         
-        add_includedirs(os.getenv("VULKAN_SDK") .. "/Include", ".", { public = true })
-        add_linkdirs(os.getenv("VULKAN_SDK") .. "/Lib", { public = true })
+        add_includedirs("include", ".", { public = true })
         add_defines("VK_NO_PROTOTYPES", { public = true })
     else
         set_kind("headeronly")

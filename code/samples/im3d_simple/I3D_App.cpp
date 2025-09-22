@@ -31,7 +31,7 @@ namespace I3D
         mWindow = KOS::IWindow::Create(mWidth, mHeight, "Im3D | Kaleidoscope 0.0.1");
     
         CODE_BLOCK("Create RHI objects") {
-            mDevice = KGPU::IDevice::Create(true);
+            mDevice = KGPU::IDevice::Create(false);
             mCommandQueue = mDevice->CreateCommandQueue(KGPU::CommandQueueType::kGraphics);
             mSurface = mDevice->CreateSurface(mWindow, mCommandQueue);
             for (int i = 0; i < KGPU::FRAMES_IN_FLIGHT; i++) {
