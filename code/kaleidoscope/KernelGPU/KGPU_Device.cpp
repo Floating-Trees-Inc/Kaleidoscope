@@ -32,6 +32,7 @@ namespace KGPU
         switch (backend)
         {
             case Backend::kAuto: return KC_NEW(MetalDevice, debug);
+            case Backend::kMetal: return KC_NEW(MetalDevice, debug);
             case Backend::kDummy: return KC_NEW(DummyDevice, debug);
             default: return nullptr;
         }

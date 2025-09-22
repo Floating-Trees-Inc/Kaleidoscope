@@ -10,7 +10,7 @@
     #include "DXIL/KDS_DXILCompiler.h"
     #include "SPIRV/KDS_SPIRVCompiler.h"
 #elif defined(KD_MAC)
-    #include "MetalLib/KDS_MetalLibReflectionEngine.h"
+    #include "MetalLib/KDS_MetalLibCompiler.h"
 #endif
 
 namespace KDS

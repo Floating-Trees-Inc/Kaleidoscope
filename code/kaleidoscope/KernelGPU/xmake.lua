@@ -16,4 +16,6 @@ target("KernelGPU")
     add_deps("KernelGPU-Dummy")
     if is_plat("windows") then
         add_deps("KernelGPU-D3D12", "KernelGPU-Vulkan")
+    elseif is_plat("macosx") then
+        add_deps("KernelGPU-Metal")
     end

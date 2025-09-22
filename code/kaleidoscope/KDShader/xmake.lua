@@ -7,8 +7,8 @@ target("KDShader")
     set_kind("static")
     set_group("Kaleidoscope")
 
-    add_headerfiles("*.h")
-    add_files("*.cpp")
+    add_headerfiles("*.h", "Dummy/*.h")
+    add_files("*.cpp", "Dummy/*.cpp")
     add_includedirs(".")
 
     add_deps("KernelOS", "KernelCore", "glm")
@@ -19,4 +19,7 @@ target("KDShader")
         add_deps("dxc", "spirv-reflect")
 
         add_syslinks("kernel32", "user32")
+    elseif is_plat("macosx") then
+        add_headerfiles("MetalLib/*.h")
+        add_files("MetalLib/*.cpp")
     end
