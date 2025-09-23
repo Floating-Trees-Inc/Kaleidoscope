@@ -25,13 +25,13 @@ namespace KOS {
     void Console::SetColor(ConsoleColor color)
     {
         const char* seq = AnsiCodeForColor(color);
-        printf(seq);
+        printf("%s", seq);
     }
 
     void Console::Write(const char* data, uint64 size)
     {
         if (!data || size == 0) return;
 
-        printf(data);
+        printf("%s", data);
     }
 }

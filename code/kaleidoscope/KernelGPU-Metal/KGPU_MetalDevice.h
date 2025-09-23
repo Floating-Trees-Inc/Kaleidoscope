@@ -22,6 +22,8 @@
 #include "KGPU_MetalMeshPipeline.h"
 #include "KGPU_MetalRaytracingPipeline.h"
 
+#include <metalpp/Metal.hpp>
+
 namespace KGPU
 {
     class MetalDevice : public IDevice
@@ -51,5 +53,9 @@ namespace KGPU
         uint64 GetOptimalRowPitchAlignment() override { return 4; }
         uint64 GetBufferImageGranularity() override { return 1; }
         KGPU::ShaderBytecodeType GetTargetBytecode() override { return KGPU::ShaderBytecodeType::kMetalLib; }
+    
+        MTL::Device* GetMTLDevice() { return mDevice; }
+    private:
+        MTL::Device* mDevice = nullptr;
     };
 }

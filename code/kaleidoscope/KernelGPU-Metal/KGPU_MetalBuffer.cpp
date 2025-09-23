@@ -13,23 +13,24 @@ namespace KGPU
     {
         mDesc = desc;
 
-        mMemory = KD_MEMORY_ALLOC(desc.Size);
+        mBuffer = device->GetMTLDevice()->newBuffer(desc.Size, MTL::ResourceStorageModeShared);
 
         KD_WHATEVER("Created Metal buffer");
     }
 
     MetalBuffer::~MetalBuffer()
     {
-        KD_MEMORY_FREE(mMemory);   
+        mBuffer->release();
     }
 
     void MetalBuffer::SetName(const KC::String& name)
     {
+        // TODO
     }
 
     void* MetalBuffer::Map()
     {
-        return mMemory;
+        return mBuffer->contents();
     }
 
     void MetalBuffer::Unmap(uint start, uint end)
@@ -38,6 +39,6 @@ namespace KGPU
 
     uint64 MetalBuffer::GetAddress()
     {
-        return 0;
+        return mBuffer->gpuAddress();
     }
 }

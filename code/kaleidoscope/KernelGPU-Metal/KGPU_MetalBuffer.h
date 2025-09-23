@@ -7,6 +7,8 @@
 
 #include <KernelGPU/KGPU_Buffer.h>
 
+#include <metalpp/Metal.hpp>
+
 namespace KGPU
 {
     class MetalDevice;
@@ -26,6 +28,7 @@ namespace KGPU
 
     private:
         MetalDevice* mParentDevice;
-        void* mMemory;
+        
+        MTL::Buffer* mBuffer = nullptr;
     };
 }

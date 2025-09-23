@@ -12,11 +12,16 @@ namespace KGPU
 {
     MetalDevice::MetalDevice(bool validationLayers)
     {
-        KD_INFO("Created Metal device!");
+        mDevice = MTL::CreateSystemDefaultDevice();
+        KD_ASSERT_EQ(mDevice, "Failed to create Metal device!");
+
+        KC::String deviceName = mDevice->name()->cString(NS::StringEncoding::UTF8StringEncoding);
+        KD_INFO("Created Metal device: %s", deviceName.c_str());
     }
 
     MetalDevice::~MetalDevice()
     {
+        mDevice->release();
     }
 
     ISurface* MetalDevice::CreateSurface(KOS::IWindow* window, ICommandQueue* graphicsQueue)
