@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_Texture.h>
+#include <MetalCPP/Metal/Metal.hpp>
 
 namespace KGPU
 {
@@ -22,5 +23,10 @@ namespace KGPU
 
     private:
         friend class MetalSurface;
+
+        MTL::Texture* mTexture = nullptr;
+
+        static MTL::PixelFormat TranslateToMTLPixelFormat(TextureFormat format);
+        static MTL::TextureUsage TranslateToMTLTextureUsage(TextureUsage usage);
     };
 }

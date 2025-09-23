@@ -7,6 +7,8 @@
 
 #include <KernelGPU/KGPU_Sampler.h>
 
+#include <MetalCPP/Metal/Metal.hpp>
+
 namespace KGPU
 {
     class MetalDevice;
@@ -16,5 +18,8 @@ namespace KGPU
     public:
         MetalSampler(MetalDevice* device, SamplerDesc desc);
         ~MetalSampler();
+
+    private:
+        MTL::SamplerState* mSamplerState = nullptr;
     };
 }

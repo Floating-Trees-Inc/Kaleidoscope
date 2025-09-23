@@ -7,7 +7,7 @@
 
 #include <KernelGPU/KGPU_Buffer.h>
 
-#include <metalpp/Metal.hpp>
+#include <MetalCPP/Metal/Metal.hpp>
 
 namespace KGPU
 {
@@ -26,6 +26,7 @@ namespace KGPU
 
         uint64 GetAddress() override;
 
+        MTL::Buffer* GetMTLBuffer() { return mBuffer; }
     private:
         MetalDevice* mParentDevice;
         

@@ -22,7 +22,7 @@
 #include "KGPU_MetalMeshPipeline.h"
 #include "KGPU_MetalRaytracingPipeline.h"
 
-#include <metalpp/Metal.hpp>
+#include <MetalCPP/Metal/Metal.hpp>
 
 namespace KGPU
 {

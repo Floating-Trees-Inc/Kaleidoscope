@@ -7,9 +7,13 @@ target("metalpp")
     set_kind("static")
     set_group("Third Party")
 
-    add_includedirs("../", {public = true})
-    add_headerfiles("Metal.hpp")
+    add_includedirs("Include", {public = true})
     if is_plat("macosx") then
-        add_files("Metal.cpp")
-        add_frameworks("QuartzCore", "Metal", "Foundation")
+        set_kind("static")
+        add_files("Source/Metal.mm")
+        add_includedirs("Include/", { public = true })
+        add_frameworks("Foundation", "QuartzCore", "Metal", { public = true })
+        add_syslinks("metalirconverter")
+    else
+        set_kind("headeronly")
     end
