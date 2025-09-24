@@ -79,6 +79,7 @@ namespace KGPU
     {
         switch (format)
         {
+            case TextureFormat::kUndefined: return VK_FORMAT_UNDEFINED;
             case TextureFormat::kR8G8B8A8_sRGB: return VK_FORMAT_R8G8B8A8_SRGB;
             case TextureFormat::kR8G8B8A8_UNORM: return VK_FORMAT_R8G8B8A8_UNORM;
             case TextureFormat::kB8G8R8A8_UNORM: return VK_FORMAT_B8G8R8A8_UNORM;

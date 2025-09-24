@@ -18,6 +18,8 @@ namespace KGPU
             case CommandQueueType::kGraphics: queueFamilyIndex = mParentDevice->GraphicsQueueFamilyIndex(); break;
             case CommandQueueType::kCompute: queueFamilyIndex = mParentDevice->ComputeQueueFamilyIndex(); break;
             case CommandQueueType::kCopy: queueFamilyIndex = mParentDevice->TransferQueueFamilyIndex(); break;
+            case CommandQueueType::kVideoDecode: break;
+            case CommandQueueType::kVideoEncode: break;
         }
 
         vkGetDeviceQueue(mParentDevice->Device(), queueFamilyIndex, 0, &mQueue);

@@ -5,7 +5,6 @@
 
 #include "KGPU_MetalTexture.h"
 #include "KGPU_MetalDevice.h"
-#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -56,6 +55,7 @@ namespace KGPU
     {
         switch (format)
         {
+            case TextureFormat::kUndefined: return MTL::PixelFormatInvalid;
             case TextureFormat::kB8G8R8A8_UNORM: return MTL::PixelFormatBGRA8Unorm;
             case TextureFormat::kD32_FLOAT: return MTL::PixelFormatDepth32Float;
             case TextureFormat::kR8G8B8A8_sRGB: return MTL::PixelFormatRGBA8Unorm_sRGB;

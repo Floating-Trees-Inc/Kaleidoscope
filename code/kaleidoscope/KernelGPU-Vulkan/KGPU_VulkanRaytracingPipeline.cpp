@@ -44,6 +44,7 @@ namespace KGPU
                 case ShaderStage::kClosestHit: closestHit = shaderModule; break;
                 case ShaderStage::kAnyHit: anyHit = shaderModule; break;
                 case ShaderStage::kIntersection: intersection = shaderModule; break;
+                default: break;
             }
 
             VkPipelineShaderStageCreateInfo stageInfo = {};

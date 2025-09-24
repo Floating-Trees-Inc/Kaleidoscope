@@ -7,7 +7,7 @@ target("vma")
     set_group("Third Party")
     add_deps("volk")
 
-    if is_plat("windows") or is_plat("linux") then
+    if is_plat("windows") or is_plat("linux") or is_plat("macosx") then
         set_kind("static")
         add_files("*.cpp")
         add_headerfiles("*.h")

@@ -26,6 +26,8 @@ namespace KGPU
                 KD_ERROR("Vulkan Error: %s", pCallbackData->pMessage);
                 break;
             }
+            default:
+                break;
         }
 
         return VK_FALSE;

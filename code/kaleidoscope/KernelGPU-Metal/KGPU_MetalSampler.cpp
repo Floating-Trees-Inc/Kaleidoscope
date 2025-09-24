@@ -5,7 +5,6 @@
 
 #include "KGPU_MetalSampler.h"
 #include "KGPU_MetalDevice.h"
-#include <Metal/Metal.h>
 
 namespace KGPU
 {

@@ -53,6 +53,7 @@ namespace KGPU
                 mBindless.Index = mParentDevice->GetBindlessManager()->WriteTextureUAV(this);
                 break;
             }
+            default: break;
         }
 
         KD_WHATEVER("Created Vulkan texture view");

@@ -13,7 +13,6 @@ target("metalpp")
         add_files("Source/Metal.mm")
         add_includedirs("Include/", { public = true })
         add_frameworks("Foundation", "QuartzCore", "Metal", { public = true })
-        add_syslinks("metalirconverter")
     else
         set_kind("headeronly")
     end

@@ -6,7 +6,7 @@
 target("volk")
     set_group("Third Party")
 
-    if is_plat("windows") or is_plat("linux") then
+    if is_plat("windows") or is_plat("linux") or is_plat("macosx") then
         set_kind("static")
 
         add_headerfiles("*.h")

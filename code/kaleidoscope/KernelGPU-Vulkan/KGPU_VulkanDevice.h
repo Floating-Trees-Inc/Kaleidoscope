@@ -49,9 +49,9 @@ namespace KGPU
         IMeshPipeline* CreateMeshPipeline(MeshPipelineDesc desc) override;
         IRaytracingPipeline* CreateRaytracingPipeline(RaytracingPipelineDesc desc) override;
 
-        Backend GetBackend() { return Backend::kVulkan; }
-        bool SupportsRaytracing() { return mSupportsRT; }
-        bool SupportsMeshShaders() { return mSupportsMS; }
+        Backend GetBackend() override { return Backend::kVulkan; }
+        bool SupportsRaytracing() override { return mSupportsRT; }
+        bool SupportsMeshShaders() override { return mSupportsMS; }
 
         TextureFormat GetSurfaceFormat() override { return TextureFormat::kB8G8R8A8_UNORM; }
         uint64 GetOptimalRowPitchAlignment() override { return mOptimalRowPitchAlignment; }

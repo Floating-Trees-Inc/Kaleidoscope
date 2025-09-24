@@ -24,11 +24,9 @@ includes("ToolImGui")
 
 -- GPU backends
 includes("KernelGPU-Dummy")
+includes("KernelGPU-Vulkan")
 if is_plat("windows") then
     includes("KernelGPU-D3D12")
-    includes("KernelGPU-Vulkan")
-elseif is_plat("linux") then
-    includes("KernelGPU-Vulkan")
 elseif is_plat("macosx") then
     includes("KernelGPU-Metal")
 end

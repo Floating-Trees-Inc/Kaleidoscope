@@ -24,8 +24,8 @@ namespace KGPU
         void Begin() override;
         void End() override;
 
-        void BeginRendering(const RenderBegin& begin);
-        void EndRendering();
+        void BeginRendering(const RenderBegin& begin) override;
+        void EndRendering() override;
 
         void Barrier(const TextureBarrier& barrier) override;
         void Barrier(const BufferBarrier& barrier) override;
