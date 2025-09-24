@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_CommandList.h>
+#include <MetalCPP/Metal/Metal.hpp>
 
 namespace KGPU
 {
@@ -72,6 +73,14 @@ namespace KGPU
         void PopMarker() override;
 
     private:
+        friend class MetalCommandQueue;
+
         MetalDevice* mParentDevice;
+
+        MTL::CommandBuffer* mBuffer;
+        MTL::RenderCommandEncoder* mRenderEncoder;
+        MTL::ComputeCommandEncoder* mComputeEncoder;
+        MTL::BlitCommandEncoder* mBlitEncoder;
+        MTL::AccelerationStructureCommandEncoder* mASEncoder;
     };
 }

@@ -53,6 +53,9 @@ namespace KGPU
         uint64 GetOptimalRowPitchAlignment() override { return 4; }
         uint64 GetBufferImageGranularity() override { return 1; }
         KGPU::ShaderBytecodeType GetTargetBytecode() override { return KGPU::ShaderBytecodeType::kMetalLib; }
+
+        bool SupportsRaytracing() override { return mDevice->supportsRaytracing(); }
+        bool SupportsMeshShaders() override { return true; }
     
         MTL::Device* GetMTLDevice() { return mDevice; }
     private:

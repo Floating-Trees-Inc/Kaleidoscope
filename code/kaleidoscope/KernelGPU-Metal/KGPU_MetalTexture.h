@@ -21,11 +21,13 @@ namespace KGPU
 
         void SetName(const KC::String& name) override;
 
+        MTL::Texture* GetMTLTexture() const { return mTexture; }
     private:
         friend class MetalSurface;
 
         MTL::Texture* mTexture = nullptr;
 
+    public:
         static MTL::PixelFormat TranslateToMTLPixelFormat(TextureFormat format);
         static MTL::TextureUsage TranslateToMTLTextureUsage(TextureUsage usage);
     };

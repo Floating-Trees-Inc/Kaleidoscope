@@ -1,4 +1,10 @@
 {
+    "ClearColor": {
+        "goldenPath": "tests/golden/ClearColorGolden.png",
+        "magmaPath": "tests/ClearColorMagma.png",
+        "outputPath": "tests/ClearColor.png",
+        "result": true
+    },
     "MeshTriangle": {
         "goldenPath": "tests/golden/MeshTriangleGolden.png",
         "magmaPath": "tests/MeshTriangleMagma.png",
