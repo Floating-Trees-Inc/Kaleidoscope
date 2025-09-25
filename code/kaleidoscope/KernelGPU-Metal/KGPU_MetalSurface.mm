@@ -16,25 +16,29 @@ namespace KGPU
     {
         int width, height;
         window->GetSize(width, height);
-        
+
+        SDL_Window* sdlWindow = static_cast<SDL_Window*>(window->GetHandle());
+        mView = SDL_Metal_CreateView(sdlWindow);
+
+        mLayer = (__bridge CAMetalLayer*)SDL_Metal_GetLayer(mView);
+        mLayer.device = device->GetMTLDevice();
+        mLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+
         KC::String title = window->GetTitle();
         title += " | Metal";
         window->SetTitle(title.c_str());
 
         for (int i = 0; i < FRAMES_IN_FLIGHT; i++) {
             TextureDesc desc = {};
-            desc.Reserved = true;
             desc.Width = width;
             desc.Height = height;
             desc.Depth = 1;
             desc.MipLevels = 1;
             desc.Usage = TextureUsage::kRenderTarget;
             desc.Format = TextureFormat::kR8G8B8A8_UNORM;
-        
-            MetalTexture* texture = KC_NEW(MetalTexture, desc);
 
-            mTextures[i] = texture;
-            mTextureViews[i] = KC_NEW(MetalTextureView, device, TextureViewDesc(texture, TextureViewType::kRenderTarget));
+            mTextures[i] = device->CreateTexture(desc);
+            mTextureViews[i] = device->CreateTextureView(TextureViewDesc(mTextures[i], TextureViewType::kRenderTarget));
         }
     
         KD_WHATEVER("Created Metal surface");

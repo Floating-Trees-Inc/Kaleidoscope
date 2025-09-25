@@ -86,9 +86,11 @@ namespace KGPUT
 
             auto pipeline = Gfx::ShaderManager::GetRaytracing("data/kd/shaders/tests/ray_pipeline_triangle.kds");
             mCommandList->Barrier(beginRenderBarrier);
+            mCommandList->BeginCompute();
             mCommandList->SetRaytracingPipeline(pipeline);
             mCommandList->SetRaytracingConstants(pipeline, &constants, sizeof(constants));
             mCommandList->DispatchRays(pipeline, TEST_WIDTH, TEST_HEIGHT, 1);
+            mCommandList->EndCompute();
             mCommandList->Barrier(endRenderBarrier);
         }
 

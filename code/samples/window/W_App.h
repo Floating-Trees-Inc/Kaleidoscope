@@ -23,5 +23,12 @@ namespace Win
         uint mHeight = 720;
 
         KOS::IWindow* mWindow;
+        KC::String mStringBackend;
+
+        KGPU::IDevice* mDevice;
+        KGPU::ICommandQueue* mCommandQueue;
+        KGPU::ISurface* mSurface;
+        KGPU::ICommandList* mLists[KGPU::FRAMES_IN_FLIGHT];
+        KGPU::ISync* mFrameSync;
     };
 }

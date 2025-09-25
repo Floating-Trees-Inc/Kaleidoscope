@@ -17,7 +17,7 @@
 namespace KGPU
 {
     MetalCommandList::MetalCommandList(MetalDevice* device, MetalCommandQueue* queue, bool singleTime)
-        : mParentDevice(device)
+        : mParentDevice(device), mParentQueue(queue)
     {
         // MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
         // MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
@@ -28,6 +28,8 @@ namespace KGPU
         // KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
         
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
+
+        KD_WHATEVER("Created Metal command list");
     }
 
     MetalCommandList::~MetalCommandList()
@@ -38,16 +40,17 @@ namespace KGPU
 
     void MetalCommandList::Reset()
     {
+        mBuffer = [mParentQueue->GetMTLCommandQueue() commandBuffer];
     }
 
     void MetalCommandList::Begin()
     {
-        
+        // NO OP
     }
 
     void MetalCommandList::End()
     {
-    
+        // NO OP
     }
 
     void MetalCommandList::BeginRendering(const RenderBegin& begin)
@@ -85,6 +88,16 @@ namespace KGPU
         [mRenderEncoder endEncoding];
     }
 
+    void MetalCommandList::BeginCompute()
+    {
+        mComputeEncoder = [mBuffer computeCommandEncoder];
+    }
+
+    void MetalCommandList::EndCompute()
+    {
+        [mComputeEncoder endEncoding];
+    }
+
     void MetalCommandList::Barrier(const TextureBarrier& barrier)
     {
         // NO OP
@@ -116,14 +129,32 @@ namespace KGPU
 
     void MetalCommandList::SetViewport(float width, float height, float x, float y)
     {
+        MTLViewport viewport;
+        viewport.originX = x;
+        viewport.originY = y;
+        viewport.width = width;
+        viewport.height = height;
+        viewport.znear = 0.0f;
+        viewport.zfar = 1.0f;
+
+        [mRenderEncoder setViewport:viewport];
     }
 
     void MetalCommandList::SetScissor(int left, int top, int right, int bottom)
     {
+        MTLScissorRect rect;
+        rect.width = right - left;
+        rect.height = bottom - top;
+        rect.x = left;
+        rect.y = top;
+
+        [mRenderEncoder setScissorRect:rect];
     }
 
     void MetalCommandList::SetRenderSize(float width, float height)
     {
+        SetViewport(width, height, 0, 0);
+        SetScissor(0, 0, (int)width, (int)height);
     }
 
     void MetalCommandList::SetVertexBuffer(IBuffer* buffer, uint64 offset)

@@ -99,9 +99,11 @@ namespace Gfx
 
         auto cmdList = CommandListRecycler::RequestCommandList();
         cmdList->Barrier(beginBarrier);
+        cmdList->BeginCompute();
         cmdList->SetComputePipeline(pipeline);
         cmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
         cmdList->Dispatch(2048 / 32, 2048 / 32, 6);
+        cmdList->EndCompute();
         cmdList->Barrier(endBarrier);
     }
 }

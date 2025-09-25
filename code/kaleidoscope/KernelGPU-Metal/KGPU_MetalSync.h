@@ -21,5 +21,17 @@ namespace KGPU
         uint BeginSynchronize() override;
         void EndSynchronize(ICommandList* submitBuffer) override;
         void PresentSurface() override;
+
+    private:
+        MetalSurface* mSurface;
+        MetalCommandQueue* mQueue;
+
+        id<CAMetalDrawable> mCurrentDrawable = nullptr;
+    
+        id<MTLRenderPipelineState> mPresentPSO = nil;
+        id<MTLSamplerState> mPresentSamp = nil;
+        id<MTLLibrary> mPresentLib = nil;
+        int mFrameIndex = 0;
+        int mActualFrameIndex = 0;
     };
 }

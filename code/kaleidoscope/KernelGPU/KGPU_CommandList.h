@@ -169,6 +169,11 @@ namespace KGPU
         virtual void BeginRendering(const RenderBegin& begin) = 0;
         virtual void EndRendering() = 0;
     
+        // FOR METAL ONLY
+        virtual void BeginCompute() {}
+        virtual void EndCompute() {}
+        //
+
         virtual void Barrier(const TextureBarrier& barrier) = 0;
         virtual void Barrier(const BufferBarrier& barrier) = 0;
         virtual void Barrier(const MemoryBarrier& barrier) = 0;

@@ -8,6 +8,9 @@
 #include <KernelGPU/KGPU_Surface.h>
 
 #include <KernelOS/KOS_Window.h>
+#include <SDL3/SDL_metal.h>
+#include <SDL3/SDL.h>
+#include <QuartzCore/QuartzCore.h>
 
 namespace KGPU
 {  
@@ -20,7 +23,11 @@ namespace KGPU
         MetalSurface(MetalDevice* device, KOS::IWindow* window, MetalCommandQueue* commandQueue);
         ~MetalSurface();
 
+        CAMetalLayer* GetLayer() { return mLayer; }
     private:
         MetalDevice* mParentDevice;
+
+        SDL_MetalView mView;
+        CAMetalLayer* mLayer;
     };
 }

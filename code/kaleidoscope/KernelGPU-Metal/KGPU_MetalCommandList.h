@@ -26,6 +26,9 @@ namespace KGPU
         void BeginRendering(const RenderBegin& begin) override;
         void EndRendering() override;
 
+        void BeginCompute() override;
+        void EndCompute() override;
+
         void Barrier(const TextureBarrier& barrier) override;
         void Barrier(const BufferBarrier& barrier) override;
         void Barrier(const MemoryBarrier& barrier) override;
@@ -74,10 +77,13 @@ namespace KGPU
 
     private:
         friend class MetalCommandQueue;
+        friend class MetalSync;
 
         MetalDevice* mParentDevice;
+        MetalCommandQueue* mParentQueue;
 
         id<MTLCommandBuffer> mBuffer;
         id<MTLRenderCommandEncoder> mRenderEncoder;
+        id<MTLComputeCommandEncoder> mComputeEncoder;
     };
 }

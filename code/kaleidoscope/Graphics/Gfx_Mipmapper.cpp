@@ -69,6 +69,7 @@ namespace Gfx
         // Dispatch shader
         KGPU::IComputePipeline* pipeline = ShaderManager::GetCompute("data/kd/shaders/mipmap.kds");
         KGPU::ICommandList* cmdList = CommandListRecycler::RequestCommandList();
+        cmdList->BeginCompute();
         cmdList->SetComputePipeline(pipeline);
 
         for (int i = 0; i < texture->GetDesc().MipLevels - 1; i++) {
@@ -100,5 +101,6 @@ namespace Gfx
             cmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
             cmdList->Dispatch((width + 7) / 8, (height + 7) / 8, 1);
         }
+        cmdList->EndCompute();
     }
 }

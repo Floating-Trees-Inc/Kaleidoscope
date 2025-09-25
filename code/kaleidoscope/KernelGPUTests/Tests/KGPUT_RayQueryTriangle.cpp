@@ -83,9 +83,11 @@ namespace KGPUT
 
             auto pipeline = Gfx::ShaderManager::GetCompute("data/kd/shaders/tests/ray_query_triangle.kds");
             mCommandList->Barrier(beginRenderBarrier);
+            mCommandList->BeginCompute();
             mCommandList->SetComputePipeline(pipeline);
             mCommandList->SetComputeConstants(pipeline, &constants, sizeof(constants));
             mCommandList->Dispatch((TEST_WIDTH + 7) / 8, (TEST_HEIGHT + 7) / 8, 1);
+            mCommandList->EndCompute();
             mCommandList->Barrier(endRenderBarrier);
         }
 

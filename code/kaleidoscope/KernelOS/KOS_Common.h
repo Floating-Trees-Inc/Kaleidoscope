@@ -36,6 +36,12 @@ static_assert(sizeof(uint64) == 8, "uint64 size incorrect.");
 #define MEGABYTES(s) KILOBYTES(s) * 1024
 #define GIGABYTES(s) MEGABYTES(s) * 1024
 
+#ifdef KD_MAC
+    #define FRAME_LOOP @autoreleasepool
+#else
+    #define FRAME_LOOP
+#endif
+
 #define ENUM_CLASS_FLAGS(EnumType)                                                \
 inline constexpr EnumType operator|(EnumType lhs, EnumType rhs) {                 \
     using T = std::underlying_type_t<EnumType>;                                   \

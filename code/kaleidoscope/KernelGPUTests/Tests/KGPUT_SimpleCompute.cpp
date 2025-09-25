@@ -38,9 +38,11 @@ namespace KGPUT
             auto pipeline = Gfx::ShaderManager::GetCompute("data/kd/shaders/tests/simple_compute.kds");
             auto index = Gfx::ViewRecycler::GetUAV(Data.RenderTexture)->GetBindlessHandle();
             mCommandList->Barrier(beginRenderBarrier);
+            mCommandList->BeginCompute();
             mCommandList->SetComputePipeline(pipeline);
             mCommandList->SetComputeConstants(pipeline, &index, sizeof(index));
             mCommandList->Dispatch((TEST_WIDTH + 7) / 8, (TEST_HEIGHT + 7) / 8, 1);
+            mCommandList->EndCompute();
             mCommandList->Barrier(endRenderBarrier);
         }
 

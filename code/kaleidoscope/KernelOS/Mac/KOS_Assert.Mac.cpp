@@ -11,8 +11,7 @@
 namespace KOS {
     void Assert::AssertBox(const char* msg)
     {
-        std::fprintf(stderr, "KALEIDOSCOPE ASSERT FAILED: %s\n", msg ? msg : "(null)");
-        std::fflush(stderr);
+        std::printf("KALEIDOSCOPE ASSERT FAILED: %s\n", msg ? msg : "(null)");
         raise(SIGTRAP);
     }
 }
