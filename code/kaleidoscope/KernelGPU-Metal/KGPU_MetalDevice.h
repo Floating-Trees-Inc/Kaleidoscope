@@ -54,11 +54,11 @@ namespace KGPU
         uint64 GetBufferImageGranularity() override { return 1; }
         KGPU::ShaderBytecodeType GetTargetBytecode() override { return KGPU::ShaderBytecodeType::kMetalLib; }
 
-        bool SupportsRaytracing() override { return mDevice->supportsRaytracing(); }
+        bool SupportsRaytracing() override { return [mDevice supportsRaytracing]; }
         bool SupportsMeshShaders() override { return true; }
     
-        MTL::Device* GetMTLDevice() { return mDevice; }
+        id<MTLDevice> GetMTLDevice() { return mDevice; }
     private:
-        MTL::Device* mDevice = nullptr;
+        id<MTLDevice> mDevice = nil;
     };
 }

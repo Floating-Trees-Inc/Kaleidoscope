@@ -6,7 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_CommandList.h>
-#include <MetalCPP/Metal/Metal.hpp>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -77,10 +77,7 @@ namespace KGPU
 
         MetalDevice* mParentDevice;
 
-        MTL::CommandBuffer* mBuffer;
-        MTL::RenderCommandEncoder* mRenderEncoder;
-        MTL::ComputeCommandEncoder* mComputeEncoder;
-        MTL::BlitCommandEncoder* mBlitEncoder;
-        MTL::AccelerationStructureCommandEncoder* mASEncoder;
+        id<MTLCommandBuffer> mBuffer;
+        id<MTLRenderCommandEncoder> mRenderEncoder;
     };
 }

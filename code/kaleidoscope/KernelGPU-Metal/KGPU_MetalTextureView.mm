@@ -12,46 +12,30 @@ namespace KGPU
     {
         mDesc = viewDesc;
         
-        if (viewDesc.Type == KGPU::TextureViewType::kRenderTarget || viewDesc.Type == KGPU::TextureViewType::kDepthTarget) {
-            mTexture = static_cast<MetalTexture*>(viewDesc.Texture)->GetMTLTexture();
-            mOwnsTexture = false;
-            return;
-        }
-        return;
-
         auto texture = static_cast<MetalTexture*>(viewDesc.Texture);
-
-        MTL::TextureViewDescriptor* viewDescMTL = MTL::TextureViewDescriptor::alloc()->init();
-        viewDescMTL->setPixelFormat(MetalTexture::TranslateToMTLPixelFormat(viewDesc.ViewFormat));
-        viewDescMTL->setTextureType(TranslateToMTLTextureType(viewDesc));
-        if (viewDesc.ViewMip == VIEW_ALL_MIPS) viewDescMTL->setLevelRange(NS::Range(viewDesc.ViewMip, viewDesc.Texture->GetDesc().MipLevels));
-        else viewDescMTL->setLevelRange(NS::Range(viewDesc.ViewMip, 1));
-        if (viewDesc.ArrayLayer == VIEW_ALL_MIPS) viewDescMTL->setSliceRange(NS::Range(0, viewDesc.Texture->GetDesc().Depth));
-        else viewDescMTL->setSliceRange(NS::Range(viewDesc.ArrayLayer, 1));
-
-        mTexture = texture->GetMTLTexture()->newTextureView(viewDescMTL);
-
-        viewDescMTL->release();
+        mTexture = [texture->GetMTLTexture() newTextureViewWithPixelFormat:MetalTexture::TranslateToMTLPixelFormat(viewDesc.ViewFormat)
+                                             textureType:TranslateToMTLTextureType(viewDesc)
+                                             levels:NSMakeRange(0, viewDesc.Texture->GetDesc().Depth)
+                                             slices:NSMakeRange(viewDesc.ArrayLayer, 1)];
 
         KD_WHATEVER("Created Metal texture view");
     }
 
     MetalTextureView::~MetalTextureView()
     {
-        if (mTexture && mOwnsTexture) mTexture->release();
     }
 
-    MTL::TextureType MetalTextureView::TranslateToMTLTextureType(TextureViewDesc desc)
+    MTLTextureType MetalTextureView::TranslateToMTLTextureType(TextureViewDesc desc)
     {
         switch (desc.Dimension)
         {
             case TextureViewDimension::kTexture2D:
                 if (desc.ArrayLayer == VIEW_ALL_MIPS && desc.Texture->GetDesc().Depth > 1)
-                    return MTL::TextureType2DArray;
+                    return MTLTextureType2DArray;
                 else
-                    return MTL::TextureType2D;
+                    return MTLTextureType2D;
             case TextureViewDimension::kTextureCube:
-                return MTL::TextureTypeCube;
+                return MTLTextureTypeCube;
         }
     }
 }

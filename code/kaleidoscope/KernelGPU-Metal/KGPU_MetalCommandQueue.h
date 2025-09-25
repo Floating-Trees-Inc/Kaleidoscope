@@ -7,7 +7,7 @@
 
 #include "KGPU_CommandQueue.h"
 
-#include <MetalCPP/Metal/Metal.hpp>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -23,10 +23,10 @@ namespace KGPU
         void CommitCommandList(ICommandList* cmdBuffer) override;
         void Wait() override;
         
-        MTL::CommandQueue* GetMTLCommandQueue() { return mCommandQueue; }
+        id<MTLCommandQueue> GetMTLCommandQueue() { return mCommandQueue; }
     private:
         MetalDevice* mParentDevice;
 
-        MTL::CommandQueue* mCommandQueue = nullptr;
+        id<MTLCommandQueue> mCommandQueue = nullptr;
     };
 }

@@ -19,16 +19,11 @@ namespace KGPU
     MetalCommandList::MetalCommandList(MetalDevice* device, MetalCommandQueue* queue, bool singleTime)
         : mParentDevice(device)
     {
-        mBuffer = queue->GetMTLCommandQueue()->commandBuffer();
+        mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
     }
 
     MetalCommandList::~MetalCommandList()
     {
-        if (mBuffer) mBuffer->release();
-        if (mRenderEncoder) mRenderEncoder->release();
-        if (mComputeEncoder) mComputeEncoder->release();
-        if (mBlitEncoder) mBlitEncoder->release();
-        if (mASEncoder) mASEncoder->release();
     }
 
     void MetalCommandList::Reset()
@@ -47,46 +42,40 @@ namespace KGPU
 
     void MetalCommandList::BeginRendering(const RenderBegin& begin)
     {
-        MTL::RenderPassDescriptor* passDesc = MTL::RenderPassDescriptor::alloc()->init();
-        passDesc->setRenderTargetWidth(begin.Width);
-        passDesc->setRenderTargetHeight(begin.Height);
+        MTLRenderPassDescriptor* passDesc = [[MTLRenderPassDescriptor alloc] init];
+        [passDesc setRenderTargetWidth:begin.Width];
+        [passDesc setRenderTargetHeight:begin.Height];
         
-        auto colorAttachments = passDesc->colorAttachments();
+        auto colorAttachments = [passDesc colorAttachments];
         for (uint i = 0; i < begin.RenderTargets.size(); i++)
         {
             auto view = static_cast<MetalTextureView*>(begin.RenderTargets[i].View);
             auto texture = view->GetDesc().Texture;
-            auto colorAttachment = colorAttachments->object(i);
-            colorAttachment->setTexture(view->GetView());
-            if (begin.RenderTargets[i].Clear) colorAttachment->setLoadAction(MTL::LoadActionClear);
-            else colorAttachment->setLoadAction(MTL::LoadActionLoad);
-            colorAttachment->setStoreAction(MTL::StoreActionStore);
-            colorAttachment->setClearColor(MTL::ClearColor::Make(begin.RenderTargets[i].ClearValue.x, begin.RenderTargets[i].ClearValue.y, begin.RenderTargets[i].ClearValue.z, 1.0));
+            auto colorAttachment = colorAttachments[i];
+            [colorAttachment setTexture:view->GetView()];
+            if (begin.RenderTargets[i].Clear) [colorAttachment setLoadAction:MTLLoadActionClear];
+            else [colorAttachment setLoadAction:MTLLoadActionLoad];
+            [colorAttachment setStoreAction:MTLStoreActionStore];
+            [colorAttachment setClearColor:MTLClearColorMake(begin.RenderTargets[i].ClearValue.x, begin.RenderTargets[i].ClearValue.y, begin.RenderTargets[i].ClearValue.z, 1.0)];
         }
         if (begin.DepthTarget.View)
         {
             auto view = static_cast<MetalTextureView*>(begin.DepthTarget.View);
             auto texture = view->GetDesc().Texture;
-            auto depthAttachment = passDesc->depthAttachment();
-            depthAttachment->setTexture(view->GetView());
-            if (begin.DepthTarget.Clear) depthAttachment->setLoadAction(MTL::LoadActionClear);
-            else depthAttachment->setLoadAction(MTL::LoadActionLoad);
-            depthAttachment->setStoreAction(MTL::StoreActionStore);
-            depthAttachment->setClearDepth(1.0);
+            auto depthAttachment = [passDesc depthAttachment];
+            [depthAttachment setTexture:view->GetView()];
+            if (begin.DepthTarget.Clear) [depthAttachment setLoadAction:MTLLoadActionClear];
+            else [depthAttachment setLoadAction:MTLLoadActionLoad];
+            [depthAttachment setStoreAction:MTLStoreActionStore];
+            [depthAttachment setClearDepth:begin.DepthTarget.ClearValue.x];
         }
 
-        mRenderEncoder = mBuffer->renderCommandEncoder(passDesc);
-        passDesc->release();
+        mRenderEncoder = [mBuffer renderCommandEncoderWithDescriptor:passDesc];
     }
 
     void MetalCommandList::EndRendering()
     {
-        if (mRenderEncoder)
-        {
-            mRenderEncoder->endEncoding();
-            mRenderEncoder->release();
-            mRenderEncoder = nullptr;
-        }
+        [mRenderEncoder endEncoding];
     }
 
     void MetalCommandList::Barrier(const TextureBarrier& barrier)

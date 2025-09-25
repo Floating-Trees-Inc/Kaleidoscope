@@ -4,15 +4,11 @@
 --
 
 target("metalpp")
-    set_kind("static")
+    set_kind("headeronly")
     set_group("Third Party")
 
-    add_includedirs("Include", {public = true})
     if is_plat("macosx") then
         set_kind("static")
-        add_files("Source/Metal.mm")
-        add_includedirs("Include/", { public = true })
+        add_files("stub.m")
         add_frameworks("Foundation", "QuartzCore", "Metal", { public = true })
-    else
-        set_kind("headeronly")
     end

@@ -7,7 +7,7 @@
 
 #include <KernelGPU/KGPU_Sampler.h>
 
-#include <MetalCPP/Metal/Metal.hpp>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -20,6 +20,6 @@ namespace KGPU
         ~MetalSampler();
 
     private:
-        MTL::SamplerState* mSamplerState = nullptr;
+        id<MTLSamplerState> mSamplerState = nil;
     };
 }

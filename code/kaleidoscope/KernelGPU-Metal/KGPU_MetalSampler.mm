@@ -12,18 +12,16 @@ namespace KGPU
     {
         mDesc = desc;
 
-        MTL::SamplerDescriptor* samplerDescriptor = MTL::SamplerDescriptor::alloc()->init();
+        MTLSamplerDescriptor* samplerDescriptor = [[MTLSamplerDescriptor alloc] init];
 
         // TODO: Fill in
 
-        mSamplerState = device->GetMTLDevice()->newSamplerState(samplerDescriptor);
+        mSamplerState = [device->GetMTLDevice() newSamplerStateWithDescriptor:samplerDescriptor];
 
-        samplerDescriptor->release();
         KD_WHATEVER("Created Metal sampler!");
     }
 
     MetalSampler::~MetalSampler()
     {
-        mSamplerState->release();
     }
 }

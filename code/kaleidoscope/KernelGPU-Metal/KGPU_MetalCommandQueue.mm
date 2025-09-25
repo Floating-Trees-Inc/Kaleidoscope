@@ -12,17 +12,14 @@ namespace KGPU
     MetalCommandQueue::MetalCommandQueue(MetalDevice* device, CommandQueueType type)
         : mParentDevice(device)
     {
-        MTL::CommandQueueDescriptor* descriptor = MTL::CommandQueueDescriptor::alloc()->init();
-        descriptor->setMaxCommandBufferCount(64);
+        MTLCommandQueueDescriptor* descriptor = [[MTLCommandQueueDescriptor alloc] init];
+        [descriptor setMaxCommandBufferCount:64];
 
-        mCommandQueue = device->GetMTLDevice()->newCommandQueue(descriptor);
-
-        descriptor->release();
+        mCommandQueue = [device->GetMTLDevice() newCommandQueueWithDescriptor:descriptor];
     }
 
     MetalCommandQueue::~MetalCommandQueue()
     {
-        mCommandQueue->release();
     }
 
     ICommandList* MetalCommandQueue::CreateCommandList(bool singleTime)
@@ -34,7 +31,8 @@ namespace KGPU
     {
         MetalCommandList* metalCmd = static_cast<MetalCommandList*>(cmdBuffer);
         
-        metalCmd->mBuffer->commit();
+        [metalCmd->mBuffer commit];
+        [metalCmd->mBuffer waitUntilCompleted];
     }
 
     void MetalCommandQueue::Wait()

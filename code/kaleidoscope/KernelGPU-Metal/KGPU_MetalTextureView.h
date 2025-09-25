@@ -6,7 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_TextureView.h>
-#include <MetalCPP/Metal/Metal.hpp>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -18,11 +18,10 @@ namespace KGPU
         MetalTextureView(MetalDevice* device, TextureViewDesc viewDesc);
         ~MetalTextureView();
 
-        MTL::Texture* GetView() { return mTexture; }
+        id<MTLTexture> GetView() { return mTexture; }
     private:
-        MTL::Texture* mTexture;
-        bool mOwnsTexture = true;
+        id<MTLTexture> mTexture;
 
-        static MTL::TextureType TranslateToMTLTextureType(TextureViewDesc desc);
+        static MTLTextureType TranslateToMTLTextureType(TextureViewDesc desc);
     };
 }

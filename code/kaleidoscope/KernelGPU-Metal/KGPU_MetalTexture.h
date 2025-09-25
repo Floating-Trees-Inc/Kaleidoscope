@@ -6,7 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_Texture.h>
-#include <MetalCPP/Metal/Metal.hpp>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -21,14 +21,14 @@ namespace KGPU
 
         void SetName(const KC::String& name) override;
 
-        MTL::Texture* GetMTLTexture() const { return mTexture; }
+        id<MTLTexture> GetMTLTexture() const { return mTexture; }
     private:
         friend class MetalSurface;
 
-        MTL::Texture* mTexture = nullptr;
+        id<MTLTexture> mTexture = nullptr;
 
     public:
-        static MTL::PixelFormat TranslateToMTLPixelFormat(TextureFormat format);
-        static MTL::TextureUsage TranslateToMTLTextureUsage(TextureUsage usage);
+        static MTLPixelFormat TranslateToMTLPixelFormat(TextureFormat format);
+        static MTLTextureUsage TranslateToMTLTextureUsage(TextureUsage usage);
     };
 }
