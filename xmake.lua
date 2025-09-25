@@ -13,7 +13,7 @@ if is_plat("windows") then
     add_defines("KD_WINDOWS", "USE_PIX", { public = true })
 elseif is_plat("linux") then
     add_defines("KD_LINUX", { public = true })
-else
+elseif is_plat("macosx") then
     add_defines("KD_MAC", { public = true })
     add_rpathdirs("dlls/mac")
 end

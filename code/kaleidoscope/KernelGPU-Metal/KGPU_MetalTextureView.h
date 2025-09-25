@@ -21,6 +21,7 @@ namespace KGPU
         MTL::Texture* GetView() { return mTexture; }
     private:
         MTL::Texture* mTexture;
+        bool mOwnsTexture = true;
 
         static MTL::TextureType TranslateToMTLTextureType(TextureViewDesc desc);
     };

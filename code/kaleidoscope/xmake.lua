@@ -41,9 +41,10 @@ end
 add_includedirs(".", { public = true })
 
 target("Kaleidoscope")
-    set_kind("headeronly")
+    set_kind("static")
     set_group("Kaleidoscope")
 
+    add_files("stub.c")
     add_deps("KernelCore",
              "KernelOS",
              "KernelGPU",

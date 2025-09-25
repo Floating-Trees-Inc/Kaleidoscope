@@ -11,6 +11,13 @@ namespace KGPU
     MetalTextureView::MetalTextureView(MetalDevice* device, TextureViewDesc viewDesc)
     {
         mDesc = viewDesc;
+        
+        if (viewDesc.Type == KGPU::TextureViewType::kRenderTarget || viewDesc.Type == KGPU::TextureViewType::kDepthTarget) {
+            mTexture = static_cast<MetalTexture*>(viewDesc.Texture)->GetMTLTexture();
+            mOwnsTexture = false;
+            return;
+        }
+        return;
 
         auto texture = static_cast<MetalTexture*>(viewDesc.Texture);
 
@@ -31,7 +38,7 @@ namespace KGPU
 
     MetalTextureView::~MetalTextureView()
     {
-        mTexture->release();
+        if (mTexture && mOwnsTexture) mTexture->release();
     }
 
     MTL::TextureType MetalTextureView::TranslateToMTLTextureType(TextureViewDesc desc)

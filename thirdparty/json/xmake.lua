@@ -4,8 +4,9 @@
 --
 
 target("json")
-    set_kind("headeronly")
+    set_kind("static")
     set_group("Third Party")
     
+    add_files("stub.c")
     add_headerfiles("*.hpp")
     add_includedirs(".", { public = true })

@@ -61,7 +61,7 @@ namespace KGPU
             if (begin.RenderTargets[i].Clear) colorAttachment->setLoadAction(MTL::LoadActionClear);
             else colorAttachment->setLoadAction(MTL::LoadActionLoad);
             colorAttachment->setStoreAction(MTL::StoreActionStore);
-            colorAttachment->setClearColor(MTL::ClearColor::Make(0.0, 0.0, 0.0, 1.0));
+            colorAttachment->setClearColor(MTL::ClearColor::Make(begin.RenderTargets[i].ClearValue.x, begin.RenderTargets[i].ClearValue.y, begin.RenderTargets[i].ClearValue.z, 1.0));
         }
         if (begin.DepthTarget.View)
         {
@@ -74,6 +74,9 @@ namespace KGPU
             depthAttachment->setStoreAction(MTL::StoreActionStore);
             depthAttachment->setClearDepth(1.0);
         }
+
+        mRenderEncoder = mBuffer->renderCommandEncoder(passDesc);
+        passDesc->release();
     }
 
     void MetalCommandList::EndRendering()
