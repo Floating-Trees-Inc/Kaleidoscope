@@ -12,7 +12,7 @@ namespace KGPU
     {
         mDesc = desc;
 
-        MTLSamplerDescriptor* samplerDescriptor = [[MTLSamplerDescriptor alloc] init];
+        MTLSamplerDescriptor* samplerDescriptor = [MTLSamplerDescriptor new];
 
         // TODO: Fill in
 

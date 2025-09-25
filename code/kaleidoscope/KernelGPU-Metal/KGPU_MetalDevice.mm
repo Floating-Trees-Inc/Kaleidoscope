@@ -14,9 +14,6 @@ namespace KGPU
     {
         mDevice = MTLCreateSystemDefaultDevice();
         KD_ASSERT_EQ(mDevice, "Failed to create Metal device!");
-        
-        auto deviceName = [mDevice name];
-        NSLog(@"Using device: %@", deviceName);
     }
 
     MetalDevice::~MetalDevice()

@@ -19,11 +19,21 @@ namespace KGPU
     MetalCommandList::MetalCommandList(MetalDevice* device, MetalCommandQueue* queue, bool singleTime)
         : mParentDevice(device)
     {
+        // MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
+        // MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
+        // descriptor.captureObject = device->GetMTLDevice();
+        // 
+        // NSError* error = nil;
+        // [captureManager startCaptureWithDescriptor:descriptor error:&error];
+        // KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
+        
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
     }
 
     MetalCommandList::~MetalCommandList()
     {
+        // auto captureManager = [MTLCaptureManager sharedCaptureManager];
+        // [captureManager stopCapture];
     }
 
     void MetalCommandList::Reset()
@@ -42,32 +52,29 @@ namespace KGPU
 
     void MetalCommandList::BeginRendering(const RenderBegin& begin)
     {
-        MTLRenderPassDescriptor* passDesc = [[MTLRenderPassDescriptor alloc] init];
-        [passDesc setRenderTargetWidth:begin.Width];
-        [passDesc setRenderTargetHeight:begin.Height];
-        
-        auto colorAttachments = [passDesc colorAttachments];
+        MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor new];
+
         for (uint i = 0; i < begin.RenderTargets.size(); i++)
         {
             auto view = static_cast<MetalTextureView*>(begin.RenderTargets[i].View);
             auto texture = view->GetDesc().Texture;
-            auto colorAttachment = colorAttachments[i];
-            [colorAttachment setTexture:view->GetView()];
-            if (begin.RenderTargets[i].Clear) [colorAttachment setLoadAction:MTLLoadActionClear];
-            else [colorAttachment setLoadAction:MTLLoadActionLoad];
-            [colorAttachment setStoreAction:MTLStoreActionStore];
-            [colorAttachment setClearColor:MTLClearColorMake(begin.RenderTargets[i].ClearValue.x, begin.RenderTargets[i].ClearValue.y, begin.RenderTargets[i].ClearValue.z, 1.0)];
+            
+            passDesc.colorAttachments[i].texture = view->GetView();
+            if (begin.RenderTargets[i].Clear) passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
+            else passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+            passDesc.colorAttachments[i].storeAction = MTLStoreActionStore;
+            passDesc.colorAttachments[i].clearColor = MTLClearColorMake(begin.RenderTargets[i].ClearValue.x, begin.RenderTargets[i].ClearValue.y, begin.RenderTargets[i].ClearValue.z, 1.0);
         }
         if (begin.DepthTarget.View)
         {
             auto view = static_cast<MetalTextureView*>(begin.DepthTarget.View);
             auto texture = view->GetDesc().Texture;
-            auto depthAttachment = [passDesc depthAttachment];
-            [depthAttachment setTexture:view->GetView()];
-            if (begin.DepthTarget.Clear) [depthAttachment setLoadAction:MTLLoadActionClear];
-            else [depthAttachment setLoadAction:MTLLoadActionLoad];
-            [depthAttachment setStoreAction:MTLStoreActionStore];
-            [depthAttachment setClearDepth:begin.DepthTarget.ClearValue.x];
+
+            passDesc.depthAttachment.texture = view->GetView();
+            if (begin.DepthTarget.Clear) passDesc.depthAttachment.loadAction = MTLLoadActionClear;
+            else passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
+            passDesc.depthAttachment.storeAction = MTLStoreActionStore;
+            passDesc.depthAttachment.clearDepth = 1.0f;
         }
 
         mRenderEncoder = [mBuffer renderCommandEncoderWithDescriptor:passDesc];
@@ -201,6 +208,36 @@ namespace KGPU
 
     void MetalCommandList::CopyTextureToBuffer(IBuffer* dest, ITexture* src)
     {
+        MetalBuffer* buffer = static_cast<MetalBuffer*>(dest);
+        MetalTexture* texture = static_cast<MetalTexture*>(src);
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+
+        const NSUInteger bpp = 4; // RGBA8
+        const NSUInteger width  = texture->GetDesc().Width;
+        const NSUInteger height = texture->GetDesc().Height;
+        
+        const NSUInteger minBytesPerRow = width * bpp;
+        const NSUInteger bytesPerRowAlignment = 256;
+        const NSUInteger bytesPerRow = ((minBytesPerRow + (bytesPerRowAlignment - 1)) / bytesPerRowAlignment) * bytesPerRowAlignment;
+
+        const NSUInteger bytesPerImage = bytesPerRow * height;
+        const NSUInteger totalSize = bytesPerImage;
+
+        MTLOrigin origin = {0, 0, 0};
+        MTLSize   size   = {width, height, 1};
+
+        [blit copyFromTexture:texture->GetMTLTexture()
+                sourceSlice:0
+                sourceLevel:0
+                sourceOrigin:origin
+                sourceSize:size
+                toBuffer:buffer->GetMTLBuffer()
+                destinationOffset:0
+                destinationBytesPerRow:bytesPerRow
+                destinationBytesPerImage:bytesPerImage];
+
+        [blit endEncoding];
     }
 
     void MetalCommandList::CopyTextureToTexture(ITexture* dst, ITexture* src)

@@ -12,10 +12,7 @@ namespace KGPU
     MetalCommandQueue::MetalCommandQueue(MetalDevice* device, CommandQueueType type)
         : mParentDevice(device)
     {
-        MTLCommandQueueDescriptor* descriptor = [[MTLCommandQueueDescriptor alloc] init];
-        [descriptor setMaxCommandBufferCount:64];
-
-        mCommandQueue = [device->GetMTLDevice() newCommandQueueWithDescriptor:descriptor];
+        mCommandQueue = [device->GetMTLDevice() newCommandQueue];
     }
 
     MetalCommandQueue::~MetalCommandQueue()

@@ -4,6 +4,7 @@
 --
 
 add_rules("mode.debug", "mode.release", "mode.releasedbg")
+set_policy("build.sanitizer.address", true)
 
 set_rundir(".")
 set_languages("c++20", { public = true })

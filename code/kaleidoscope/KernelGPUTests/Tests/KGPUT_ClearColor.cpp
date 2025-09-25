@@ -36,7 +36,7 @@ namespace KGPUT
             endRenderBarrier.DestAccess = KGPU::ResourceAccess::kMemoryRead;
             endRenderBarrier.NewLayout = KGPU::ResourceLayout::kTransferSrc;
 
-            KGPU::RenderAttachment attachment(Gfx::ViewRecycler::GetRTV(Data.RenderTexture), true, KGPU::float3(0.3f, 0.3f, 0.3f));
+            KGPU::RenderAttachment attachment(Gfx::ViewRecycler::GetRTV(Data.RenderTexture), true, KGPU::float3(0.3f, 0.8f, 0.3f));
             KGPU::RenderBegin renderBegin(TEST_WIDTH, TEST_HEIGHT, { attachment }, {});
 
             mCommandList->Barrier(beginRenderBarrier);

@@ -17,20 +17,21 @@ namespace KGPU
     }
     
     MetalTexture::MetalTexture(MetalDevice* device, TextureDesc desc)
-{
+    {
         mDesc = desc;
         for (int i = 0; i < desc.MipLevels; i++) {
             mLayouts.push_back(KGPU::ResourceLayout::kUndefined);
         }
         
-        MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc] init];
-        [textureDescriptor setWidth:desc.Width];
-        [textureDescriptor setHeight:desc.Height];
-        [textureDescriptor setDepth:desc.Depth];
-        [textureDescriptor setPixelFormat:TranslateToMTLPixelFormat(desc.Format)];
-        [textureDescriptor setMipmapLevelCount:desc.MipLevels];
-        [textureDescriptor setTextureType:MTLTextureType2D];
-        [textureDescriptor setUsage:TranslateToMTLTextureUsage(desc.Usage)];
+        MTLTextureDescriptor* textureDescriptor = [MTLTextureDescriptor new];
+        textureDescriptor.width = desc.Width;
+        textureDescriptor.height = desc.Height;
+        textureDescriptor.depth = desc.Depth;
+        textureDescriptor.pixelFormat = TranslateToMTLPixelFormat(desc.Format);
+        textureDescriptor.mipmapLevelCount = desc.MipLevels;
+        textureDescriptor.textureType = desc.Depth == 6 ? MTLTextureTypeCube : MTLTextureType2D;
+        textureDescriptor.usage = TranslateToMTLTextureUsage(desc.Usage);
+        textureDescriptor.storageMode = MTLStorageModePrivate;
 
         mTexture = [device->GetMTLDevice() newTextureWithDescriptor:textureDescriptor];
 
