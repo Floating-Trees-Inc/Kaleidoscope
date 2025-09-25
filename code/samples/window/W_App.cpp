@@ -56,8 +56,8 @@ namespace Win
 
     void App::Run()
     {
-        FRAME_LOOP {
-            while (mWindow->IsOpen()) {
+        while (mWindow->IsOpen()) {
+            FRAME_LOOP {
                 CODE_BLOCK("Render") {
                     uint index = mFrameSync->BeginSynchronize();
                     auto cmdList = mLists[index];
@@ -102,7 +102,7 @@ namespace Win
                     }
                 }
             }
-            mCommandQueue->Wait();
         }
+        mCommandQueue->Wait();
     }
 }

@@ -85,58 +85,60 @@ namespace Tri
     void App::Run()
     {
         while (mWindow->IsOpen()) {
-            CODE_BLOCK("Reset") {
-                KI::InputSystem::Reset();
-            }
-
-            CODE_BLOCK("Render") {
-                uint index = mFrameSync->BeginSynchronize();
-                auto cmdList = mLists[index];
-                auto texture = mSurface->GetTexture(index);
-                auto textureView = mSurface->GetTextureView(index);
-
-                cmdList->Reset();
-                cmdList->Begin();
-
-                CODE_BLOCK("Draw Triangle") {
-                    KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds");
-                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, false) }, {});
-
-                    cmdList->Barrier(KGPU::TextureBarrier(
-                        texture,
-                        KGPU::ResourceAccess::kNone,
-                        KGPU::ResourceAccess::kColorAttachmentRead,
-                        KGPU::PipelineStage::kNone,
-                        KGPU::PipelineStage::kColorAttachmentOutput,
-                        KGPU::ResourceLayout::kColorAttachment
-                    ));
-                    cmdList->BeginRendering(renderBegin);
-                    cmdList->SetGraphicsPipeline(pipeline);
-                    cmdList->SetRenderSize(mWidth, mHeight);
-                    cmdList->Draw(3, 1, 0, 0);
-                    cmdList->EndRendering();
-                    cmdList->Barrier(KGPU::TextureBarrier(
-                        texture,
-                        KGPU::ResourceAccess::kColorAttachmentWrite,
-                        KGPU::ResourceAccess::kMemoryRead,
-                        KGPU::PipelineStage::kColorAttachmentOutput,
-                        KGPU::PipelineStage::kAllCommands,
-                        KGPU::ResourceLayout::kPresent
-                    ));
+            FRAME_LOOP {
+                CODE_BLOCK("Reset") {
+                    KI::InputSystem::Reset();
                 }
-
-                cmdList->End();
-                mFrameSync->EndSynchronize(cmdList);
-                mFrameSync->PresentSurface();
-            }
-
-            CODE_BLOCK("Update") {
-                void* event;
-                while (mWindow->PollEvents(&event)) {
-                    (void)event;
+    
+                CODE_BLOCK("Render") {
+                    uint index = mFrameSync->BeginSynchronize();
+                    auto cmdList = mLists[index];
+                    auto texture = mSurface->GetTexture(index);
+                    auto textureView = mSurface->GetTextureView(index);
+    
+                    cmdList->Reset();
+                    cmdList->Begin();
+    
+                    CODE_BLOCK("Draw Triangle") {
+                        KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds");
+                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, false) }, {});
+    
+                        cmdList->Barrier(KGPU::TextureBarrier(
+                            texture,
+                            KGPU::ResourceAccess::kNone,
+                            KGPU::ResourceAccess::kColorAttachmentRead,
+                            KGPU::PipelineStage::kNone,
+                            KGPU::PipelineStage::kColorAttachmentOutput,
+                            KGPU::ResourceLayout::kColorAttachment
+                        ));
+                        cmdList->BeginRendering(renderBegin);
+                        cmdList->SetGraphicsPipeline(pipeline);
+                        cmdList->SetRenderSize(mWidth, mHeight);
+                        cmdList->Draw(3, 1, 0, 0);
+                        cmdList->EndRendering();
+                        cmdList->Barrier(KGPU::TextureBarrier(
+                            texture,
+                            KGPU::ResourceAccess::kColorAttachmentWrite,
+                            KGPU::ResourceAccess::kMemoryRead,
+                            KGPU::PipelineStage::kColorAttachmentOutput,
+                            KGPU::PipelineStage::kAllCommands,
+                            KGPU::ResourceLayout::kPresent
+                        ));
+                    }
+    
+                    cmdList->End();
+                    mFrameSync->EndSynchronize(cmdList);
+                    mFrameSync->PresentSurface();
                 }
-
-                Gfx::ShaderManager::ReloadPipelines();
+    
+                CODE_BLOCK("Update") {
+                    void* event;
+                    while (mWindow->PollEvents(&event)) {
+                        (void)event;
+                    }
+    
+                    Gfx::ShaderManager::ReloadPipelines();
+                }
             }
         }
         mCommandQueue->Wait();

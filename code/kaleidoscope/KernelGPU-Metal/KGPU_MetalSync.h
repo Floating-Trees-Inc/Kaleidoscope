@@ -25,8 +25,6 @@ namespace KGPU
     private:
         MetalSurface* mSurface;
         MetalCommandQueue* mQueue;
-
-        id<CAMetalDrawable> mCurrentDrawable = nullptr;
     
         id<MTLRenderPipelineState> mPresentPSO = nil;
         id<MTLSamplerState> mPresentSamp = nil;

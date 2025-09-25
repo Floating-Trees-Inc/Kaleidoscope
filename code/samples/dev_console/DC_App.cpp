@@ -103,64 +103,66 @@ namespace DC
     void App::Run()
     {
         while (mWindow->IsOpen()) {
-            double now = KC::GlobalTimer.ToSeconds();
-            double dt = now - mLast;
-            mLast = now;
-            ToolImGui::Manager::Begin();
+            FRAME_LOOP {
+                double now = KC::GlobalTimer.ToSeconds();
+                double dt = now - mLast;
+                mLast = now;
+                ToolImGui::Manager::Begin();
 
-            CODE_BLOCK("Reset") {
-                KI::InputSystem::Reset();
-            }
-
-            CODE_BLOCK("Update") {
-                TDC::Console::Draw(dt, mWidth, mHeight);
-            }
-
-            CODE_BLOCK("Render") {
-                uint index = mFrameSync->BeginSynchronize();
-                auto cmdList = mLists[index];
-                auto texture = mSurface->GetTexture(index);
-                auto textureView = mSurface->GetTextureView(index);
-
-                cmdList->Reset();
-                cmdList->Begin();
-
-                CODE_BLOCK("Draw Triangle") {
-                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, glm::vec3(mClearRed, mClearGreen, mClearBlue)) }, {});
-
-                    cmdList->Barrier(KGPU::TextureBarrier(
-                        texture,
-                        KGPU::ResourceAccess::kNone,
-                        KGPU::ResourceAccess::kColorAttachmentRead,
-                        KGPU::PipelineStage::kNone,
-                        KGPU::PipelineStage::kColorAttachmentOutput,
-                        KGPU::ResourceLayout::kColorAttachment
-                    ));
-                    cmdList->BeginRendering(renderBegin);
-                    ToolImGui::Manager::Render(cmdList, index);
-                    cmdList->EndRendering();
-                    cmdList->Barrier(KGPU::TextureBarrier(
-                        texture,
-                        KGPU::ResourceAccess::kColorAttachmentWrite,
-                        KGPU::ResourceAccess::kMemoryRead,
-                        KGPU::PipelineStage::kColorAttachmentOutput,
-                        KGPU::PipelineStage::kAllCommands,
-                        KGPU::ResourceLayout::kPresent
-                    ));
+                CODE_BLOCK("Reset") {
+                    KI::InputSystem::Reset();
                 }
 
-                cmdList->End();
-                mFrameSync->EndSynchronize(cmdList);
-                mFrameSync->PresentSurface();
-            }
-
-            CODE_BLOCK("Update") {
-                void* event;
-                while (mWindow->PollEvents(&event)) {
-                    ToolImGui::Manager::Update(event);
+                CODE_BLOCK("Update") {
+                    TDC::Console::Draw(dt, mWidth, mHeight);
                 }
 
-                Gfx::ShaderManager::ReloadPipelines();
+                CODE_BLOCK("Render") {
+                    uint index = mFrameSync->BeginSynchronize();
+                    auto cmdList = mLists[index];
+                    auto texture = mSurface->GetTexture(index);
+                    auto textureView = mSurface->GetTextureView(index);
+
+                    cmdList->Reset();
+                    cmdList->Begin();
+
+                    CODE_BLOCK("Draw Triangle") {
+                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, glm::vec3(mClearRed, mClearGreen, mClearBlue)) }, {});
+
+                        cmdList->Barrier(KGPU::TextureBarrier(
+                            texture,
+                            KGPU::ResourceAccess::kNone,
+                            KGPU::ResourceAccess::kColorAttachmentRead,
+                            KGPU::PipelineStage::kNone,
+                            KGPU::PipelineStage::kColorAttachmentOutput,
+                            KGPU::ResourceLayout::kColorAttachment
+                        ));
+                        cmdList->BeginRendering(renderBegin);
+                        ToolImGui::Manager::Render(cmdList, index);
+                        cmdList->EndRendering();
+                        cmdList->Barrier(KGPU::TextureBarrier(
+                            texture,
+                            KGPU::ResourceAccess::kColorAttachmentWrite,
+                            KGPU::ResourceAccess::kMemoryRead,
+                            KGPU::PipelineStage::kColorAttachmentOutput,
+                            KGPU::PipelineStage::kAllCommands,
+                            KGPU::ResourceLayout::kPresent
+                        ));
+                    }
+
+                    cmdList->End();
+                    mFrameSync->EndSynchronize(cmdList);
+                    mFrameSync->PresentSurface();
+                }
+
+                CODE_BLOCK("Update") {
+                    void* event;
+                    while (mWindow->PollEvents(&event)) {
+                        ToolImGui::Manager::Update(event);
+                    }
+
+                    Gfx::ShaderManager::ReloadPipelines();
+                }
             }
         }
         mCommandQueue->Wait();

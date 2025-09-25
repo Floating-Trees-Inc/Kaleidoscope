@@ -139,108 +139,110 @@ namespace RTS
     void App::Run()
     {
         while (mWindow->IsOpen()) {
-            CODE_BLOCK("Reset") {
-                KI::InputSystem::Reset();
-            }
-
-            CODE_BLOCK("Render") {
-                uint index = mFrameSync->BeginSynchronize();
-                auto cmdList = mLists[index];
-                auto texture = mSurface->GetTexture(index);
-                auto textureView = mSurface->GetTextureView(index);
-
-                cmdList->Reset();
-                cmdList->Begin();
-                
-                CODE_BLOCK("Build TLAS") {
-                    KGPU::BufferBarrier beforeBarrier(mTLAS->GetMemory());
-                    beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
-                    beforeBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
-                    beforeBarrier.SourceStage = KGPU::PipelineStage::kCopy;
-                    beforeBarrier.DestStage = KGPU::PipelineStage::kAccelStructureWrite;
-
-                    KGPU::BufferBarrier afterBarrier(mTLAS->GetMemory());
-                    afterBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
-                    afterBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
-                    afterBarrier.SourceStage = KGPU::PipelineStage::kAccelStructureWrite;
-                    afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
-
-                    cmdList->Barrier(beforeBarrier);
-                    cmdList->BuildTLAS(mTLAS, KGPU::ASBuildMode::kRebuild, 1, mInstanceBuffer);
-                    cmdList->Barrier(afterBarrier);
+            FRAME_LOOP {
+                CODE_BLOCK("Reset") {
+                    KI::InputSystem::Reset();
                 }
-
-                CODE_BLOCK("Trace Rays") {
-                    Gfx::Resource& ldr = Gfx::ResourceManager::Import("rt_output", cmdList, Gfx::ImportType::kShaderWrite);
-
-                    struct Constants {
-                        KGPU::BindlessHandle OutputID;
-                        KGPU::BindlessHandle WorldID;
-                        KGPU::float2 Pad;
-                    } constants = {
-                        Gfx::ViewRecycler::GetUAV(ldr.Texture)->GetBindlessHandle(),
-                        mTLAS->GetBindlessHandle(),
-                        {}
-                    };
-                
-                    auto pipeline = Gfx::ShaderManager::GetRaytracing("data/kd/shaders/tests/ray_pipeline_triangle.kds");
-                    cmdList->SetRaytracingPipeline(pipeline);
-                    cmdList->SetRaytracingConstants(pipeline, &constants, sizeof(constants));
-                    cmdList->DispatchRays(pipeline, mWidth, mHeight, 1);
+    
+                CODE_BLOCK("Render") {
+                    uint index = mFrameSync->BeginSynchronize();
+                    auto cmdList = mLists[index];
+                    auto texture = mSurface->GetTexture(index);
+                    auto textureView = mSurface->GetTextureView(index);
+    
+                    cmdList->Reset();
+                    cmdList->Begin();
+                    
+                    CODE_BLOCK("Build TLAS") {
+                        KGPU::BufferBarrier beforeBarrier(mTLAS->GetMemory());
+                        beforeBarrier.SourceAccess = KGPU::ResourceAccess::kTransferWrite;
+                        beforeBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
+                        beforeBarrier.SourceStage = KGPU::PipelineStage::kCopy;
+                        beforeBarrier.DestStage = KGPU::PipelineStage::kAccelStructureWrite;
+    
+                        KGPU::BufferBarrier afterBarrier(mTLAS->GetMemory());
+                        afterBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureWrite;
+                        afterBarrier.DestAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
+                        afterBarrier.SourceStage = KGPU::PipelineStage::kAccelStructureWrite;
+                        afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
+    
+                        cmdList->Barrier(beforeBarrier);
+                        cmdList->BuildTLAS(mTLAS, KGPU::ASBuildMode::kRebuild, 1, mInstanceBuffer);
+                        cmdList->Barrier(afterBarrier);
+                    }
+    
+                    CODE_BLOCK("Trace Rays") {
+                        Gfx::Resource& ldr = Gfx::ResourceManager::Import("rt_output", cmdList, Gfx::ImportType::kShaderWrite);
+    
+                        struct Constants {
+                            KGPU::BindlessHandle OutputID;
+                            KGPU::BindlessHandle WorldID;
+                            KGPU::float2 Pad;
+                        } constants = {
+                            Gfx::ViewRecycler::GetUAV(ldr.Texture)->GetBindlessHandle(),
+                            mTLAS->GetBindlessHandle(),
+                            {}
+                        };
+                    
+                        auto pipeline = Gfx::ShaderManager::GetRaytracing("data/kd/shaders/tests/ray_pipeline_triangle.kds");
+                        cmdList->SetRaytracingPipeline(pipeline);
+                        cmdList->SetRaytracingConstants(pipeline, &constants, sizeof(constants));
+                        cmdList->DispatchRays(pipeline, mWidth, mHeight, 1);
+                    }
+    
+                    CODE_BLOCK("Copy To Backbuffer") {
+                        Gfx::Resource& ldr = Gfx::ResourceManager::Import("rt_output", cmdList, Gfx::ImportType::kShaderRead);
+                        Gfx::Resource& sampler = Gfx::ResourceManager::Get("sampler");
+                        KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/render_texture.kds");
+                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, false) }, {});
+    
+                        struct Constants {
+                            KGPU::BindlessHandle in;
+                            KGPU::BindlessHandle sampler;
+                            KGPU::uint2 Pad;
+                        } constants = {
+                            Gfx::ViewRecycler::GetSRV(ldr.Texture)->GetBindlessHandle(),
+                            sampler.Sampler->GetBindlessHandle(),
+                            {}
+                        };
+    
+                        cmdList->Barrier(KGPU::TextureBarrier(
+                            texture,
+                            KGPU::ResourceAccess::kNone,
+                            KGPU::ResourceAccess::kColorAttachmentRead,
+                            KGPU::PipelineStage::kNone,
+                            KGPU::PipelineStage::kColorAttachmentOutput,
+                            KGPU::ResourceLayout::kColorAttachment
+                        ));
+                        cmdList->BeginRendering(renderBegin);
+                        cmdList->SetGraphicsPipeline(pipeline);
+                        cmdList->SetRenderSize(mWidth, mHeight);
+                        cmdList->SetGraphicsConstants(pipeline, &constants, sizeof(constants));
+                        cmdList->Draw(3, 1, 0, 0);
+                        cmdList->EndRendering();
+                        cmdList->Barrier(KGPU::TextureBarrier(
+                            texture,
+                            KGPU::ResourceAccess::kColorAttachmentWrite,
+                            KGPU::ResourceAccess::kMemoryRead,
+                            KGPU::PipelineStage::kColorAttachmentOutput,
+                            KGPU::PipelineStage::kAllCommands,
+                            KGPU::ResourceLayout::kPresent
+                        ));
+                    }
+    
+                    cmdList->End();
+                    mFrameSync->EndSynchronize(cmdList);
+                    mFrameSync->PresentSurface();
                 }
-
-                CODE_BLOCK("Copy To Backbuffer") {
-                    Gfx::Resource& ldr = Gfx::ResourceManager::Import("rt_output", cmdList, Gfx::ImportType::kShaderRead);
-                    Gfx::Resource& sampler = Gfx::ResourceManager::Get("sampler");
-                    KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/render_texture.kds");
-                    KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, false) }, {});
-
-                    struct Constants {
-                        KGPU::BindlessHandle in;
-                        KGPU::BindlessHandle sampler;
-                        KGPU::uint2 Pad;
-                    } constants = {
-                        Gfx::ViewRecycler::GetSRV(ldr.Texture)->GetBindlessHandle(),
-                        sampler.Sampler->GetBindlessHandle(),
-                        {}
-                    };
-
-                    cmdList->Barrier(KGPU::TextureBarrier(
-                        texture,
-                        KGPU::ResourceAccess::kNone,
-                        KGPU::ResourceAccess::kColorAttachmentRead,
-                        KGPU::PipelineStage::kNone,
-                        KGPU::PipelineStage::kColorAttachmentOutput,
-                        KGPU::ResourceLayout::kColorAttachment
-                    ));
-                    cmdList->BeginRendering(renderBegin);
-                    cmdList->SetGraphicsPipeline(pipeline);
-                    cmdList->SetRenderSize(mWidth, mHeight);
-                    cmdList->SetGraphicsConstants(pipeline, &constants, sizeof(constants));
-                    cmdList->Draw(3, 1, 0, 0);
-                    cmdList->EndRendering();
-                    cmdList->Barrier(KGPU::TextureBarrier(
-                        texture,
-                        KGPU::ResourceAccess::kColorAttachmentWrite,
-                        KGPU::ResourceAccess::kMemoryRead,
-                        KGPU::PipelineStage::kColorAttachmentOutput,
-                        KGPU::PipelineStage::kAllCommands,
-                        KGPU::ResourceLayout::kPresent
-                    ));
+    
+                CODE_BLOCK("Update") {
+                    void* event;
+                    while (mWindow->PollEvents(&event)) {
+                        (void)event;
+                    }
+    
+                    Gfx::ShaderManager::ReloadPipelines();
                 }
-
-                cmdList->End();
-                mFrameSync->EndSynchronize(cmdList);
-                mFrameSync->PresentSurface();
-            }
-
-            CODE_BLOCK("Update") {
-                void* event;
-                while (mWindow->PollEvents(&event)) {
-                    (void)event;
-                }
-
-                Gfx::ShaderManager::ReloadPipelines();
             }
         }
         mCommandQueue->Wait();

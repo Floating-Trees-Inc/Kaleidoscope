@@ -83,39 +83,37 @@ namespace KGPU
 
     void MetalSync::PresentSurface()
     {
-        ITexture* currentSwapTexture = mSurface->GetTexture(mActualFrameIndex);
-        id<MTLTexture> srcTex = static_cast<MetalTexture*>(currentSwapTexture)->GetMTLTexture();
+        @autoreleasepool {
+            ITexture* currentSwapTexture = mSurface->GetTexture(mActualFrameIndex);
+            id<MTLTexture> srcTex = static_cast<MetalTexture*>(currentSwapTexture)->GetMTLTexture();
 
-        CAMetalLayer* layer = mSurface->GetLayer();
-        mCurrentDrawable = [layer nextDrawable];
-        id<MTLTexture> dstTex = [mCurrentDrawable texture];
+            CAMetalLayer* layer = mSurface->GetLayer();
+            auto drawable = [layer nextDrawable];
+            id<MTLTexture> dstTex = [drawable texture];
 
-        // New command buffer for the present pass
-        ICommandList* newList = mQueue->CreateCommandList(true);
-        MetalCommandList* cmdList = static_cast<MetalCommandList*>(newList);
-        id<MTLCommandBuffer> cb = cmdList->mBuffer;
+            // New command buffer for the present pass
+            id<MTLCommandBuffer> buffer = [mQueue->GetMTLCommandQueue() commandBuffer];
 
-        // Render pass targeting the drawable
-        MTLRenderPassDescriptor* rp = [MTLRenderPassDescriptor renderPassDescriptor];
-        rp.colorAttachments[0].texture    = dstTex;
-        rp.colorAttachments[0].loadAction = MTLLoadActionDontCare;
-        rp.colorAttachments[0].storeAction = MTLStoreActionStore;
+            // Render pass targeting the drawable
+            MTLRenderPassDescriptor* rp = [MTLRenderPassDescriptor renderPassDescriptor];
+            rp.colorAttachments[0].texture    = dstTex;
+            rp.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+            rp.colorAttachments[0].storeAction = MTLStoreActionStore;
 
-        id<MTLRenderCommandEncoder> enc = [cb renderCommandEncoderWithDescriptor:rp];
-        [enc setLabel:@"KGPU Present Pass"];
-        [enc setRenderPipelineState:mPresentPSO];
+            id<MTLRenderCommandEncoder> enc = [buffer renderCommandEncoderWithDescriptor:rp];
+            [enc setLabel:@"KGPU Present Pass"];
+            [enc setRenderPipelineState:mPresentPSO];
 
-        // Bind source texture + sampler to fragment stage
-        [enc setFragmentTexture:srcTex atIndex:0];
-        [enc setFragmentSamplerState:mPresentSamp atIndex:0];
+            // Bind source texture + sampler to fragment stage
+            [enc setFragmentTexture:srcTex atIndex:0];
+            [enc setFragmentSamplerState:mPresentSamp atIndex:0];
 
-        // Fullscreen triangle (no vertex buffers)
-        [enc drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
-        [enc endEncoding];
+            // Fullscreen triangle (no vertex buffers)
+            [enc drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+            [enc endEncoding];
 
-        [cb presentDrawable:mCurrentDrawable];
-        [cb commit];
-
-        KC_DELETE(newList);
+            [buffer presentDrawable:drawable];
+            [buffer commit];
+        }
     }
 }
