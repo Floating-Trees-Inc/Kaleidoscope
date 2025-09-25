@@ -101,7 +101,7 @@ namespace Tri
     
                     CODE_BLOCK("Draw Triangle") {
                         KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds");
-                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, false) }, {});
+                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true) }, {});
     
                         cmdList->Barrier(KGPU::TextureBarrier(
                             texture,

@@ -16,7 +16,6 @@ elseif is_plat("linux") then
 elseif is_plat("macosx") then
     add_defines("KD_MAC", { public = true })
     add_rpathdirs("dlls/mac")
-    add_cxxflags("-fobjc-arc", "-x objective-c++", { public = true })
 end
 
 -- Config
