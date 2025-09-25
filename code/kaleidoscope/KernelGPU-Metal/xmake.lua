@@ -7,7 +7,7 @@ target("KernelGPU-Metal")
     set_kind("static")
     set_group("Kaleidoscope")
 
-    add_files("*.cpp")
+    add_files("*.mm")
     add_headerfiles("*.h")
     add_includedirs(".", "../KernelGPU", { public = true })
     add_deps("sdl3", "glm", "KernelOS", "KernelCore", "metalpp")

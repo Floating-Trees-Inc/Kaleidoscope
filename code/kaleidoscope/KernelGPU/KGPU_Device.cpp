@@ -12,7 +12,7 @@
     #include <KernelGPU-D3D12/KGPU_D3D12Device.h>
     #include <KernelGPU-Vulkan/KGPU_VulkanDevice.h>
 #elif defined(KD_MAC)
-    #include <KernelGPU-Metal/KGPU_MetalDevice.h>
+    #include <KernelGPU-Metal/KGPU_MetalBlackbox.h>
     #include <KernelGPU-Vulkan/KGPU_VulkanDevice.h>
 #endif
 
@@ -32,8 +32,8 @@ namespace KGPU
 #elif defined(KD_MAC)
         switch (backend)
         {
-            case Backend::kAuto: return KC_NEW(MetalDevice, debug);
-            case Backend::kMetal: return KC_NEW(MetalDevice, debug);
+            case Backend::kAuto: return CreateMetalDevice(debug);
+            case Backend::kMetal: return CreateMetalDevice(debug);
             case Backend::kVulkan: return KC_NEW(VulkanDevice, debug);
             case Backend::kDummy: return KC_NEW(DummyDevice, debug);
             default: return nullptr;
