@@ -13,3 +13,6 @@ data/kd/tests/*.png
 
 # Config
 imgui.ini
+
+# Whatever
+.DS_Store
