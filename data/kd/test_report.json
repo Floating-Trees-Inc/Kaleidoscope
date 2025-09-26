@@ -9,60 +9,60 @@
         "goldenPath": "tests/golden/MeshTriangleGolden.png",
         "magmaPath": "tests/MeshTriangleMagma.png",
         "outputPath": "tests/MeshTriangle.png",
-        "result": false
+        "result": true
     },
     "MeshTriangleIndirect": {
         "goldenPath": "tests/golden/MeshTriangleIndirectGolden.png",
         "magmaPath": "tests/MeshTriangleIndirectMagma.png",
         "outputPath": "tests/MeshTriangleIndirect.png",
-        "result": false
+        "result": true
     },
     "RayPipelineTriangle": {
         "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
         "magmaPath": "tests/RayPipelineTriangleMagma.png",
         "outputPath": "tests/RayPipelineTriangle.png",
-        "result": false
+        "result": true
     },
     "RayQueryTriangle": {
         "goldenPath": "tests/golden/RayQueryTriangleGolden.png",
         "magmaPath": "tests/RayQueryTriangleMagma.png",
         "outputPath": "tests/RayQueryTriangle.png",
-        "result": false
+        "result": true
     },
     "SimpleCompute": {
         "goldenPath": "tests/golden/SimpleComputeGolden.png",
         "magmaPath": "tests/SimpleComputeMagma.png",
         "outputPath": "tests/SimpleCompute.png",
-        "result": false
+        "result": true
     },
     "SimpleComputeIndirect": {
         "goldenPath": "tests/golden/SimpleComputeIndirectGolden.png",
         "magmaPath": "tests/SimpleComputeIndirectMagma.png",
         "outputPath": "tests/SimpleComputeIndirect.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangle": {
         "goldenPath": "tests/golden/StreamedTriangleGolden.png",
         "magmaPath": "tests/StreamedTriangleMagma.png",
         "outputPath": "tests/StreamedTriangle.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangleIndex": {
         "goldenPath": "tests/golden/StreamedTriangleIndexGolden.png",
         "magmaPath": "tests/StreamedTriangleIndexMagma.png",
         "outputPath": "tests/StreamedTriangleIndex.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangleIndexIndirect": {
         "goldenPath": "tests/golden/StreamedTriangleIndexIndirectGolden.png",
         "magmaPath": "tests/StreamedTriangleIndexIndirectMagma.png",
         "outputPath": "tests/StreamedTriangleIndexIndirect.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangleIndirect": {
         "goldenPath": "tests/golden/StreamedTriangleIndirectGolden.png",
         "magmaPath": "tests/StreamedTriangleIndirectMagma.png",
         "outputPath": "tests/StreamedTriangleIndirect.png",
-        "result": false
+        "result": true
     }
 }
