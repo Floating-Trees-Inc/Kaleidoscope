@@ -19,10 +19,10 @@ This engine is **Windows/MacOS only** for now. More platforms may be added in th
 
 ## Features
 
-- RHI with D3D12/Vulkan support (Metal WIP). Has bindless, raytracing, mesh shaders, indirect commands
+- RHI with D3D12/Vulkan/Metal support. Has bindless, raytracing, mesh shaders, indirect commands
+- Unified shader system, write once run everywhere
 - Input system
 - Asset management
-- Graphics utilities (resource recycling)
 - Custom ImGui/Im3D renderer
 - Access to the system sound buffer
 - Test suite for various engine modules, auto test runner written in Haskell: ![](.github/test.png)
