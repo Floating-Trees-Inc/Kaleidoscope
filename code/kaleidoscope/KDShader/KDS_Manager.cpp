@@ -13,9 +13,7 @@ namespace KDS
 
     void Manager::Initialize()
     {
-#ifdef KD_WINDOWS
         sDynLib = KC_NEW(KOS::DynLib, DXC_DLL);
-#endif
     }
 
     void Manager::Shutdown()

@@ -24,5 +24,7 @@ namespace KOS
 #ifdef KD_WINDOWS
     #define DXC_DLL "dxcompiler.dll"
     #define DISCORD_DLL "discord_game_sdk.dll"
+#elif defined(KD_MAC)
+    #define DXC_DLL "libdxcompiler.dylib"
 #endif
 }
