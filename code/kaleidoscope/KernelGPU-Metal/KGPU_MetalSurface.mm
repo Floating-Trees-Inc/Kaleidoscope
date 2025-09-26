@@ -23,6 +23,7 @@ namespace KGPU
         mLayer = (__bridge CAMetalLayer*)SDL_Metal_GetLayer(mView);
         mLayer.device = device->GetMTLDevice();
         mLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+        mLayer.framebufferOnly = NO;
 
         KC::String title = window->GetTitle();
         title += " | Metal";

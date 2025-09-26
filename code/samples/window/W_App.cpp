@@ -68,7 +68,7 @@ namespace Win
                     cmdList->Begin();
     
                     CODE_BLOCK("Draw Triangle") {
-                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, KGPU::float3(0.1f, 0.8f, 0.3f)) }, {});
+                        KGPU::RenderBegin renderBegin(mWidth, mHeight, { KGPU::RenderAttachment(textureView, true, KGPU::float3(0.0f, 1.0f, 0.0f)) }, {});
     
                         cmdList->Barrier(KGPU::TextureBarrier(
                             texture,

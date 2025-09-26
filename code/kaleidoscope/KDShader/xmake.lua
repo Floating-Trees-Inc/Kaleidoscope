@@ -21,5 +21,6 @@ target("KDShader")
         add_syslinks("kernel32", "user32")
     elseif is_plat("macosx") then
         add_headerfiles("MetalLib/*.h")
-        add_files("MetalLib/*.cpp")
+        add_files("MetalLib/*.mm")
+        add_deps("dxc", "metalirconverter")
     end

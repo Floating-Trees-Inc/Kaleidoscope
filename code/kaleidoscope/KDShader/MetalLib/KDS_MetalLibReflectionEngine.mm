@@ -6,8 +6,12 @@
 #include "KDS_MetalLibReflectionEngine.h"
 #include "KDS_Manager.h"
 
+#include <DXC/dxcapi.h>
+
 namespace KDS
 {
+    typedef HRESULT (*PFN_DxcCreateInstance)(REFCLSID rclsid, REFIID riid, LPVOID *ppv);
+
     MetalLibReflectionEngine::MetalLibReflectionEngine()
     {
        

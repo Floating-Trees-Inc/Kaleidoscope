@@ -8,6 +8,9 @@ generated
 build
 kaleidoscope.txt
 
+# Private stuff smh
+thirdparty/metalirconverter/Include/
+
 # Images
 data/kd/tests/*.png
 
