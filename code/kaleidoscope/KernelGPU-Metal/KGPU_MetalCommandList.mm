@@ -165,6 +165,7 @@ namespace KGPU
 
     void MetalCommandList::SetIndexBuffer(IBuffer* buffer)
     {
+        mBoundIndexBuffer = buffer;
     }
 
     void MetalCommandList::SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size)
@@ -181,6 +182,8 @@ namespace KGPU
 
     void MetalCommandList::SetMeshPipeline(IMeshPipeline* pipeline)
     {
+        MetalMeshPipeline* metalPipeline = static_cast<MetalMeshPipeline*>(pipeline);
+        [mRenderEncoder setRenderPipelineState:metalPipeline->GetPipelineState()];
     }
 
     void MetalCommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
@@ -197,19 +200,36 @@ namespace KGPU
 
     void MetalCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
+        // TODO: Change primitive type depending on pipeline state...
         [mRenderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:firstVertex vertexCount:vertexCount instanceCount:instanceCount baseInstance:firstInstance];
     }
 
     void MetalCommandList::DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance)
     {
+        MetalBuffer* indexBuffer = static_cast<MetalBuffer*>(mBoundIndexBuffer);
+        [mRenderEncoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                        indexCount: indexCount
+                        indexType: MTLIndexTypeUInt32
+                        indexBuffer: indexBuffer->GetMTLBuffer()
+                        indexBufferOffset:0
+                        instanceCount: instanceCount
+                        baseVertex: vertexOffset
+                        baseInstance: firstInstance];
     }
 
-    void MetalCommandList::Dispatch(uint x, uint y, uint z)
+    void MetalCommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
     {
+#if 0
+        [mComputeEncoder dispatchThreadgroups:MTLSizeMake(numberGroups.x, numberGroups.y, numberGroups.z)
+                           threadsPerThreadgroup:MTLSizeMake(threadsPerGroup.x, threadsPerGroup.y, threadsPerGroup.z)];
+#endif
     }
 
-    void MetalCommandList::DispatchMesh(uint x, uint y, uint z)
+    void MetalCommandList::DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup)
     {
+        [mRenderEncoder drawMeshThreadgroups:MTLSizeMake(numberGroups.x, numberGroups.y, numberGroups.z)
+                        threadsPerObjectThreadgroup:MTLSizeMake(0, 0, 0)
+                        threadsPerMeshThreadgroup:MTLSizeMake(threadsPerGroup.x, threadsPerGroup.y, threadsPerGroup.z)];
     }
 
     void MetalCommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)
@@ -234,10 +254,17 @@ namespace KGPU
 
     void MetalCommandList::CopyBufferToBufferFull(IBuffer* dest, IBuffer* src)
     {
+        MetalBuffer* dstBuffer = static_cast<MetalBuffer*>(dest);
+        MetalBuffer* srcBuffer = static_cast<MetalBuffer*>(src);
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit copyFromBuffer:srcBuffer->GetMTLBuffer() sourceOffset:0 toBuffer:dstBuffer->GetMTLBuffer() destinationOffset:0 size:srcBuffer->GetDesc().Size];
+        [blit endEncoding];
     }
 
     void MetalCommandList::CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips)
     {
+        
     }
 
     void MetalCommandList::CopyTextureToBuffer(IBuffer* dest, ITexture* src)
@@ -276,6 +303,12 @@ namespace KGPU
 
     void MetalCommandList::CopyTextureToTexture(ITexture* dst, ITexture* src)
     {
+        MetalTexture* dest = static_cast<MetalTexture*>(dst);
+        MetalTexture* source = static_cast<MetalTexture*>(src);
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit copyFromTexture:source->GetMTLTexture() sourceSlice:0 sourceLevel:0 toTexture:dest->GetMTLTexture() destinationSlice:0 destinationLevel:0 sliceCount:1 levelCount:1];
+        [blit endEncoding];
     }
 
     void MetalCommandList::BuildBLAS(IBLAS* blas, ASBuildMode mode)
@@ -288,9 +321,12 @@ namespace KGPU
 
     void MetalCommandList::PushMarker(const KC::String& name)
     {
+        NSString* nsName = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
+        [mBuffer pushDebugGroup:nsName];
     }
 
     void MetalCommandList::PopMarker()
     {
+        [mBuffer popDebugGroup];
     }
 }

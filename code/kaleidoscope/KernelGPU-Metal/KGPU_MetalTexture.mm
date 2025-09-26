@@ -45,7 +45,8 @@ namespace KGPU
     
     void MetalTexture::SetName(const KC::String& name)
     {
-        // TODO
+        mLabel = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
+        mTexture.label = mLabel;
     }
 
     MTLPixelFormat MetalTexture::TranslateToMTLPixelFormat(TextureFormat format)

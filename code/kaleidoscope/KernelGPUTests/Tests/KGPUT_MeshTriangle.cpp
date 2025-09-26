@@ -45,7 +45,7 @@ namespace KGPUT
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
             mCommandList->SetMeshPipeline(Gfx::ShaderManager::GetMesh("data/kd/shaders/tests/mesh_triangle.kds"));
-            mCommandList->DispatchMesh(1, 1, 1);
+            mCommandList->DispatchMesh(KGPU::uint3(1, 1, 1), KGPU::uint3(1, 1, 1));
             mCommandList->EndRendering();
             mCommandList->Barrier(endRenderBarrier);
         }

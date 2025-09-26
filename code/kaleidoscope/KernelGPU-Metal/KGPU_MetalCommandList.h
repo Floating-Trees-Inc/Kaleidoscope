@@ -56,8 +56,8 @@ namespace KGPU
 
         void Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) override;
         void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) override;
-        void Dispatch(uint x, uint y, uint z) override;
-        void DispatchMesh(uint x, uint y, uint z) override;
+        void Dispatch(uint3 numberGroups, uint3 threadsPerGroup) override;
+        void DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup) override;
         void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) override;
 
         void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
@@ -85,5 +85,7 @@ namespace KGPU
         id<MTLCommandBuffer> mBuffer;
         id<MTLRenderCommandEncoder> mRenderEncoder;
         id<MTLComputeCommandEncoder> mComputeEncoder;
+
+        IBuffer* mBoundIndexBuffer = nullptr;
     };
 }

@@ -457,14 +457,14 @@ namespace KGPU
         vkCmdDrawIndexed(mCmdBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
-    void VulkanCommandList::Dispatch(uint x, uint y, uint z)
+    void VulkanCommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
     {
-        vkCmdDispatch(mCmdBuffer, x, y, z);
+        vkCmdDispatch(mCmdBuffer, numberGroups.x, numberGroups.y, numberGroups.z);
     }
 
-    void VulkanCommandList::DispatchMesh(uint x, uint y, uint z)
+    void VulkanCommandList::DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup)
     {
-        vkCmdDrawMeshTasksEXT(mCmdBuffer, x, y, z);
+        vkCmdDrawMeshTasksEXT(mCmdBuffer, numberGroups.x, numberGroups.y, numberGroups.z);
     }
     
     void VulkanCommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)

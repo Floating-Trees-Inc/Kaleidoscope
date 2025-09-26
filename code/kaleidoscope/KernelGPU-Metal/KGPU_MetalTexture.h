@@ -26,6 +26,7 @@ namespace KGPU
         friend class MetalSurface;
 
         id<MTLTexture> mTexture = nullptr;
+        NSString* mLabel;
 
     public:
         static MTLPixelFormat TranslateToMTLPixelFormat(TextureFormat format);

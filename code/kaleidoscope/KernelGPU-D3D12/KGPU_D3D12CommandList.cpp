@@ -380,14 +380,14 @@ namespace KGPU
         mList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
-    void D3D12CommandList::Dispatch(uint x, uint y, uint z)
+    void D3D12CommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
     {
-        mList->Dispatch(x, y, z);
+        mList->Dispatch(numberGroups.x, numberGroups.y, numberGroups.z);
     }
 
-    void D3D12CommandList::DispatchMesh(uint x, uint y, uint z)
+    void D3D12CommandList::DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup)
     {
-        mList->DispatchMesh(x, y, z);
+        mList->DispatchMesh(numberGroups.x, numberGroups.y, numberGroups.z);
     }
 
     void D3D12CommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)

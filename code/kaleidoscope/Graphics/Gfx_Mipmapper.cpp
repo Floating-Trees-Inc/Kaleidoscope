@@ -93,13 +93,16 @@ namespace Gfx
                 KGPU::float2(width, height),
                 KGPU::float2()
             };
+
+            KGPU::uint3 groupSize = KGPU::uint3(8);
             
             if (i > 0) {
                 cmdList->Barrier(ReadBarriers[i - 1]);
             }
             cmdList->Barrier(WriteBarriers[i]);
             cmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
-            cmdList->Dispatch((width + 7) / 8, (height + 7) / 8, 1);
+            cmdList->Dispatch(KGPU::uint3((width + 7) / 8, (height + 7) / 8, 1),
+                              groupSize);
         }
         cmdList->EndCompute();
     }

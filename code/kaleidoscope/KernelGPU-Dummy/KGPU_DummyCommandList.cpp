@@ -126,11 +126,11 @@ namespace KGPU
     {
     }
 
-    void DummyCommandList::Dispatch(uint x, uint y, uint z)
+    void DummyCommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
     {
     }
 
-    void DummyCommandList::DispatchMesh(uint x, uint y, uint z)
+    void DummyCommandList::DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup)
     {
     }
 

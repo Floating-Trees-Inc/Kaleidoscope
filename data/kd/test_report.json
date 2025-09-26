@@ -9,7 +9,7 @@
         "goldenPath": "tests/golden/MeshTriangleGolden.png",
         "magmaPath": "tests/MeshTriangleMagma.png",
         "outputPath": "tests/MeshTriangle.png",
-        "result": false
+        "result": true
     },
     "MeshTriangleIndirect": {
         "goldenPath": "tests/golden/MeshTriangleIndirectGolden.png",
@@ -51,7 +51,7 @@
         "goldenPath": "tests/golden/StreamedTriangleIndexGolden.png",
         "magmaPath": "tests/StreamedTriangleIndexMagma.png",
         "outputPath": "tests/StreamedTriangleIndex.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangleIndexIndirect": {
         "goldenPath": "tests/golden/StreamedTriangleIndexIndirectGolden.png",

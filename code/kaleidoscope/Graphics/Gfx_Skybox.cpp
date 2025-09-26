@@ -102,7 +102,7 @@ namespace Gfx
         cmdList->BeginCompute();
         cmdList->SetComputePipeline(pipeline);
         cmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
-        cmdList->Dispatch(2048 / 32, 2048 / 32, 6);
+        cmdList->Dispatch(KGPU::uint3(2048 / 32, 2048 / 32, 6), KGPU::uint3(32, 32, 6));
         cmdList->EndCompute();
         cmdList->Barrier(endBarrier);
     }

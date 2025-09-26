@@ -86,7 +86,7 @@ namespace KGPUT
             mCommandList->BeginCompute();
             mCommandList->SetComputePipeline(pipeline);
             mCommandList->SetComputeConstants(pipeline, &constants, sizeof(constants));
-            mCommandList->Dispatch((TEST_WIDTH + 7) / 8, (TEST_HEIGHT + 7) / 8, 1);
+            mCommandList->Dispatch(KGPU::uint3((TEST_WIDTH + 7) / 8, (TEST_HEIGHT + 7) / 8, 1), KGPU::uint3(8, 8, 1));
             mCommandList->EndCompute();
             mCommandList->Barrier(endRenderBarrier);
         }

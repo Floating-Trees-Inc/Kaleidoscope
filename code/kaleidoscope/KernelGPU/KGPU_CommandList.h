@@ -202,8 +202,8 @@ namespace KGPU
     
         virtual void Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance) = 0;
         virtual void DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance) = 0;
-        virtual void Dispatch(uint x, uint y, uint z) = 0;
-        virtual void DispatchMesh(uint x, uint y, uint z) = 0;
+        virtual void Dispatch(uint3 numberGroups, uint3 threadsPerGroup) = 0;
+        virtual void DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup) = 0;
         virtual void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) = 0;
 
         virtual void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
