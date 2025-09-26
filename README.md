@@ -4,7 +4,7 @@ Kaleidoscope is the internal game engine used to make my own games. Built from t
 
 ## Building and running
 
-xmake is required. On Mac, you must drag and drop the Metal Shader Converter headers (runtime and compiler) in thirdparty/metalirconverter/Include.\
+xmake is required.\
 To build: `xmake`\
 To run: `xmake run {target}`, target can be your app (for instance, demo_app)
 
