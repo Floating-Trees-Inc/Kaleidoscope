@@ -119,7 +119,7 @@ namespace KDS
         result.Stage = stage;
         result.Entry = entry;
         result.Language = KGPU::ShaderLanguage::kHLSL;
-        result.Bytecode = KGPU::ShaderBytecodeType::kDXIL;
+        result.Bytecode = KGPU::ShaderBytecodeType::kMetalLib;
         result.Data.resize(pShaderBlob->GetBufferSize());
         memcpy(result.Data.data(), pShaderBlob->GetBufferPointer(), result.Data.size());
 
@@ -136,12 +136,36 @@ namespace KDS
 
     MetalLibCompiler::MetalLibCompiler()
     {
-        
+        IRRootParameter1 rootSigParams[1];
+        rootSigParams[0] = {
+            .ParameterType = IRRootParameterType32BitConstants,
+            .Constants = {
+                .ShaderRegister = 0,
+                .RegisterSpace = 0,
+                .Num32BitValues = 160 / sizeof(uint32_t)
+            },
+            .ShaderVisibility = IRShaderVisibilityAll
+        };
+
+        IRVersionedRootSignatureDescriptor rootSignature = {};
+        rootSignature.version = IRRootSignatureVersion_1_1;
+        rootSignature.desc_1_1.Flags = IRRootSignatureFlags(IRRootSignatureFlagSamplerHeapDirectlyIndexed | IRRootSignatureFlagCBVSRVUAVHeapDirectlyIndexed);
+        rootSignature.desc_1_1.pParameters = rootSigParams;
+        rootSignature.desc_1_1.NumParameters = 1;
+
+        IRError* pRootSigError = nullptr;
+        mRootSignature = IRRootSignatureCreateFromDescriptor(&rootSignature, &pRootSigError);
+        if (pRootSigError) {
+            auto errorCode = IRErrorGetCode(pRootSigError);
+
+            KD_ERROR("Failed to create root signature with code %u", errorCode);
+            IRErrorDestroy(pRootSigError);
+        }
     }
 
     MetalLibCompiler::~MetalLibCompiler() 
     {
-        
+        IRRootSignatureDestroy(mRootSignature);
     }
 
     KGPU::ShaderModule MetalLibCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage)
@@ -152,18 +176,19 @@ namespace KDS
             return {};
         }
 
-#if 0
         auto dxil = IRObjectCreateFromDXIL((uint8*)module.Data.data(), module.Data.size(), IRBytecodeOwnershipNone);
 
         IRCompiler* compiler = IRCompilerCreate();
         IRCompilerSetEntryPointName(compiler, entry.c_str());
         IRCompilerSetMinimumDeploymentTarget(compiler, IROperatingSystem_macOS, "14.0");
+        IRCompilerSetGlobalRootSignature(compiler, mRootSignature);
 
         IRError* compileError = nullptr;
         auto metalIR = IRCompilerAllocCompileAndLink(compiler, entry.c_str(), dxil, &compileError);
         if (compileError) {
             auto errorCode = IRErrorGetCode(compileError);
-            KD_ERROR("Metal IR generation failed with code %d", errorCode);
+
+            KD_ERROR("Metal IR generation failed with code %u", errorCode);
             IRErrorDestroy(compileError);
         }
 
@@ -177,7 +202,6 @@ namespace KDS
         IRObjectDestroy(dxil);
         IRObjectDestroy(metalIR);
         IRCompilerDestroy(compiler);
-#endif
 
         return module;
     }

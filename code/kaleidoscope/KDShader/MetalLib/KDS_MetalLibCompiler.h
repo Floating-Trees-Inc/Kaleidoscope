@@ -7,6 +7,8 @@
 
 #include "KDS_Compiler.h"
 
+class IRRootSignature;
+
 namespace KDS
 {
     class MetalLibCompiler : public ICompiler
@@ -16,5 +18,8 @@ namespace KDS
         ~MetalLibCompiler() override;
 
         KGPU::ShaderModule Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage) override;
+    
+    private:
+        IRRootSignature* mRootSignature;
     };
 }

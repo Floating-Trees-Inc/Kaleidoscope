@@ -125,6 +125,8 @@ namespace KGPU
 
     void MetalCommandList::SetGraphicsPipeline(IGraphicsPipeline* pipeline)
     {
+        MetalGraphicsPipeline* metalPipeline = static_cast<MetalGraphicsPipeline*>(pipeline);
+        [mRenderEncoder setRenderPipelineState:metalPipeline->GetState()];
     }
 
     void MetalCommandList::SetViewport(float width, float height, float x, float y)
@@ -195,6 +197,7 @@ namespace KGPU
 
     void MetalCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
+        [mRenderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:firstVertex vertexCount:vertexCount instanceCount:instanceCount baseInstance:firstInstance];
     }
 
     void MetalCommandList::DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance)

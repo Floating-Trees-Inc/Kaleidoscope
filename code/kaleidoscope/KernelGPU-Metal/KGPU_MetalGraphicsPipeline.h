@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_GraphicsPipeline.h>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -16,5 +17,9 @@ namespace KGPU
     public:
         MetalGraphicsPipeline(MetalDevice* device, GraphicsPipelineDesc desc);
         ~MetalGraphicsPipeline();
+
+        id<MTLRenderPipelineState> GetState() { return mState; }
+    private:
+        id<MTLRenderPipelineState> mState;
     };
 }

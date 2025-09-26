@@ -12,5 +12,7 @@ target("metalirconverter")
         add_files("Source/runtime.mm")
         add_headerfiles("Include/**.h")
         add_includedirs("Include/", { public = true })
+        add_linkdirs("Libs/")
+        add_links("metalirconverter")
         add_frameworks("Metal", "Foundation")
     end

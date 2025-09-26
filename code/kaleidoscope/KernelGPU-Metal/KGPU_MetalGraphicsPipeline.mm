@@ -13,11 +13,53 @@ namespace KGPU
     {
         mDesc = desc;
 
+        NSError* __autoreleasing error = nil;
+
+        // Create vertex and fragment shader libraries
+        dispatch_data_t vertexData = dispatch_data_create(desc.Modules[ShaderStage::kVertex].Data.data(),
+                                                          desc.Modules[ShaderStage::kVertex].Data.size(),
+                                                          dispatch_get_main_queue(), NULL);
+        id<MTLLibrary> vertexLibrary = [device->GetMTLDevice() newLibraryWithData:vertexData error:&error];
+        KD_ASSERT_EQ(vertexLibrary, "Failed to create vertex shader library!");
+
+        dispatch_data_t fragmentData = dispatch_data_create(desc.Modules[ShaderStage::kPixel].Data.data(),
+                                                            desc.Modules[ShaderStage::kPixel].Data.size(),
+                                                            dispatch_get_main_queue(), NULL);
+        id<MTLLibrary> fragmentLibrary = [device->GetMTLDevice() newLibraryWithData:fragmentData error:&error];
+        KD_ASSERT_EQ(fragmentLibrary, "Failed to create fragment shader library!");
+
+        // Create vertex and fragment function
+        NSString* vertexName = [[NSString alloc] initWithBytes:desc.Modules[ShaderStage::kVertex].Entry.c_str()
+                                                     length:desc.Modules[ShaderStage::kVertex].Entry.size()
+                                                   encoding:NSUTF8StringEncoding];
+        NSString* fragmentName = [[NSString alloc] initWithBytes:desc.Modules[ShaderStage::kPixel].Entry.c_str()
+                                                       length:desc.Modules[ShaderStage::kPixel].Entry.size()
+                                                     encoding:NSUTF8StringEncoding];
+
+        id<MTLFunction> vertexFunction = [vertexLibrary newFunctionWithName:vertexName];
+        id<MTLFunction> fragmentFunction = [fragmentLibrary newFunctionWithName:fragmentName];
+
+        // Configure pipeline descriptor
+        MTLRenderPipelineDescriptor* pipelineDescriptor = [MTLRenderPipelineDescriptor new];
+        pipelineDescriptor.vertexFunction = vertexFunction;
+        pipelineDescriptor.fragmentFunction = fragmentFunction;
+
+        for (int i = 0; i < desc.RenderTargetFormats.size(); i++) {
+            pipelineDescriptor.colorAttachments[i].pixelFormat = MetalTexture::TranslateToMTLPixelFormat(desc.RenderTargetFormats[i]);
+        }
+
+        if (desc.DepthEnabled) {
+            pipelineDescriptor.depthAttachmentPixelFormat = MetalTexture::TranslateToMTLPixelFormat(desc.DepthFormat);
+        }
+
+        // Create the pipeline state
+        mState = [device->GetMTLDevice() newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&error];
+        KD_ASSERT_EQ(mState, "Failed to create Metal graphics pipeline!");
+
         KD_WHATEVER("Created Metal graphics pipeline");
     }
-    
+
     MetalGraphicsPipeline::~MetalGraphicsPipeline()
     {
-
     }
 }

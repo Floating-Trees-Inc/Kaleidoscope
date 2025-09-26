@@ -45,7 +45,7 @@
         "goldenPath": "tests/golden/StreamedTriangleGolden.png",
         "magmaPath": "tests/StreamedTriangleMagma.png",
         "outputPath": "tests/StreamedTriangle.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangleIndex": {
         "goldenPath": "tests/golden/StreamedTriangleIndexGolden.png",
