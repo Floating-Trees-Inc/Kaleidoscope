@@ -176,6 +176,15 @@ namespace KDS
             return {};
         }
 
+        // SKIP IF RAYTRACING SHADER:
+        if (stage == KGPU::ShaderStage::kRayGeneration ||
+            stage == KGPU::ShaderStage::kClosestHit ||
+            stage == KGPU::ShaderStage::kAnyHit ||
+            stage == KGPU::ShaderStage::kMiss ||
+            stage == KGPU::ShaderStage::kIntersection) {
+            return module;
+        }
+
         auto dxil = IRObjectCreateFromDXIL((uint8*)module.Data.data(), module.Data.size(), IRBytecodeOwnershipNone);
 
         IRCompiler* compiler = IRCompilerCreate();
