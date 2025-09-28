@@ -69,7 +69,7 @@ namespace KGPU
         void CopyTextureToBuffer(IBuffer* dest, ITexture* src) override;
         void CopyTextureToTexture(ITexture* dst, ITexture* src) override;
         void BuildBLAS(IBLAS* blas, ASBuildMode mode) override;
-        void BuildTLAS(ITLAS* blas, ASBuildMode mode, uint instanceCount, IBuffer* buffer) override;
+        void BuildTLAS(ITLAS* blas, ASBuildMode mode) override;
 
         void PushMarker(const KC::String& name) override;
         void PopMarker() override;

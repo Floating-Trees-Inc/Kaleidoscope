@@ -23,6 +23,8 @@ namespace KGPU
         id<MTLAccelerationStructure> GetAccelerationStructure() { return mAccelerationStructure; }
         MTLPrimitiveAccelerationStructureDescriptor* GetDescriptor() { return mDescriptor; }
     private:
+        MetalDevice* mParentDevice;
+
         MTLAccelerationStructureTriangleGeometryDescriptor* mGeometry;
         MTLPrimitiveAccelerationStructureDescriptor* mDescriptor;
 

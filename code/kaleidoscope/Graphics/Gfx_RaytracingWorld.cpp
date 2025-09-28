@@ -12,18 +12,16 @@ namespace Gfx
         KGPU::IDevice* device = Manager::GetDevice();
 
         mTLAS = device->CreateTLAS();
-        mInstanceBuffer = device->CreateBuffer(KGPU::BufferDesc(sizeof(KGPU::TLASInstance) * KGPU::MAX_TLAS_INSTANCES, sizeof(KGPU::TLASInstance), KGPU::BufferUsage::kConstant));
     }
 
     RaytracingWorld::~RaytracingWorld()
     {
-        KC_DELETE(mInstanceBuffer);
         KC_DELETE(mTLAS);
     }
 
     void RaytracingWorld::Reset()
     {
-        mInstances.clear();
+        mTLAS->ResetInstanceBuffer();
     }
 
     void RaytracingWorld::AddInstance(Gfx::MeshPrimitive* primitive, KGPU::float4x4 transform, bool opaque)
@@ -31,20 +29,12 @@ namespace Gfx
         if (!Gfx::Manager::GetDevice()->SupportsRaytracing())
             return;
 
-        KGPU::TLASInstance instance;
-        instance.AccelerationStructureReference = primitive->GetBLAS()->GetAddress();
-        instance.Mask = 1;
-        instance.Transform = KGPU::float3x4(transform);
-        instance.Flags = opaque ? KGPU::TLAS_INSTANCE_OPAQUE : KGPU::TLAS_INSTANCE_NON_OPAQUE;
-        
-        mInstances.push_back(instance);
+        mTLAS->AddInstance(primitive->GetBLAS(), transform, opaque);
     }
 
     void RaytracingWorld::Build(KGPU::ICommandList* list)
     {
-        void* ptr = mInstanceBuffer->Map();
-        memcpy(ptr, mInstances.data(), mInstances.size() * sizeof(KGPU::TLASInstance));
-        mInstanceBuffer->Unmap();
+        mTLAS->Upload();
 
         KGPU::BufferBarrier beforeBarrier(mTLAS->GetMemory());
         beforeBarrier.SourceAccess = KGPU::ResourceAccess::kAccelerationStructureRead;
@@ -60,7 +50,7 @@ namespace Gfx
 
         list->PushMarker("Gfx::RaytracingWorld::Build");
         list->Barrier(beforeBarrier);
-        list->BuildTLAS(mTLAS, KGPU::ASBuildMode::kRebuild, mInstances.size(), mInstanceBuffer);
+        list->BuildTLAS(mTLAS, KGPU::ASBuildMode::kRebuild);
         list->Barrier(afterBarrier);
         list->PopMarker();
     }

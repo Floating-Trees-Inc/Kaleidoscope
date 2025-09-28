@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <KernelGPU/KGPU_BLAS.h>
 #include <KernelGPU/KGPU_TLAS.h>
 
 namespace KGPU
@@ -18,6 +19,10 @@ namespace KGPU
         ~DummyTLAS();
     
         uint64 Address() const { return mMemory->GetAddress(); }
+
+        void ResetInstanceBuffer() override;
+        void AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque = true) override;
+        void Upload() override;
     private:
         friend class DummyCommandList;
     };

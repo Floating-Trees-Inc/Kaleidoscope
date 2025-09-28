@@ -17,8 +17,9 @@ namespace Gfx
         uint64 RowPitch;
     };
 
-    void Uploader::EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::IBuffer* instanceBuffer, uint instanceCount, KGPU::ICommandList* cmd)
+    void Uploader::EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::ICommandList* cmd)
     {
+        tlas->Upload();
         KGPU::ICommandList* cmdList = cmd ? cmd : CommandListRecycler::RequestCommandList();
 
         KGPU::BufferBarrier beforeBarrier(tlas->GetMemory());
@@ -34,7 +35,7 @@ namespace Gfx
         afterBarrier.DestStage = KGPU::PipelineStage::kRayTracingShader;
 
         cmdList->Barrier(beforeBarrier);
-        cmdList->BuildTLAS(tlas, KGPU::ASBuildMode::kRebuild, instanceCount, instanceBuffer);
+        cmdList->BuildTLAS(tlas, KGPU::ASBuildMode::kRebuild);
         cmdList->Barrier(afterBarrier);
     }
 

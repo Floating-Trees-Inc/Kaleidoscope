@@ -174,7 +174,7 @@ namespace KGPU
     {
     }
 
-    void DummyCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode, uint instanceCount, IBuffer* buffer)
+    void DummyCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode)
     {
     }
 

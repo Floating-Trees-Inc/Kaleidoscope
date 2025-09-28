@@ -18,7 +18,7 @@ namespace KGPU
     {
         MTLResidencySetDescriptor* descriptor = [MTLResidencySetDescriptor new];
         descriptor.label = @"KGPU_MetalResidencySet";
-        descriptor.initialCapacity = 4096; // 1 million resources
+        descriptor.initialCapacity = 4096;
 
         NSError* err = nil;
         mResidencySet = [device->GetMTLDevice() newResidencySetWithDescriptor:descriptor error:&err];
@@ -82,22 +82,26 @@ namespace KGPU
 
     void MetalResidencySet::WriteBLAS(MetalBLAS* blas)
     {
-
+        [mResidencySet addAllocation:blas->GetAccelerationStructure()];
+        mDirty = true;
     }
 
     void MetalResidencySet::FreeBLAS(MetalBLAS* blas)
     {
-
+        [mResidencySet removeAllocation:blas->GetAccelerationStructure()];
+        mDirty = true;
     }
 
     void MetalResidencySet::WriteTLAS(MetalTLAS* tlas)
     {
-
+        [mResidencySet addAllocation:tlas->GetAccelerationStructure()];
+        mDirty = true;
     }
 
     void MetalResidencySet::FreeTLAS(MetalTLAS* tlas)
     {
-
+        [mResidencySet removeAllocation:tlas->GetAccelerationStructure()];
+        mDirty = true;
     }
 
     void MetalResidencySet::UpdateIfDirty()

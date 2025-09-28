@@ -20,5 +20,6 @@ namespace KGPU
     using int4 = glm::ivec4;
     using float4x4 = glm::mat4;
     using float3x4 = glm::mat3x4;
+    using float4x3 = glm::mat4x3;
     using float3x3 = glm::mat3x3;
 }

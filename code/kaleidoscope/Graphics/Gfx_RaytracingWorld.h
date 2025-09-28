@@ -25,7 +25,5 @@ namespace Gfx
         KGPU::BindlessHandle GetWorldView() { return mTLAS->GetBindlessHandle(); }
     private:
         KGPU::ITLAS* mTLAS;
-        KGPU::IBuffer* mInstanceBuffer;
-        KC::Array<KGPU::TLASInstance> mInstances;
     };
 }

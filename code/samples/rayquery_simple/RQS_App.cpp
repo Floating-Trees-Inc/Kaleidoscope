@@ -3,7 +3,7 @@
 // > Create Time: 2025-07-26 00:23:26
 //
 
-#include "RTS_App.h"
+#include "RQS_App.h"
 
 #include <KernelInput/KI_InputSystem.h>
 
@@ -19,11 +19,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace RTS
+namespace RQS
 {
     App::App()
     {
-        mWindow = KOS::IWindow::Create(mWidth, mHeight, "RT Test | Kaleidoscope 0.0.1");
+        mWindow = KOS::IWindow::Create(mWidth, mHeight, "RQ Test | Kaleidoscope 0.0.1");
     
         CODE_BLOCK("Create RHI objects") {
             mDevice = KGPU::IDevice::Create(false);
@@ -73,11 +73,7 @@ namespace RTS
             Gfx::Uploader::EnqueueBLASBuild(mBLAS);
             Gfx::Uploader::EnqueueTLASBuild(mTLAS);
 
-            KGPU::RaytracingPipelineDesc desc;
-            desc.PayloadDesc = sizeof(uint) * 4;
-            desc.RecursionDepth = 1;
-            desc.PushConstantSize = sizeof(uint) * 4;
-            Gfx::ShaderManager::SubscribeRaytracing("data/kd/shaders/tests/ray_pipeline_triangle.kds", desc);
+            Gfx::ShaderManager::SubscribeCompute("data/kd/shaders/tests/ray_query_triangle.kds");
 
             KGPU::GraphicsPipelineDesc gfxDesc;
             gfxDesc.RenderTargetFormats.push_back(Gfx::Manager::GetDevice()->GetSurfaceFormat());
@@ -98,7 +94,7 @@ namespace RTS
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("RT app ready!");
+        KD_INFO("RQ app ready!");
     }
 
     App::~App()
@@ -166,20 +162,22 @@ namespace RTS
                         Gfx::Resource& ldr = Gfx::ResourceManager::Import("rt_output", cmdList, Gfx::ImportType::kShaderWrite);
     
                         struct Constants {
-                            KGPU::BindlessHandle OutputID;
-                            KGPU::BindlessHandle WorldID;
-                            KGPU::float2 Pad;
+                            KGPU::BindlessHandle Output;
+                            KGPU::BindlessHandle AccelerationStructure;
+                            uint Width;
+                            uint Height;
                         } constants = {
                             Gfx::ViewRecycler::GetUAV(ldr.Texture)->GetBindlessHandle(),
                             mTLAS->GetBindlessHandle(),
-                            {}
+                            mWidth,
+                            mHeight
                         };
                     
-                        auto pipeline = Gfx::ShaderManager::GetRaytracing("data/kd/shaders/tests/ray_pipeline_triangle.kds");
+                        auto pipeline = Gfx::ShaderManager::GetCompute("data/kd/shaders/tests/ray_query_triangle.kds");
                         cmdList->BeginCompute();
-                        cmdList->SetRaytracingPipeline(pipeline);
-                        cmdList->SetRaytracingConstants(pipeline, &constants, sizeof(constants));
-                        cmdList->DispatchRays(pipeline, mWidth, mHeight, 1);
+                        cmdList->SetComputePipeline(pipeline);
+                        cmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
+                        cmdList->Dispatch(KGPU::uint3((mWidth + 7) / 8, (mHeight + 7) / 8, 1), KGPU::uint3(8, 8, 1));
                         cmdList->EndCompute();
                     }
     

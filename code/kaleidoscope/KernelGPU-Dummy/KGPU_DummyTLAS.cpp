@@ -18,4 +18,19 @@ namespace KGPU
     DummyTLAS::~DummyTLAS()
     {
     }
+
+    void DummyTLAS::ResetInstanceBuffer()
+    {
+
+    }
+
+    void DummyTLAS::AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque)
+    {
+
+    }
+
+    void DummyTLAS::Upload()
+    {
+        
+    }
 }

@@ -554,10 +554,13 @@ namespace KGPU
         mList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
     }
 
-    void D3D12CommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode, uint instanceCount, IBuffer* buffer)
+    void D3D12CommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode)
     {
         if (!mParentDevice->SupportsRaytracing())
             return;
+
+        uint instanceCount = tlas->GetInstanceCount();
+        IBuffer* buffer = tlas->GetInstanceBuffer();
 
         D3D12TLAS* d3dblas = static_cast<D3D12TLAS*>(tlas);
 

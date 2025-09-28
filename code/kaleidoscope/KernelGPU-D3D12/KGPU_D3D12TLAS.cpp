@@ -33,6 +33,9 @@ namespace KGPU
     
         mAlloc = device->GetBindlessManager()->WriteAS(this);
         mBindless.Index = mAlloc.Index;
+
+        mInstanceBuffer = device->CreateBuffer(BufferDesc(sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * MAX_TLAS_INSTANCES, 0, BufferUsage::kShaderRead | BufferUsage::kShaderWrite));
+        mInstanceBuffer->SetName("TLAS Instance Buffer");
     
         KD_WHATEVER("Created D3D12 TLAS");
     }
@@ -44,7 +47,37 @@ namespace KGPU
 
         mParentDevice->GetBindlessManager()->FreeCBVSRVUAV(mAlloc);
 
+        KC_DELETE(mInstanceBuffer);
         KC_DELETE(mMemory);
         KC_DELETE(mScratch);
+    }
+
+    void D3D12TLAS::ResetInstanceBuffer()
+    {
+        mInstanceArray.clear();
+        mInstanceCount = 0;
+    }
+
+    void D3D12TLAS::AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque)
+    {
+        KGPU::float3x4 d3dTransform = KGPU::float3x4(transform);
+
+        D3D12_RAYTRACING_INSTANCE_DESC desc = {};
+        memcpy(desc.Transform, &d3dTransform, sizeof(d3dTransform));
+        desc.InstanceID = 0;
+        desc.InstanceMask = 0xFF;
+        desc.InstanceCOntributionToHitGroupIndex = 0;
+        desc.Flags = opaque ? TLAS_INSTANCE_OPAQUE : TLAS_INSTANCE_NON_OPAQUE;
+        desc.AccelerationStructure = blas->GetMemory()->GetAddress();
+
+        mInstanceArray.push_back(desc);
+        mInstanceCount = (uint)mInstanceArray.size();
+    }
+
+    void D3D12TLAS::Upload()
+    {
+        void* ptr = mInstanceBuffer->Map();
+        memcpy(ptr, mInstanceArray.data(), sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * mInstanceArray.size());
+        mInstanceBuffer->Unmap();
     }
 }

@@ -6,7 +6,7 @@
 #include "KGPU_VulkanTLAS.h"
 #include "KGPU_VulkanDevice.h"
 
-#undef max
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace KGPU
 {
@@ -83,6 +83,9 @@ namespace KGPU
 
         // Descriptor!
         mBindless = mParentDevice->GetBindlessManager()->WriteAS(this);
+
+        // Instance buffer
+        mInstanceBuffer = mParentDevice->CreateBuffer(BufferDesc(sizeof(VkAccelerationStructureInstanceKHR) * MAX_TLAS_INSTANCES, 0, BufferUsage::kShaderRead | BufferUsage::kShaderWrite));
         
         KD_WHATEVER("Created Vulkan TLAS");
     }
@@ -93,8 +96,38 @@ namespace KGPU
             return;
 
         mParentDevice->GetBindlessManager()->FreeAS(mBindless.Index);
+        KC_DELETE(mInstanceBuffer);
         KC_DELETE(mMemory);
         KC_DELETE(mScratch);
         if (mHandle) vkDestroyAccelerationStructureKHR(mParentDevice->Device(), mHandle, nullptr);
+    }
+
+    void VulkanTLAS::ResetInstanceBuffer()
+    {
+        mInstances.clear();
+        mInstanceCount++;
+    }
+
+    void VulkanTLAS::AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque)
+    {
+        KGPU::float3x4 d3dTransform = KGPU::float3x4(transform);
+
+        VkAccelerationStructureInstanceKHR instance = {};
+        memcpy(&instance.transform, &d3dTransform, sizeof(d3dTransform));
+        instance.instanceCustomIndex = 0;
+        instance.mask = 0xFF;
+        instance.instanceShaderBindingTableRecordOffset = 0;
+        instance.flags = opaque ? TLAS_INSTANCE_OPAQUE : TLAS_INSTANCE_NON_OPAQUE;
+        instance.accelerationStructureReference = blas->GetAddress();
+
+        mInstances.push_back(instance);
+        mInstanceCount = (uint)mInstances.size();
+    }
+
+    void VulkanTLAS::Upload()
+    {
+        void* ptr = mInstanceBuffer->Map();
+        memcpy(ptr, mInstances.data(), sizeof(VkAccelerationStructureInstanceKHR) * mInstances.size());
+        mInstanceBuffer->Unmap();
     }
 }

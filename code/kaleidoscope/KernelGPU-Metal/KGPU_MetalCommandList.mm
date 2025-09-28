@@ -375,8 +375,32 @@ namespace KGPU
         [asEncoder endEncoding];
     }
 
-    void MetalCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode, uint instanceCount, IBuffer* buffer)
+    void MetalCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode)
     {
+        MetalTLAS* metalTLAS = static_cast<MetalTLAS*>(tlas);
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
+        if (mode == ASBuildMode::kRefit) {
+            metalTLAS->GetDescriptor().usage = MTLAccelerationStructureUsageRefit;
+        }
+
+        NSMutableArray<id<MTLAccelerationStructure>>* blasArray = [NSMutableArray arrayWithCapacity:metalTLAS->GetBLASMap().size()];
+        for (int i = 0; i < metalTLAS->GetBLASMap().size(); i++) {
+            MetalBLAS* blas = reinterpret_cast<MetalBLAS*>(metalTLAS->GetBLASMap()[i]);
+            blasArray[i] = blas->GetAccelerationStructure();
+        }
+        metalTLAS->GetDescriptor().instancedAccelerationStructures = blasArray;
+        metalTLAS->GetDescriptor().instanceCount = (uint)metalTLAS->GetInstanceCount();
+
+        id<MTLAccelerationStructureCommandEncoder> asEncoder = [mBuffer accelerationStructureCommandEncoder];
+        if (mCurrentLabel) asEncoder.label = mCurrentLabel;
+
+        [asEncoder buildAccelerationStructure:metalTLAS->GetAccelerationStructure()
+                           descriptor:metalTLAS->GetDescriptor()
+                           scratchBuffer:static_cast<MetalBuffer*>(metalTLAS->GetScratch())->GetMTLBuffer()
+                           scratchBufferOffset:0];
+        [asEncoder endEncoding];
     }
 
     void MetalCommandList::PushMarker(const KC::String& name)

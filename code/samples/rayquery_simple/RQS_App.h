@@ -9,7 +9,7 @@
 #include <Graphics/Gfx_Manager.h>
 #include <KernelCore/KC_Timer.h>
 
-namespace RTS
+namespace RQS
 {
     class App
     {

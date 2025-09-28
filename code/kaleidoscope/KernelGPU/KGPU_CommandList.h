@@ -216,7 +216,7 @@ namespace KGPU
         virtual void CopyTextureToBuffer(IBuffer* dest, ITexture* src) = 0;
         virtual void CopyTextureToTexture(ITexture* dst, ITexture* src) = 0;
         virtual void BuildBLAS(IBLAS* blas, ASBuildMode mode) = 0;
-        virtual void BuildTLAS(ITLAS* blas, ASBuildMode mode, uint instanceCount, IBuffer* buffer) = 0;
+        virtual void BuildTLAS(ITLAS* blas, ASBuildMode mode) = 0;
     
         virtual void PushMarker(const KC::String& name) = 0;
         virtual void PopMarker() = 0;

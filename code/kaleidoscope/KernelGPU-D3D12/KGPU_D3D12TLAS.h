@@ -19,6 +19,10 @@ namespace KGPU
         D3D12TLAS(D3D12Device* device);
         ~D3D12TLAS();
     
+        void ResetInstanceBuffer() override;
+        void AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque = true) override;
+        void Upload() override;
+        
         uint64 Address() const { return mMemory->GetAddress(); }
     private:
         friend class D3D12CommandList;
@@ -27,5 +31,7 @@ namespace KGPU
     
         D3D12BindlessAlloc mAlloc;
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS mInputs;
+
+        KC::Array<D3D12_RAYTRACING_INSTANCE_DESC> mInstanceArray;
     };
 }

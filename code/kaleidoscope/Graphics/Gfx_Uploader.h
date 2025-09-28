@@ -12,7 +12,7 @@ namespace Gfx
     class Uploader
     {
     public:
-        static void EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::IBuffer* instanceBuffer, uint instanceCount, KGPU::ICommandList* cmdList = nullptr);
+        static void EnqueueTLASBuild(KGPU::ITLAS* tlas, KGPU::ICommandList* cmdList = nullptr);
         static void EnqueueBLASBuild(KGPU::IBLAS* blas, KGPU::ICommandList* cmdList = nullptr);
         static void EnqueueTextureUploadRaw(const void* data, uint64 size, KGPU::ITexture* texture, bool bufferHasMips = true, KGPU::ICommandList* cmdList = nullptr);
         static void EnqueueBufferUpload(const void* data, uint64 size, KGPU::IBuffer* buffer, KGPU::ICommandList* cmdList = nullptr);

@@ -23,16 +23,8 @@ namespace KGPUT
             mIndexBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(sizeof(uint) * 3, sizeof(uint), KGPU::BufferUsage::kIndex));
             mBLAS = Data.Device->CreateBLAS(KGPU::BLASDesc(mVertexBuffer, mIndexBuffer));
             mTLAS = Data.Device->CreateTLAS();
-            mInstanceBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(sizeof(KGPU::TLASInstance), sizeof(KGPU::TLASInstance), KGPU::BufferUsage::kConstant));
 
-            KGPU::TLASInstance* instance = static_cast<KGPU::TLASInstance*>(mInstanceBuffer->Map());
-            instance->AccelerationStructureReference = mBLAS->GetAddress();
-            instance->Transform = glm::identity<glm::mat3x4>();
-            instance->Flags = KGPU::TLAS_INSTANCE_OPAQUE;
-            instance->InstanceCustomIndex = 0;
-            instance->Mask = 1;
-            instance->InstanceShaderBindingTableRecordOffset = 0;
-            mInstanceBuffer->Unmap();
+            mTLAS->AddInstance(mBLAS, glm::identity<glm::mat4>(), true);
 
             KGPU::RaytracingPipelineDesc desc;
             desc.PayloadDesc = sizeof(uint) * 4;
@@ -72,7 +64,7 @@ namespace KGPUT
             Gfx::Uploader::EnqueueBufferUpload(vertices, sizeof(KGPU::float3) * 3, mVertexBuffer, mCommandList);
             Gfx::Uploader::EnqueueBufferUpload(indices, sizeof(indices), mIndexBuffer, mCommandList);
             Gfx::Uploader::EnqueueBLASBuild(mBLAS, mCommandList);
-            Gfx::Uploader::EnqueueTLASBuild(mTLAS, mInstanceBuffer, 1, mCommandList);
+            Gfx::Uploader::EnqueueTLASBuild(mTLAS, mCommandList);
 
             struct Constants {
                 KGPU::BindlessHandle OutputID;
@@ -95,7 +87,6 @@ namespace KGPUT
         }
 
         void Cleanup() override {
-            KC_DELETE(mInstanceBuffer);
             KC_DELETE(mVertexBuffer);
             KC_DELETE(mIndexBuffer);
             KC_DELETE(mBLAS);
@@ -105,7 +96,6 @@ namespace KGPUT
     private:
         KGPU::IBuffer* mVertexBuffer;
         KGPU::IBuffer* mIndexBuffer;
-        KGPU::IBuffer* mInstanceBuffer;
         KGPU::IBLAS* mBLAS;
         KGPU::ITLAS* mTLAS;
     };

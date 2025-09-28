@@ -17,28 +17,6 @@ namespace KGPU
     constexpr uint TLAS_INSTANCE_OPAQUE = 0x00000004;
     constexpr uint TLAS_INSTANCE_NON_OPAQUE = 0x00000008;
 
-#ifndef KD_MAC
-    struct TLASInstance
-    {
-        float3x4 Transform;
-        uint InstanceCustomIndex:24;
-        uint Mask:8;
-        uint InstanceShaderBindingTableRecordOffset:24;
-        uint Flags:8;
-        uint64 AccelerationStructureReference;
-    };
-#else
-    struct TLASInstance
-    {
-        float3x4 Transform;
-        uint Flags;
-        uint Mask;
-        uint InstanceShaderBindingTableRecordOffset;
-        uint AccelerationStructureReference;
-        uint64 InstanceCustomIndex;
-    };
-#endif
-
     class ITLAS
     {
     public:
@@ -48,10 +26,19 @@ namespace KGPU
 
         IBuffer* GetMemory() { return mMemory; }
         IBuffer* GetScratch() { return mScratch; }
+
+        virtual void ResetInstanceBuffer() = 0;
+        virtual void AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque = true) = 0;
+        virtual void Upload() = 0;
+
+        IBuffer* GetInstanceBuffer() const { return mInstanceBuffer; }
+        uint GetInstanceCount() const { return mInstanceCount; };
     protected:
         BindlessHandle mBindless;
 
         IBuffer* mMemory;
         IBuffer* mScratch;
+        IBuffer* mInstanceBuffer;
+        uint mInstanceCount = 0;
     };
 }

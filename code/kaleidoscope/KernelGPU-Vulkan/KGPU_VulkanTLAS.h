@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <KernelGPU/KGPU_BLAS.h>
 #include <KernelGPU/KGPU_TLAS.h>
 
 #include <volk.h>
@@ -21,6 +22,10 @@ namespace KGPU
     
         uint64 Address() const { return mMemory->GetAddress(); }
 
+        void ResetInstanceBuffer() override;
+        void AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque = true) override;
+        void Upload() override;
+
         VkAccelerationStructureKHR GetHandle() { return mHandle; }
     private:
         friend class VulkanCommandList;
@@ -31,5 +36,8 @@ namespace KGPU
         VkAccelerationStructureBuildGeometryInfoKHR mBuildInfo;
         VkAccelerationStructureBuildRangeInfoKHR mRangeInfo;
         VkAccelerationStructureGeometryKHR mGeometry;
+
+        IBuffer* mInstanceBuffer;
+        KC::Array<VkAccelerationStructureInstanceKHR> mInstances;
     };
 }

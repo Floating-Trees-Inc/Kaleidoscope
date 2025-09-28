@@ -56,7 +56,12 @@ namespace KGPU
 
     uint MetalBindlessManager::WriteTLAS(MetalTLAS* as)
     {
-        return 0;
+        IRDescriptorTableEntry entry;
+        IRDescriptorTableSetAccelerationStructure(&entry, as->GetAccelerationStructure().gpuResourceID._impl);
+
+        uint index = mFreeList.Allocate();
+        memcpy((char*)mMappedData + index * sizeof(IRDescriptorTableEntry), &entry, sizeof(IRDescriptorTableEntry));
+        return index;
     }
 
     uint MetalBindlessManager::WriteSampler(MetalSampler* sampler)

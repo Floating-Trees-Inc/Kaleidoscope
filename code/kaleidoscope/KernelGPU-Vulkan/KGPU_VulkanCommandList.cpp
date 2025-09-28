@@ -720,10 +720,13 @@ namespace KGPU
         vkCmdBuildAccelerationStructuresKHR(mCmdBuffer, 1, &vkBlas->mBuildInfo, &range);
     }
 
-    void VulkanCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode, uint instanceCount, IBuffer* buffer)
+    void VulkanCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode)
     {
         if (!mParentDevice->SupportsRaytracing())
             return;
+
+        uint instanceCount = tlas->GetInstanceCount();
+        IBuffer* buffer = tlas->GetInstanceBuffer();
 
         VulkanTLAS* vkTlas = static_cast<VulkanTLAS*>(tlas);
         vkTlas->mGeometry.geometry.instances.data.deviceAddress = buffer->GetAddress();
