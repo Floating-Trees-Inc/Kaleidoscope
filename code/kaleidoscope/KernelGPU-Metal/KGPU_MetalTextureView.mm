@@ -20,8 +20,12 @@ namespace KGPU
                                 : MetalTexture::TranslateToMTLPixelFormat(viewDesc.ViewFormat);
         mTexture = [texture->GetMTLTexture() newTextureViewWithPixelFormat:format
                                              textureType:TranslateToMTLTextureType(viewDesc)
-                                             levels:NSMakeRange(0, viewDesc.Texture->GetDesc().Depth)
-                                             slices:NSMakeRange(viewDesc.ArrayLayer, 1)];
+                                             levels:(viewDesc.ViewMip == VIEW_ALL_MIPS)
+                                                    ? NSMakeRange(0, texture->GetDesc().MipLevels)
+                                                    : NSMakeRange(viewDesc.ViewMip, 1)
+                                             slices:(viewDesc.ArrayLayer == VIEW_ALL_MIPS)
+                                                    ? NSMakeRange(0, texture->GetDesc().Depth)
+                                                    : NSMakeRange(viewDesc.ArrayLayer, 1)];
         device->GetResidencySet()->WriteTextureView(this);
 
         if (viewDesc.Type != TextureViewType::kRenderTarget && viewDesc.Type != TextureViewType::kDepthTarget)
