@@ -17,6 +17,12 @@
         "outputPath": "tests/MeshTriangleIndirect.png",
         "result": false
     },
+    "PushConstants": {
+        "goldenPath": "tests/golden/PushConstantsGolden.png",
+        "magmaPath": "tests/PushConstantsMagma.png",
+        "outputPath": "tests/PushConstants.png",
+        "result": true
+    },
     "RayPipelineTriangle": {
         "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
         "magmaPath": "tests/RayPipelineTriangleMagma.png",
