@@ -19,7 +19,9 @@ namespace KGPU
         ~MetalMeshPipeline();
 
         id<MTLRenderPipelineState> GetPipelineState() const { return mPipelineState; }
+        id<MTLDepthStencilState> GetDepthStencilState() { return mDepthStencilState; }
     private:
         id<MTLRenderPipelineState> mPipelineState = nil;
+        id<MTLDepthStencilState> mDepthStencilState;
     };
 }

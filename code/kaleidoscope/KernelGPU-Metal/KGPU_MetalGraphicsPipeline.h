@@ -19,11 +19,13 @@ namespace KGPU
         ~MetalGraphicsPipeline();
 
         id<MTLRenderPipelineState> GetState() { return mState; }
+        id<MTLDepthStencilState> GetDepthStencilState() { return mDepthStencilState; }
 
         static MTLCullMode GetCullMode(CullMode mode);
         static MTLTriangleFillMode GetFillMode(FillMode mode);
         static MTLPrimitiveTopologyClass GetTopology(PrimitiveTopology topology);
     private:
         id<MTLRenderPipelineState> mState;
+        id<MTLDepthStencilState> mDepthStencilState;
     };
 }

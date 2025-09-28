@@ -51,6 +51,18 @@ namespace KGPU
 
         if (desc.DepthEnabled) {
             pipelineDescriptor.depthAttachmentPixelFormat = MetalTexture::TranslateToMTLPixelFormat(desc.DepthFormat);
+
+            // Configure depth stencil state
+            MTLDepthStencilDescriptor* depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+            depthStencilDescriptor.depthCompareFunction = (desc.DepthOperation == DepthOperation::kGreater) ? MTLCompareFunctionGreater :
+                                                          (desc.DepthOperation == DepthOperation::kEqual) ? MTLCompareFunctionEqual :
+                                                          (desc.DepthOperation == DepthOperation::kLessEqual) ? MTLCompareFunctionLessEqual :
+                                                          (desc.DepthOperation == DepthOperation::kLess) ? MTLCompareFunctionLess :
+                                                          MTLCompareFunctionAlways; // Default to always
+            depthStencilDescriptor.depthWriteEnabled = desc.DepthWrite;
+
+            mDepthStencilState = [device->GetMTLDevice() newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+            KD_ASSERT_EQ(mDepthStencilState, "Failed to create Metal depth stencil state!");
         }
 
         // Create the pipeline state

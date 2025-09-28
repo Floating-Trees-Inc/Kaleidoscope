@@ -106,6 +106,14 @@ namespace KGPU
         [mRenderEncoder setCullMode:MetalGraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
         [mRenderEncoder setTriangleFillMode:MetalGraphicsPipeline::GetFillMode(metalPipeline->GetDesc().FillMode)];
         [mRenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+        if (pipeline->GetDesc().DepthEnabled) {
+            [mRenderEncoder setDepthStencilState:metalPipeline->GetDepthStencilState()];
+        }
+        if (pipeline->GetDesc().DepthClampEnabled) {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClamp];
+        } else {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClip];
+        }
 
         id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
         [mRenderEncoder setVertexBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
@@ -185,6 +193,14 @@ namespace KGPU
         [mRenderEncoder setCullMode:MetalGraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
         [mRenderEncoder setTriangleFillMode:MetalGraphicsPipeline::GetFillMode(metalPipeline->GetDesc().FillMode)];
         [mRenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+        if (pipeline->GetDesc().DepthEnabled) {
+            [mRenderEncoder setDepthStencilState:metalPipeline->GetDepthStencilState()];
+        }
+        if (pipeline->GetDesc().DepthClampEnabled) {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClamp];
+        } else {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClip];
+        }
 
         id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
         [mRenderEncoder setVertexBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
