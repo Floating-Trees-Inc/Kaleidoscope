@@ -94,7 +94,7 @@ namespace Gfx
                 KGPU::float2()
             };
 
-            KGPU::uint3 groupSize = KGPU::uint3(8);
+            KGPU::uint3 groupSize = KGPU::uint3(8, 8, 1);
             
             if (i > 0) {
                 cmdList->Barrier(ReadBarriers[i - 1]);
