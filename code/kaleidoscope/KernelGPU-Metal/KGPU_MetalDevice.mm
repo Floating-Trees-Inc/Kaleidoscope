@@ -22,7 +22,7 @@ namespace KGPU
     MetalDevice::~MetalDevice()
     {
         KC_DELETE(mBindlessManager);
-        KC_DELETE(mResidencySet);mResidencySet = KC_NEW(MetalResidencySet, this);
+        KC_DELETE(mResidencySet);
     }
 
     ISurface* MetalDevice::CreateSurface(KOS::IWindow* window, ICommandQueue* graphicsQueue)

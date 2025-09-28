@@ -46,6 +46,17 @@ namespace KGPU
 
         for (int i = 0; i < desc.RenderTargetFormats.size(); i++) {
             pipelineDescriptor.colorAttachments[i].pixelFormat = MetalTexture::TranslateToMTLPixelFormat(desc.RenderTargetFormats[i]);
+            if (desc.EnableBlend) {
+                pipelineDescriptor.colorAttachments[i].blendingEnabled = YES;
+                pipelineDescriptor.colorAttachments[i].rgbBlendOperation = MTLBlendOperationAdd;
+                pipelineDescriptor.colorAttachments[i].alphaBlendOperation = MTLBlendOperationAdd;
+                pipelineDescriptor.colorAttachments[i].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+                pipelineDescriptor.colorAttachments[i].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+                pipelineDescriptor.colorAttachments[i].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+                pipelineDescriptor.colorAttachments[i].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+            } else {
+                pipelineDescriptor.colorAttachments[i].blendingEnabled = NO;
+            }
         }
 
         if (desc.DepthEnabled) {

@@ -51,7 +51,7 @@ namespace KGPU
 
         Backend GetBackend() override { return Backend::kMetal; }
 
-        TextureFormat GetSurfaceFormat() override { return TextureFormat::kR8G8B8A8_UNORM; }
+        TextureFormat GetSurfaceFormat() override { return TextureFormat::kB8G8R8A8_UNORM; }
         uint64 GetOptimalRowPitchAlignment() override { return 4; }
         uint64 GetBufferImageGranularity() override { return 1; }
         KGPU::ShaderBytecodeType GetTargetBytecode() override { return KGPU::ShaderBytecodeType::kMetalLib; }

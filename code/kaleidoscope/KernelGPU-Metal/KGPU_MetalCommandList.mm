@@ -162,8 +162,8 @@ namespace KGPU
     void MetalCommandList::SetScissor(int left, int top, int right, int bottom)
     {
         MTLScissorRect rect;
-        rect.width = right - left;
-        rect.height = bottom - top;
+        rect.width = right;
+        rect.height = bottom;
         rect.x = left;
         rect.y = top;
 

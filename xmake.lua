@@ -15,7 +15,7 @@ elseif is_plat("linux") then
     add_defines("KD_LINUX", { public = true })
 elseif is_plat("macosx") then
     add_defines("KD_MAC", { public = true })
-    add_rpathdirs("dlls/mac")
+    add_rpathdirs(".", "./dlls/mac")
 end
 
 -- Config

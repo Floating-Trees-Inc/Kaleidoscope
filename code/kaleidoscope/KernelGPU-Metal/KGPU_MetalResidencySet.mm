@@ -18,7 +18,7 @@ namespace KGPU
     {
         MTLResidencySetDescriptor* descriptor = [MTLResidencySetDescriptor new];
         descriptor.label = @"KGPU_MetalResidencySet";
-        descriptor.initialCapacity = 1'000'000; // 1 million resources
+        descriptor.initialCapacity = 4096; // 1 million resources
 
         NSError* err = nil;
         mResidencySet = [device->GetMTLDevice() newResidencySetWithDescriptor:descriptor error:&err];

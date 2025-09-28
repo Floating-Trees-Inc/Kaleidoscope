@@ -36,7 +36,7 @@ namespace KGPU
             desc.Depth = 1;
             desc.MipLevels = 1;
             desc.Usage = TextureUsage::kRenderTarget;
-            desc.Format = TextureFormat::kR8G8B8A8_UNORM;
+            desc.Format = TextureFormat::kB8G8R8A8_UNORM;
 
             mTextures[i] = device->CreateTexture(desc);
             mTextureViews[i] = device->CreateTextureView(TextureViewDesc(mTextures[i], TextureViewType::kRenderTarget));
