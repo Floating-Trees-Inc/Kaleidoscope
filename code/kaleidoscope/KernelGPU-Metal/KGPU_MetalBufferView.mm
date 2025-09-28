@@ -5,6 +5,7 @@
 
 #include "KGPU_MetalBufferView.h"
 #include "KGPU_MetalDevice.h"
+#include "KGPU_MetalBuffer.h"
 
 namespace KGPU
 {
@@ -13,10 +14,14 @@ namespace KGPU
     {
         mDesc = desc;
 
+        mBuffer = reinterpret_cast<MetalBuffer*>(desc.Buffer)->GetMTLBuffer();
+        mBindless.Index = device->GetBindlessManager()->WriteBufferView(this);
+
         KD_WHATEVER("Created Metal buffer view");
     }
 
     MetalBufferView::~MetalBufferView()
     {
+        mParentDevice->GetBindlessManager()->Free(mBindless.Index);
     }
 }

@@ -19,8 +19,8 @@ namespace IG
 
         void Run();
     private:
-        uint mWidth = 1920;
-        uint mHeight = 1009;
+        uint mWidth = 1280;
+        uint mHeight = 720;
 
         KOS::IWindow* mWindow;
         KC::String mStringBackend;

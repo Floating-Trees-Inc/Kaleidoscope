@@ -140,7 +140,7 @@ namespace KDS
         rootSigParams[0] = {
             .ParameterType = IRRootParameterType32BitConstants,
             .Constants = {
-                .ShaderRegister = 0,
+                .ShaderRegister = 999,
                 .RegisterSpace = 0,
                 .Num32BitValues = 160 / sizeof(uint32_t)
             },

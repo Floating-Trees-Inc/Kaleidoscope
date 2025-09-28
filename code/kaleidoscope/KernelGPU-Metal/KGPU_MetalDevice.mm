@@ -14,10 +14,13 @@ namespace KGPU
     {
         mDevice = MTLCreateSystemDefaultDevice();
         KD_ASSERT_EQ(mDevice, "Failed to create Metal device!");
+
+        mBindlessManager = KC_NEW(MetalBindlessManager, this);
     }
 
     MetalDevice::~MetalDevice()
     {
+        KC_DELETE(mBindlessManager);
     }
 
     ISurface* MetalDevice::CreateSurface(KOS::IWindow* window, ICommandQueue* graphicsQueue)

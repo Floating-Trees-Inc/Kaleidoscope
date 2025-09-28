@@ -14,6 +14,8 @@
 #include "KGPU_MetalBLAS.h"
 #include "KGPU_MetalTLAS.h"
 
+#include <metal_irconverter_runtime.h>
+
 namespace KGPU
 {
     MetalCommandList::MetalCommandList(MetalDevice* device, MetalCommandQueue* queue, bool singleTime)
@@ -125,8 +127,21 @@ namespace KGPU
 
     void MetalCommandList::SetGraphicsPipeline(IGraphicsPipeline* pipeline)
     {
+        // Set cull mode, set fill mode
+
         MetalGraphicsPipeline* metalPipeline = static_cast<MetalGraphicsPipeline*>(pipeline);
         [mRenderEncoder setRenderPipelineState:metalPipeline->GetState()];
+        [mRenderEncoder setCullMode:MetalGraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
+        [mRenderEncoder setTriangleFillMode:MetalGraphicsPipeline::GetFillMode(metalPipeline->GetDesc().FillMode)];
+        [mRenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+
+        id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
+        [mRenderEncoder setVertexBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+
+        id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
+        [mRenderEncoder setVertexBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
     }
 
     void MetalCommandList::SetViewport(float width, float height, float x, float y)
@@ -170,6 +185,8 @@ namespace KGPU
 
     void MetalCommandList::SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size)
     {
+        [mRenderEncoder setVertexBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
     }
 
     void MetalCommandList::SetComputePipeline(IComputePipeline* pipeline)
@@ -184,10 +201,23 @@ namespace KGPU
     {
         MetalMeshPipeline* metalPipeline = static_cast<MetalMeshPipeline*>(pipeline);
         [mRenderEncoder setRenderPipelineState:metalPipeline->GetPipelineState()];
+        [mRenderEncoder setCullMode:MetalGraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
+        [mRenderEncoder setTriangleFillMode:MetalGraphicsPipeline::GetFillMode(metalPipeline->GetDesc().FillMode)];
+        [mRenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+
+        id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
+        [mRenderEncoder setVertexBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+
+        id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
+        [mRenderEncoder setVertexBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
     }
 
     void MetalCommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
     {
+        [mRenderEncoder setVertexBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
     }
 
     void MetalCommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
@@ -201,20 +231,14 @@ namespace KGPU
     void MetalCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
         // TODO: Change primitive type depending on pipeline state...
-        [mRenderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:firstVertex vertexCount:vertexCount instanceCount:instanceCount baseInstance:firstInstance];
+        IRRuntimeDrawPrimitives(mRenderEncoder, MTLPrimitiveTypeTriangle, firstVertex, vertexCount, instanceCount, firstInstance);
     }
 
     void MetalCommandList::DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance)
     {
+        // TODO: Change primitive type depending on pipeline state...
         MetalBuffer* indexBuffer = static_cast<MetalBuffer*>(mBoundIndexBuffer);
-        [mRenderEncoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                        indexCount: indexCount
-                        indexType: MTLIndexTypeUInt32
-                        indexBuffer: indexBuffer->GetMTLBuffer()
-                        indexBufferOffset:0
-                        instanceCount: instanceCount
-                        baseVertex: vertexOffset
-                        baseInstance: firstInstance];
+        IRRuntimeDrawIndexedPrimitives(mRenderEncoder, MTLPrimitiveTypeTriangle, indexCount, MTLIndexTypeUInt32, indexBuffer->GetMTLBuffer(), firstIndex * 4, instanceCount);
     }
 
     void MetalCommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
@@ -264,7 +288,41 @@ namespace KGPU
 
     void MetalCommandList::CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips)
     {
-        
+        MetalTexture* texture = static_cast<MetalTexture*>(dest);
+        MetalBuffer* buffer = static_cast<MetalBuffer*>(src);
+
+        const TextureDesc& textureDesc = texture->GetDesc();
+        uint64 bufferOffset = 0;
+        uint mipLevels = bufferHasMips ? textureDesc.MipLevels : 1;
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+
+        for (uint mip = 0; mip < mipLevels; ++mip) {
+            uint width = std::max(1u, textureDesc.Width >> mip);
+            uint height = std::max(1u, textureDesc.Height >> mip);
+
+            NSUInteger bytesPerPixel = MetalTexture::BytesPerPixel(textureDesc.Format);
+            NSUInteger minBytesPerRow = width * bytesPerPixel;
+            NSUInteger bytesPerRow = ((minBytesPerRow + 255) / 256) * 256; // Align to 256 bytes
+            NSUInteger bytesPerImage = bytesPerRow * height;
+
+            MTLSize size = {width, height, 1};
+            MTLOrigin origin = {0, 0, 0};
+
+            [blit copyFromBuffer:buffer->GetMTLBuffer()
+                    sourceOffset:bufferOffset
+              sourceBytesPerRow:bytesPerRow
+             sourceBytesPerImage:bytesPerImage
+                     sourceSize:size
+                      toTexture:texture->GetMTLTexture()
+               destinationSlice:0
+               destinationLevel:mip
+              destinationOrigin:origin];
+
+            bufferOffset += bytesPerImage;
+        }
+
+        [blit endEncoding];
     }
 
     void MetalCommandList::CopyTextureToBuffer(IBuffer* dest, ITexture* src)

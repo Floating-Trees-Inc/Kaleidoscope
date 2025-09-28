@@ -62,4 +62,50 @@ namespace KGPU
     MetalGraphicsPipeline::~MetalGraphicsPipeline()
     {
     }
+
+    MTLCullMode MetalGraphicsPipeline::GetCullMode(CullMode mode)
+    {
+        switch (mode)
+        {
+        case CullMode::kNone:
+            return MTLCullModeNone;
+        case CullMode::kFront:
+            return MTLCullModeFront;
+        case CullMode::kBack:
+            return MTLCullModeBack;
+        default:
+            KD_ASSERT_EQ(false, "Unknown CullMode");
+            return MTLCullModeNone;
+        }
+    }
+
+    MTLTriangleFillMode MetalGraphicsPipeline::GetFillMode(FillMode mode)
+    {
+        switch (mode)
+        {
+        case FillMode::kSolid:
+            return MTLTriangleFillModeFill;
+        case FillMode::kWireframe:
+            return MTLTriangleFillModeLines;
+        default:
+            KD_ASSERT_EQ(false, "Unknown FillMode");
+            return MTLTriangleFillModeFill;
+        }
+    }
+
+    MTLPrimitiveTopologyClass MetalGraphicsPipeline::GetTopology(PrimitiveTopology topology)
+    {
+        switch (topology)
+        {
+        case PrimitiveTopology::kPoints:
+            return MTLPrimitiveTopologyClassPoint;
+        case PrimitiveTopology::kLines:
+            return MTLPrimitiveTopologyClassLine;
+        case PrimitiveTopology::kTriangles:
+            return MTLPrimitiveTopologyClassTriangle;
+        default:
+            KD_ASSERT_EQ(false, "Unknown PrimitiveTopology");
+            return MTLPrimitiveTopologyClassTriangle;
+        }
+    }
 }

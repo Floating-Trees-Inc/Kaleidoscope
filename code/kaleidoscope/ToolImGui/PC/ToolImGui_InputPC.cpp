@@ -11,7 +11,7 @@ namespace ToolImGui
 {
     void Input::Initialize(KOS::IWindow* window)
     {
-        ImGui_ImplSDL3_InitForD3D((SDL_Window*)window->GetHandle());
+        ImGui_ImplSDL3_InitForOther((SDL_Window*)window->GetHandle());
     }
 
     void Input::Shutdown()

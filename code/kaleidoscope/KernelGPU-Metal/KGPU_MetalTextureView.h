@@ -20,6 +20,7 @@ namespace KGPU
 
         id<MTLTexture> GetView() { return mTexture; }
     private:
+        MetalDevice* mParentDevice;
         id<MTLTexture> mTexture;
 
         static MTLTextureType TranslateToMTLTextureType(TextureViewDesc desc);

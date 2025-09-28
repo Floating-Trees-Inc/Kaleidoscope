@@ -19,6 +19,10 @@ namespace KGPU
         ~MetalGraphicsPipeline();
 
         id<MTLRenderPipelineState> GetState() { return mState; }
+
+        static MTLCullMode GetCullMode(CullMode mode);
+        static MTLTriangleFillMode GetFillMode(FillMode mode);
+        static MTLPrimitiveTopologyClass GetTopology(PrimitiveTopology topology);
     private:
         id<MTLRenderPipelineState> mState;
     };

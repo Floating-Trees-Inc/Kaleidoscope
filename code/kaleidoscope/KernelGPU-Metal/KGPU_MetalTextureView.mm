@@ -9,6 +9,7 @@
 namespace KGPU
 {
     MetalTextureView::MetalTextureView(MetalDevice* device, TextureViewDesc viewDesc)
+        : mParentDevice(device)
     {
         mDesc = viewDesc;
         
@@ -18,11 +19,14 @@ namespace KGPU
                                              levels:NSMakeRange(0, viewDesc.Texture->GetDesc().Depth)
                                              slices:NSMakeRange(viewDesc.ArrayLayer, 1)];
 
+        mBindless.Index = device->GetBindlessManager()->WriteTextureView(this);
+
         KD_WHATEVER("Created Metal texture view");
     }
 
     MetalTextureView::~MetalTextureView()
     {
+        mParentDevice->GetBindlessManager()->Free(mBindless.Index);
     }
 
     MTLTextureType MetalTextureView::TranslateToMTLTextureType(TextureViewDesc desc)

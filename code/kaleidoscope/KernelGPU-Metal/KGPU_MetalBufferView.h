@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_BufferView.h>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -17,7 +18,10 @@ namespace KGPU
         MetalBufferView(MetalDevice* device, BufferViewDesc desc);
         ~MetalBufferView();
 
+        id<MTLBuffer> GetBuffer() const { return mBuffer; }
     private:
         MetalDevice* mParentDevice;
+
+        id<MTLBuffer> mBuffer;
     };
 }

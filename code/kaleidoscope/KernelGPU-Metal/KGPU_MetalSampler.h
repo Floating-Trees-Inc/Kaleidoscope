@@ -19,7 +19,10 @@ namespace KGPU
         MetalSampler(MetalDevice* device, SamplerDesc desc);
         ~MetalSampler();
 
+        id<MTLSamplerState> GetState() const { return mSamplerState; }
     private:
+        MetalDevice* mParentDevice;
+
         id<MTLSamplerState> mSamplerState = nil;
     };
 }
