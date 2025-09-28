@@ -16,7 +16,8 @@ namespace KGPU
         // Desktop
         kD3D12,
         kVulkan,
-        kMetal,
+        kMetal3,
+        kMetal4,
 
         // Console
         kSignTheNDAFirst

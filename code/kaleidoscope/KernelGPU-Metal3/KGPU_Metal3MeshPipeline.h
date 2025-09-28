@@ -1,0 +1,27 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-08-06 23:43:45
+//
+
+#pragma once
+
+#include <KernelGPU/KGPU_MeshPipeline.h>
+#include <Metal/Metal.h>
+
+namespace KGPU
+{
+    class Metal3Device;
+
+    class Metal3MeshPipeline : public IMeshPipeline
+    {
+    public:
+        Metal3MeshPipeline(Metal3Device* device, MeshPipelineDesc desc);
+        ~Metal3MeshPipeline();
+
+        id<MTLRenderPipelineState> GetPipelineState() const { return mPipelineState; }
+        id<MTLDepthStencilState> GetDepthStencilState() { return mDepthStencilState; }
+    private:
+        id<MTLRenderPipelineState> mPipelineState = nil;
+        id<MTLDepthStencilState> mDepthStencilState;
+    };
+}

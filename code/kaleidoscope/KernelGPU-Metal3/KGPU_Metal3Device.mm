@@ -1,0 +1,97 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-05 19:04:09
+//
+
+#include "KGPU_Metal3Device.h"
+
+#include <KernelCore/KC_Assert.h>
+#include <unordered_map>
+
+namespace KGPU
+{
+    Metal3Device::Metal3Device(bool validationLayers)
+    {
+        mDevice = MTLCreateSystemDefaultDevice();
+        KD_ASSERT_EQ(mDevice, "Failed to create Metal3 device!");
+
+        mResidencySet = KC_NEW(Metal3ResidencySet, this);
+        mBindlessManager = KC_NEW(Metal3BindlessManager, this);
+    }
+
+    Metal3Device::~Metal3Device()
+    {
+        KC_DELETE(mBindlessManager);
+        KC_DELETE(mResidencySet);
+    }
+
+    ISurface* Metal3Device::CreateSurface(KOS::IWindow* window, ICommandQueue* graphicsQueue)
+    {
+        return KC_NEW(Metal3Surface, this, window, static_cast<Metal3CommandQueue*>(graphicsQueue));
+    }
+
+    ITexture* Metal3Device::CreateTexture(TextureDesc desc)
+    {
+        return KC_NEW(Metal3Texture, this, desc);
+    }
+
+    ITextureView* Metal3Device::CreateTextureView(TextureViewDesc desc)
+    {
+        return KC_NEW(Metal3TextureView, this, desc);
+    }
+
+    ICommandQueue* Metal3Device::CreateCommandQueue(CommandQueueType type)
+    {
+        return KC_NEW(Metal3CommandQueue, this, type);
+    }
+
+    ISync* Metal3Device::CreateSync(ISurface* surface, ICommandQueue* queue)
+    {
+        return KC_NEW(Metal3Sync, this, static_cast<Metal3Surface*>(surface), static_cast<Metal3CommandQueue*>(queue));
+    }
+
+    IGraphicsPipeline* Metal3Device::CreateGraphicsPipeline(GraphicsPipelineDesc desc)
+    {
+        return KC_NEW(Metal3GraphicsPipeline, this, desc);
+    }
+
+    IBuffer* Metal3Device::CreateBuffer(BufferDesc desc)
+    {
+        return KC_NEW(Metal3Buffer, this, desc);
+    }
+
+    ISampler* Metal3Device::CreateSampler(SamplerDesc desc)
+    {
+        return KC_NEW(Metal3Sampler, this, desc);
+    }
+
+    IComputePipeline* Metal3Device::CreateComputePipeline(ComputePipelineDesc desc)
+    {
+        return KC_NEW(Metal3ComputePipeline, this, desc);
+    }
+
+    IBLAS* Metal3Device::CreateBLAS(BLASDesc desc)
+    {
+        return KC_NEW(Metal3BLAS, this, desc);
+    }
+
+    ITLAS* Metal3Device::CreateTLAS()
+    {
+        return KC_NEW(Metal3TLAS, this);
+    }
+
+    IBufferView* Metal3Device::CreateBufferView(BufferViewDesc desc)
+    {
+        return KC_NEW(Metal3BufferView, this, desc);
+    }
+
+    IMeshPipeline* Metal3Device::CreateMeshPipeline(MeshPipelineDesc desc)
+    {
+        return KC_NEW(Metal3MeshPipeline, this, desc);
+    }
+
+    IRaytracingPipeline* Metal3Device::CreateRaytracingPipeline(RaytracingPipelineDesc desc)
+    {
+        return KC_NEW(Metal3RaytracingPipeline, this, desc);   
+    }
+}

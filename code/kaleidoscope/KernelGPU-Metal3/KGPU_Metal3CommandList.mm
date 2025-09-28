@@ -1,0 +1,438 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-15 22:17:26
+//
+
+#include "KGPU_Metal3CommandList.h"
+#include "KGPU_Metal3Device.h"
+#include "KGPU_Metal3CommandQueue.h"
+#include "KGPU_Metal3TextureView.h"
+#include "KGPU_Metal3Texture.h"
+#include "KGPU_Metal3Buffer.h"
+#include "KGPU_Metal3GraphicsPipeline.h"
+#include "KGPU_Metal3ComputePipeline.h"
+#include "KGPU_Metal3BLAS.h"
+#include "KGPU_Metal3TLAS.h"
+
+#include <metal_irconverter_runtime.h>
+
+namespace KGPU
+{
+    Metal3CommandList::Metal3CommandList(Metal3Device* device, Metal3CommandQueue* queue, bool singleTime)
+        : mParentDevice(device), mParentQueue(queue)
+    {
+        // MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
+        // MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
+        // descriptor.captureObject = device->GetMTLDevice();
+        // 
+        // NSError* error = nil;
+        // [captureManager startCaptureWithDescriptor:descriptor error:&error];
+        // KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
+        
+        mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
+
+        KD_WHATEVER("Created Metal3 command list");
+    }
+
+    Metal3CommandList::~Metal3CommandList()
+    {
+        // auto captureManager = [MTLCaptureManager sharedCaptureManager];
+        // [captureManager stopCapture];
+    }
+
+    void Metal3CommandList::Reset()
+    {
+        mBuffer = [mParentQueue->GetMTLCommandQueue() commandBuffer];
+    }
+
+    void Metal3CommandList::Begin()
+    {
+        mParentDevice->GetResidencySet()->UpdateIfDirty();
+    }
+
+    void Metal3CommandList::BeginRendering(const RenderBegin& begin)
+    {
+        MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor new];
+
+        for (uint i = 0; i < begin.RenderTargets.size(); i++)
+        {
+            auto view = static_cast<Metal3TextureView*>(begin.RenderTargets[i].View);
+            auto texture = view->GetDesc().Texture;
+            
+            passDesc.colorAttachments[i].texture = view->GetView();
+            if (begin.RenderTargets[i].Clear) passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
+            else passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+            passDesc.colorAttachments[i].storeAction = MTLStoreActionStore;
+            passDesc.colorAttachments[i].clearColor = MTLClearColorMake(begin.RenderTargets[i].ClearValue.x, begin.RenderTargets[i].ClearValue.y, begin.RenderTargets[i].ClearValue.z, 1.0);
+        }
+        if (begin.DepthTarget.View)
+        {
+            auto view = static_cast<Metal3TextureView*>(begin.DepthTarget.View);
+            auto texture = view->GetDesc().Texture;
+
+            passDesc.depthAttachment.texture = view->GetView();
+            if (begin.DepthTarget.Clear) passDesc.depthAttachment.loadAction = MTLLoadActionClear;
+            else passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
+            passDesc.depthAttachment.storeAction = MTLStoreActionStore;
+            passDesc.depthAttachment.clearDepth = 1.0f;
+        }
+
+        mRenderEncoder = [mBuffer renderCommandEncoderWithDescriptor:passDesc];
+        if (mCurrentLabel) mRenderEncoder.label = mCurrentLabel;
+    }
+
+    void Metal3CommandList::EndRendering()
+    {
+        [mRenderEncoder endEncoding];
+    }
+
+    void Metal3CommandList::BeginCompute()
+    {
+        mComputeEncoder = [mBuffer computeCommandEncoder];
+        if (mCurrentLabel) mComputeEncoder.label = mCurrentLabel;
+    }
+
+    void Metal3CommandList::EndCompute()
+    {
+        [mComputeEncoder endEncoding];
+    }
+
+    void Metal3CommandList::SetGraphicsPipeline(IGraphicsPipeline* pipeline)
+    {
+        // TODO: Set depth stencil state
+        
+        Metal3GraphicsPipeline* metalPipeline = static_cast<Metal3GraphicsPipeline*>(pipeline);
+        [mRenderEncoder setRenderPipelineState:metalPipeline->GetState()];
+        [mRenderEncoder setCullMode:Metal3GraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
+        [mRenderEncoder setTriangleFillMode:Metal3GraphicsPipeline::GetFillMode(metalPipeline->GetDesc().FillMode)];
+        [mRenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+        if (pipeline->GetDesc().DepthEnabled) {
+            [mRenderEncoder setDepthStencilState:metalPipeline->GetDepthStencilState()];
+        }
+        if (pipeline->GetDesc().DepthClampEnabled) {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClamp];
+        } else {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClip];
+        }
+
+        id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
+        [mRenderEncoder setVertexBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+
+        id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
+        [mRenderEncoder setVertexBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+    }
+
+    void Metal3CommandList::SetViewport(float width, float height, float x, float y)
+    {
+        MTLViewport viewport;
+        viewport.originX = x;
+        viewport.originY = y;
+        viewport.width = width;
+        viewport.height = height;
+        viewport.znear = 0.0f;
+        viewport.zfar = 1.0f;
+
+        [mRenderEncoder setViewport:viewport];
+    }
+
+    void Metal3CommandList::SetScissor(int left, int top, int right, int bottom)
+    {
+        MTLScissorRect rect;
+        rect.width = right;
+        rect.height = bottom;
+        rect.x = left;
+        rect.y = top;
+
+        [mRenderEncoder setScissorRect:rect];
+    }
+
+    void Metal3CommandList::SetRenderSize(float width, float height)
+    {
+        SetViewport(width, height, 0, 0);
+        SetScissor(0, 0, (int)width, (int)height);
+    }
+
+    void Metal3CommandList::SetVertexBuffer(IBuffer* buffer, uint64 offset)
+    {
+    }
+
+    void Metal3CommandList::SetIndexBuffer(IBuffer* buffer)
+    {
+        mBoundIndexBuffer = buffer;
+    }
+
+    void Metal3CommandList::SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size)
+    {
+        [mRenderEncoder setVertexBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+    }
+
+    void Metal3CommandList::SetComputePipeline(IComputePipeline* pipeline)
+    {
+        Metal3ComputePipeline* metalPipeline = static_cast<Metal3ComputePipeline*>(pipeline);
+        [mComputeEncoder setComputePipelineState:metalPipeline->GetPipelineState()];
+
+        id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
+        [mComputeEncoder setBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+
+        id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
+        [mComputeEncoder setBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+    }
+
+    void Metal3CommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)
+    {
+        [mComputeEncoder setBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+    }
+
+    void Metal3CommandList::SetMeshPipeline(IMeshPipeline* pipeline)
+    {
+        Metal3MeshPipeline* metalPipeline = static_cast<Metal3MeshPipeline*>(pipeline);
+        [mRenderEncoder setRenderPipelineState:metalPipeline->GetPipelineState()];
+        [mRenderEncoder setCullMode:Metal3GraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
+        [mRenderEncoder setTriangleFillMode:Metal3GraphicsPipeline::GetFillMode(metalPipeline->GetDesc().FillMode)];
+        [mRenderEncoder setFrontFacingWinding:MTLWindingClockwise];
+        if (pipeline->GetDesc().DepthEnabled) {
+            [mRenderEncoder setDepthStencilState:metalPipeline->GetDepthStencilState()];
+        }
+        if (pipeline->GetDesc().DepthClampEnabled) {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClamp];
+        } else {
+            [mRenderEncoder setDepthClipMode:MTLDepthClipModeClip];
+        }
+
+        id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
+        [mRenderEncoder setVertexBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+
+        id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
+        [mRenderEncoder setVertexBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+        [mRenderEncoder setFragmentBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+    }
+
+    void Metal3CommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
+    {
+        [mRenderEncoder setVertexBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
+    }
+
+    void Metal3CommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
+    {
+        // TODO: Should just bind compute kernel
+    }
+
+    void Metal3CommandList::SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size)
+    {
+        // TODO: Set bytes in compute kernel
+    }
+
+    void Metal3CommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
+    {
+        // TODO: Change primitive type depending on pipeline state...
+        IRRuntimeDrawPrimitives(mRenderEncoder, MTLPrimitiveTypeTriangle, firstVertex, vertexCount, instanceCount, firstInstance);
+    }
+
+    void Metal3CommandList::DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance)
+    {
+        // TODO: Change primitive type depending on pipeline state...
+        Metal3Buffer* indexBuffer = static_cast<Metal3Buffer*>(mBoundIndexBuffer);
+        IRRuntimeDrawIndexedPrimitives(mRenderEncoder, MTLPrimitiveTypeTriangle, indexCount, MTLIndexTypeUInt32, indexBuffer->GetMTLBuffer(), firstIndex * 4, instanceCount);
+    }
+
+    void Metal3CommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
+    {
+        [mComputeEncoder dispatchThreadgroups:MTLSizeMake(numberGroups.x, numberGroups.y, numberGroups.z)
+                           threadsPerThreadgroup:MTLSizeMake(threadsPerGroup.x, threadsPerGroup.y, threadsPerGroup.z)];
+    }
+
+    void Metal3CommandList::DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup)
+    {
+        [mRenderEncoder drawMeshThreadgroups:MTLSizeMake(numberGroups.x, numberGroups.y, numberGroups.z)
+                        threadsPerObjectThreadgroup:MTLSizeMake(0, 0, 0)
+                        threadsPerMeshThreadgroup:MTLSizeMake(threadsPerGroup.x, threadsPerGroup.y, threadsPerGroup.z)];
+    }
+
+    void Metal3CommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)
+    {
+        // TODO: Bind SBT
+    }
+
+    void Metal3CommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+        // TODO: Run ICB kernel
+    }
+
+    void Metal3CommandList::DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+        // TODO: Run ICB kernel
+    }
+
+    void Metal3CommandList::DispatchIndirect(IBuffer* buffer, uint offset)
+    {
+        // TODO: Run ICB kernel
+    }
+
+    void Metal3CommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    {
+        // TODO: Run ICB kernel
+    }
+
+    void Metal3CommandList::CopyBufferToBufferFull(IBuffer* dest, IBuffer* src)
+    {
+        Metal3Buffer* dstBuffer = static_cast<Metal3Buffer*>(dest);
+        Metal3Buffer* srcBuffer = static_cast<Metal3Buffer*>(src);
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit copyFromBuffer:srcBuffer->GetMTLBuffer() sourceOffset:0 toBuffer:dstBuffer->GetMTLBuffer() destinationOffset:0 size:srcBuffer->GetDesc().Size];
+        [blit endEncoding];
+    }
+
+    void Metal3CommandList::CopyBufferToTexture(ITexture* dest, IBuffer* src, bool bufferHasMips)
+    {
+        Metal3Texture* texture = static_cast<Metal3Texture*>(dest);
+        Metal3Buffer* buffer = static_cast<Metal3Buffer*>(src);
+
+        const TextureDesc& textureDesc = texture->GetDesc();
+        uint64 bufferOffset = 0;
+        uint mipLevels = bufferHasMips ? textureDesc.MipLevels : 1;
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+
+        for (uint mip = 0; mip < mipLevels; ++mip) {
+            uint width = std::max(1u, textureDesc.Width >> mip);
+            uint height = std::max(1u, textureDesc.Height >> mip);
+
+            NSUInteger bytesPerPixel = Metal3Texture::BytesPerPixel(textureDesc.Format);
+            NSUInteger minBytesPerRow = width * bytesPerPixel;
+            NSUInteger bytesPerRow = ((minBytesPerRow + 255) / 256) * 256; // Align to 256 bytes
+            NSUInteger bytesPerImage = bytesPerRow * height;
+
+            MTLSize size = {width, height, 1};
+            MTLOrigin origin = {0, 0, 0};
+
+            [blit copyFromBuffer:buffer->GetMTLBuffer()
+                    sourceOffset:bufferOffset
+              sourceBytesPerRow:bytesPerRow
+             sourceBytesPerImage:bytesPerImage
+                     sourceSize:size
+                      toTexture:texture->GetMTLTexture()
+               destinationSlice:0
+               destinationLevel:mip
+              destinationOrigin:origin];
+
+            bufferOffset += bytesPerImage;
+        }
+
+        [blit endEncoding];
+    }
+
+    void Metal3CommandList::CopyTextureToBuffer(IBuffer* dest, ITexture* src)
+    {
+        Metal3Buffer* buffer = static_cast<Metal3Buffer*>(dest);
+        Metal3Texture* texture = static_cast<Metal3Texture*>(src);
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+
+        const NSUInteger bpp = 4; // RGBA8
+        const NSUInteger width  = texture->GetDesc().Width;
+        const NSUInteger height = texture->GetDesc().Height;
+        
+        const NSUInteger minBytesPerRow = width * bpp;
+        const NSUInteger bytesPerRowAlignment = 256;
+        const NSUInteger bytesPerRow = ((minBytesPerRow + (bytesPerRowAlignment - 1)) / bytesPerRowAlignment) * bytesPerRowAlignment;
+
+        const NSUInteger bytesPerImage = bytesPerRow * height;
+        const NSUInteger totalSize = bytesPerImage;
+
+        MTLOrigin origin = {0, 0, 0};
+        MTLSize   size   = {width, height, 1};
+
+        [blit copyFromTexture:texture->GetMTLTexture()
+                sourceSlice:0
+                sourceLevel:0
+                sourceOrigin:origin
+                sourceSize:size
+                toBuffer:buffer->GetMTLBuffer()
+                destinationOffset:0
+                destinationBytesPerRow:bytesPerRow
+                destinationBytesPerImage:bytesPerImage];
+
+        [blit endEncoding];
+    }
+
+    void Metal3CommandList::CopyTextureToTexture(ITexture* dst, ITexture* src)
+    {
+        Metal3Texture* dest = static_cast<Metal3Texture*>(dst);
+        Metal3Texture* source = static_cast<Metal3Texture*>(src);
+
+        id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit copyFromTexture:source->GetMTLTexture() sourceSlice:0 sourceLevel:0 toTexture:dest->GetMTLTexture() destinationSlice:0 destinationLevel:0 sliceCount:1 levelCount:1];
+        [blit endEncoding];
+    }
+
+    void Metal3CommandList::BuildBLAS(IBLAS* blas, ASBuildMode mode)
+    {
+        Metal3BLAS* metalBLAS = static_cast<Metal3BLAS*>(blas);
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
+        if (mode == ASBuildMode::kRefit) {
+            metalBLAS->GetDescriptor().usage = MTLAccelerationStructureUsageRefit;
+        }
+
+        id<MTLAccelerationStructureCommandEncoder> asEncoder = [mBuffer accelerationStructureCommandEncoder];
+        if (mCurrentLabel) asEncoder.label = mCurrentLabel;
+
+        [asEncoder buildAccelerationStructure:metalBLAS->GetAccelerationStructure()
+                           descriptor:metalBLAS->GetDescriptor()
+                           scratchBuffer:static_cast<Metal3Buffer*>(metalBLAS->GetScratch())->GetMTLBuffer()
+                           scratchBufferOffset:0];
+        [asEncoder endEncoding];
+    }
+
+    void Metal3CommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode)
+    {
+        Metal3TLAS* metalTLAS = static_cast<Metal3TLAS*>(tlas);
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
+        if (mode == ASBuildMode::kRefit) {
+            metalTLAS->GetDescriptor().usage = MTLAccelerationStructureUsageRefit;
+        }
+
+        NSMutableArray<id<MTLAccelerationStructure>>* blasArray = [NSMutableArray arrayWithCapacity:metalTLAS->GetBLASMap().size()];
+        for (int i = 0; i < metalTLAS->GetBLASMap().size(); i++) {
+            Metal3BLAS* blas = reinterpret_cast<Metal3BLAS*>(metalTLAS->GetBLASMap()[i]);
+            blasArray[i] = blas->GetAccelerationStructure();
+        }
+        metalTLAS->GetDescriptor().instancedAccelerationStructures = blasArray;
+        metalTLAS->GetDescriptor().instanceCount = (uint)metalTLAS->GetInstanceCount();
+
+        id<MTLAccelerationStructureCommandEncoder> asEncoder = [mBuffer accelerationStructureCommandEncoder];
+        if (mCurrentLabel) asEncoder.label = mCurrentLabel;
+
+        [asEncoder buildAccelerationStructure:metalTLAS->GetAccelerationStructure()
+                           descriptor:metalTLAS->GetDescriptor()
+                           scratchBuffer:static_cast<Metal3Buffer*>(metalTLAS->GetScratch())->GetMTLBuffer()
+                           scratchBufferOffset:0];
+        [asEncoder endEncoding];
+    }
+
+    void Metal3CommandList::PushMarker(const KC::String& name)
+    {
+        mCurrentLabel = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
+    }
+
+    void Metal3CommandList::PopMarker()
+    {
+        mCurrentLabel = nil;
+    }
+
+    void Metal3CommandList::Barrier(const TextureBarrier& barrier) {}
+    void Metal3CommandList::Barrier(const BufferBarrier& barrier) {}
+    void Metal3CommandList::Barrier(const MemoryBarrier& barrier) {}
+    void Metal3CommandList::Barrier(const BarrierGroup& barrierGroup) {}
+    void Metal3CommandList::ClearColor(ITextureView* view, float r, float g, float b) {}
+    void Metal3CommandList::End() {}
+}
