@@ -79,6 +79,7 @@ namespace KGPU
     {
         MTLTextureUsage mtlUsage = MTLTextureUsageShaderRead;
         if (Any(usage & TextureUsage::kRenderTarget)) mtlUsage |= MTLTextureUsageRenderTarget;
+        if (Any(usage & TextureUsage::kDepthTarget)) mtlUsage |= MTLTextureUsageRenderTarget;
         if (Any(usage & TextureUsage::kStorage)) mtlUsage |= MTLTextureUsageShaderWrite;
         return mtlUsage;
     }
