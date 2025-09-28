@@ -558,13 +558,6 @@ void IRRuntimeSetFunctionConstantValue(functionconstantvalues_t values, uint16_t
 
 #ifdef IR_PRIVATE_IMPLEMENTATION
 
-#ifndef IR_RUNTIME_METALCPP
-#if !__has_feature(objc_arc)
-#error The implementation of this file needs to be generated in a module with ARC enabled when in Objective-C mode.
-#endif
-#endif
-
-
 const uint64_t kIRArgumentBufferBindPoint                   = 2;
 const uint64_t kIRArgumentBufferHullDomainBindPoint         = 3;
 const uint64_t kIRDescriptorHeapBindPoint                   = 0;
