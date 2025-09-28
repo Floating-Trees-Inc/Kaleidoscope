@@ -27,7 +27,7 @@ namespace KGPU
         MTLTextureDescriptor* textureDescriptor = [MTLTextureDescriptor new];
         textureDescriptor.width = desc.Width;
         textureDescriptor.height = desc.Height;
-        textureDescriptor.arrayLength = desc.Depth;
+        textureDescriptor.arrayLength = 1;
         textureDescriptor.depth = 1;
         textureDescriptor.pixelFormat = TranslateToMTLPixelFormat(desc.Format);
         textureDescriptor.mipmapLevelCount = desc.MipLevels;
