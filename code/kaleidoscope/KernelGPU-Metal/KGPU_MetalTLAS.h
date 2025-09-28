@@ -29,6 +29,8 @@ namespace KGPU
         id<MTLAccelerationStructure> GetAccelerationStructure() const { return mTLAS; }
         MTLInstanceAccelerationStructureDescriptor* GetDescriptor() const { return mDescriptor; }
         KC::Array<IBLAS*> GetBLASMap() const { return mBLASMap; }
+
+        IBuffer* GetBindlessBuffer() const { return mBindlessBuffer; }
     private:
         friend class MetalCommandList;
 
@@ -38,6 +40,7 @@ namespace KGPU
         MTLInstanceAccelerationStructureDescriptor* mDescriptor;
 
         IBuffer* mInstanceBuffer = nullptr;
+        IBuffer* mBindlessBuffer = nullptr; // ??????????
         KC::Array<MTLAccelerationStructureInstanceDescriptor> mInstances;
         KC::Array<IBLAS*> mBLASMap;
     };

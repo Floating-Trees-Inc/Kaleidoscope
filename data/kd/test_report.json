@@ -33,7 +33,7 @@
         "goldenPath": "tests/golden/RayQueryTriangleGolden.png",
         "magmaPath": "tests/RayQueryTriangleMagma.png",
         "outputPath": "tests/RayQueryTriangle.png",
-        "result": false
+        "result": true
     },
     "SimpleCompute": {
         "goldenPath": "tests/golden/SimpleComputeGolden.png",

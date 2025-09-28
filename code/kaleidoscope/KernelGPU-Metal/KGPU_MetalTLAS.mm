@@ -7,6 +7,7 @@
 #include "KGPU_MetalDevice.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <metal_irconverter_runtime.h>
 
 #undef max
 
@@ -27,10 +28,15 @@ namespace KGPU
         mScratch = device->CreateBuffer(BufferDesc(sizes.buildScratchBufferSize, 0, BufferUsage::kConstant));
 
         mTLAS = [device->GetMTLDevice() newAccelerationStructureWithSize:sizes.accelerationStructureSize];
+        
+        uint headerSize = sizeof(IRRaytracingAccelerationStructureGPUHeader);
+        mBindlessBuffer = device->CreateBuffer(BufferDesc(headerSize, 0, BufferUsage::kShaderRead));
 
         mBindless.Index = device->GetBindlessManager()->WriteTLAS(this);
         device->GetResidencySet()->WriteTLAS(this);
         device->GetResidencySet()->WriteBuffer(reinterpret_cast<MetalBuffer*>(mScratch));
+        device->GetResidencySet()->WriteBuffer(reinterpret_cast<MetalBuffer*>(mInstanceBuffer));
+        device->GetResidencySet()->WriteBuffer(reinterpret_cast<MetalBuffer*>(mBindlessBuffer));
 
         KD_WHATEVER("Created Metal TLAS");
     }
@@ -40,6 +46,9 @@ namespace KGPU
         mParentDevice->GetBindlessManager()->Free(mBindless.Index);
         mParentDevice->GetResidencySet()->FreeTLAS(this);
         mParentDevice->GetResidencySet()->FreeBuffer(reinterpret_cast<MetalBuffer*>(mScratch));
+        mParentDevice->GetResidencySet()->FreeBuffer(reinterpret_cast<MetalBuffer*>(mInstanceBuffer));
+        mParentDevice->GetResidencySet()->FreeBuffer(reinterpret_cast<MetalBuffer*>(mBindlessBuffer));
+        if (mBindlessBuffer) KC_DELETE(mBindlessBuffer);
         if (mInstanceBuffer) KC_DELETE(mInstanceBuffer);
         if (mScratch) KC_DELETE(mScratch);
     }
