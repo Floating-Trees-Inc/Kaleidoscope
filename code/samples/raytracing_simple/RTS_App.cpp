@@ -185,9 +185,11 @@ namespace RTS
                         };
                     
                         auto pipeline = Gfx::ShaderManager::GetRaytracing("data/kd/shaders/tests/ray_pipeline_triangle.kds");
+                        cmdList->BeginCompute();
                         cmdList->SetRaytracingPipeline(pipeline);
                         cmdList->SetRaytracingConstants(pipeline, &constants, sizeof(constants));
                         cmdList->DispatchRays(pipeline, mWidth, mHeight, 1);
+                        cmdList->EndCompute();
                     }
     
                     CODE_BLOCK("Copy To Backbuffer") {

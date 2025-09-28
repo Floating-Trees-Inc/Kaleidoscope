@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_BLAS.h>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -18,5 +19,13 @@ namespace KGPU
         ~MetalBLAS();
 
         uint64 GetAddress() override;
+
+        id<MTLAccelerationStructure> GetAccelerationStructure() { return mAccelerationStructure; }
+        MTLPrimitiveAccelerationStructureDescriptor* GetDescriptor() { return mDescriptor; }
+    private:
+        MTLAccelerationStructureTriangleGeometryDescriptor* mGeometry;
+        MTLPrimitiveAccelerationStructureDescriptor* mDescriptor;
+
+        id<MTLAccelerationStructure> mAccelerationStructure;
     };
 }

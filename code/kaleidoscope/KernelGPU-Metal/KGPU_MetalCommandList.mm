@@ -50,11 +50,6 @@ namespace KGPU
         mParentDevice->GetResidencySet()->UpdateIfDirty();
     }
 
-    void MetalCommandList::End()
-    {
-        // NO OP
-    }
-
     void MetalCommandList::BeginRendering(const RenderBegin& begin)
     {
         MTLRenderPassDescriptor* passDesc = [MTLRenderPassDescriptor new];
@@ -102,35 +97,10 @@ namespace KGPU
         [mComputeEncoder endEncoding];
     }
 
-    void MetalCommandList::Barrier(const TextureBarrier& barrier)
-    {
-        // NO OP
-    }
-
-    void MetalCommandList::Barrier(const BufferBarrier& barrier)
-    {
-        // NO OP
-    }
-
-    void MetalCommandList::Barrier(const MemoryBarrier& barrier)
-    {
-        // NO OP
-    }
-
-    void MetalCommandList::Barrier(const BarrierGroup& barrierGroup)
-    {
-        // NO OP
-    }
-
-    void MetalCommandList::ClearColor(ITextureView* view, float r, float g, float b)
-    {
-        // NO OP
-    }
-
     void MetalCommandList::SetGraphicsPipeline(IGraphicsPipeline* pipeline)
     {
-        // Set cull mode, set fill mode
-
+        // TODO: Set depth stencil state
+        
         MetalGraphicsPipeline* metalPipeline = static_cast<MetalGraphicsPipeline*>(pipeline);
         [mRenderEncoder setRenderPipelineState:metalPipeline->GetState()];
         [mRenderEncoder setCullMode:MetalGraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
@@ -233,10 +203,12 @@ namespace KGPU
 
     void MetalCommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
     {
+        // TODO: Should just bind compute kernel
     }
 
     void MetalCommandList::SetRaytracingConstants(IRaytracingPipeline* pipeline, const void* data, uint64 size)
     {
+        // TODO: Set bytes in compute kernel
     }
 
     void MetalCommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
@@ -267,22 +239,27 @@ namespace KGPU
 
     void MetalCommandList::DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth)
     {
+        // TODO: Bind SBT
     }
 
     void MetalCommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
+        // TODO: Run ICB kernel
     }
 
     void MetalCommandList::DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
+        // TODO: Run ICB kernel
     }
 
     void MetalCommandList::DispatchIndirect(IBuffer* buffer, uint offset)
     {
+        // TODO: Run ICB kernel
     }
 
     void MetalCommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
+        // TODO: Run ICB kernel
     }
 
     void MetalCommandList::CopyBufferToBufferFull(IBuffer* dest, IBuffer* src)
@@ -380,6 +357,22 @@ namespace KGPU
 
     void MetalCommandList::BuildBLAS(IBLAS* blas, ASBuildMode mode)
     {
+        MetalBLAS* metalBLAS = static_cast<MetalBLAS*>(blas);
+        if (!mParentDevice->SupportsRaytracing())
+            return;
+
+        if (mode == ASBuildMode::kRefit) {
+            metalBLAS->GetDescriptor().usage = MTLAccelerationStructureUsageRefit;
+        }
+
+        id<MTLAccelerationStructureCommandEncoder> asEncoder = [mBuffer accelerationStructureCommandEncoder];
+        if (mCurrentLabel) asEncoder.label = mCurrentLabel;
+
+        [asEncoder buildAccelerationStructure:metalBLAS->GetAccelerationStructure()
+                           descriptor:metalBLAS->GetDescriptor()
+                           scratchBuffer:static_cast<MetalBuffer*>(metalBLAS->GetScratch())->GetMTLBuffer()
+                           scratchBufferOffset:0];
+        [asEncoder endEncoding];
     }
 
     void MetalCommandList::BuildTLAS(ITLAS* tlas, ASBuildMode mode, uint instanceCount, IBuffer* buffer)
@@ -395,4 +388,11 @@ namespace KGPU
     {
         mCurrentLabel = nil;
     }
+
+    void MetalCommandList::Barrier(const TextureBarrier& barrier) {}
+    void MetalCommandList::Barrier(const BufferBarrier& barrier) {}
+    void MetalCommandList::Barrier(const MemoryBarrier& barrier) {}
+    void MetalCommandList::Barrier(const BarrierGroup& barrierGroup) {}
+    void MetalCommandList::ClearColor(ITextureView* view, float r, float g, float b) {}
+    void MetalCommandList::End() {}
 }

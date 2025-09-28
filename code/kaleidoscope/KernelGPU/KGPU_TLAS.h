@@ -17,6 +17,7 @@ namespace KGPU
     constexpr uint TLAS_INSTANCE_OPAQUE = 0x00000004;
     constexpr uint TLAS_INSTANCE_NON_OPAQUE = 0x00000008;
 
+#ifndef KD_MAC
     struct TLASInstance
     {
         float3x4 Transform;
@@ -26,6 +27,17 @@ namespace KGPU
         uint Flags:8;
         uint64 AccelerationStructureReference;
     };
+#else
+    struct TLASInstance
+    {
+        float3x4 Transform;
+        uint Flags;
+        uint Mask;
+        uint InstanceShaderBindingTableRecordOffset;
+        uint AccelerationStructureReference;
+        uint64 InstanceCustomIndex;
+    };
+#endif
 
     class ITLAS
     {
