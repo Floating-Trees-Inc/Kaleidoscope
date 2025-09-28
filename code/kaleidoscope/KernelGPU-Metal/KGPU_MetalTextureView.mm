@@ -45,12 +45,12 @@ namespace KGPU
         switch (desc.Dimension)
         {
             case TextureViewDimension::kTexture2D:
-                if (desc.ArrayLayer == VIEW_ALL_MIPS && desc.Texture->GetDesc().Depth > 1)
+                return MTLTextureType2D;
+            case TextureViewDimension::kTextureCube:
+                if (desc.Type == TextureViewType::kStorage)
                     return MTLTextureType2DArray;
                 else
-                    return MTLTextureType2D;
-            case TextureViewDimension::kTextureCube:
-                return MTLTextureTypeCube;
+                    return MTLTextureTypeCube;
         }
     }
 }
