@@ -15,4 +15,5 @@ target("metalirconverter")
         add_linkdirs("Libs/")
         add_links("metalirconverter")
         add_frameworks("Metal", "Foundation")
+        add_cxxflags("-fobjc-arc", "-x objective-c++")
     end
