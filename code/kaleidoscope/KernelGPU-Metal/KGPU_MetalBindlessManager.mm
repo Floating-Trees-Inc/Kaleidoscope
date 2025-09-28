@@ -56,7 +56,7 @@ namespace KGPU
 
     uint MetalBindlessManager::WriteTLAS(MetalTLAS* as)
     {
-        IRDescriptorTableEntry entry;
+        IRDescriptorTableEntry entry = {};
         IRDescriptorTableSetAccelerationStructure(&entry, as->GetAccelerationStructure().gpuResourceID._impl);
 
         uint index = mFreeList.Allocate();

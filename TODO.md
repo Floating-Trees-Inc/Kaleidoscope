@@ -1,4 +1,5 @@
 ## RHI tests
+- Texture2D test
 - Sampler tests
 - Comparison sampler test
 - TextureCube test
