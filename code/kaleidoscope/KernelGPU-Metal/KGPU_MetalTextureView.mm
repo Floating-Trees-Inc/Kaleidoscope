@@ -14,7 +14,11 @@ namespace KGPU
         mDesc = viewDesc;
         
         auto texture = static_cast<MetalTexture*>(viewDesc.Texture);
-        mTexture = [texture->GetMTLTexture() newTextureViewWithPixelFormat:MetalTexture::TranslateToMTLPixelFormat(viewDesc.ViewFormat)
+
+        MTLPixelFormat format = (Any(texture->GetDesc().Usage & TextureUsage::kDepthTarget))
+                               ? MetalTexture::TranslateToMTLPixelFormat(viewDesc.ViewFormat)
+                               : texture->GetMTLTexture().pixelFormat;
+        mTexture = [texture->GetMTLTexture() newTextureViewWithPixelFormat:format
                                              textureType:TranslateToMTLTextureType(viewDesc)
                                              levels:NSMakeRange(0, viewDesc.Texture->GetDesc().Depth)
                                              slices:NSMakeRange(viewDesc.ArrayLayer, 1)];
