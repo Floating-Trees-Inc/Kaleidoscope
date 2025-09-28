@@ -17,6 +17,7 @@ namespace KGPU
     }
     
     MetalTexture::MetalTexture(MetalDevice* device, TextureDesc desc)
+        : mParentDevice(device)
     {
         mDesc = desc;
         for (int i = 0; i < desc.MipLevels; i++) {
@@ -34,13 +35,14 @@ namespace KGPU
         textureDescriptor.storageMode = MTLStorageModePrivate;
 
         mTexture = [device->GetMTLDevice() newTextureWithDescriptor:textureDescriptor];
+        device->GetResidencySet()->WriteTexture(this);
 
         KD_WHATEVER("Created Metal texture");
     }
     
     MetalTexture::~MetalTexture()
     {
-
+        mParentDevice->GetResidencySet()->FreeTexture(this);
     }
     
     void MetalTexture::SetName(const KC::String& name)

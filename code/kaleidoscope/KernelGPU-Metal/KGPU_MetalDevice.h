@@ -22,6 +22,7 @@
 #include "KGPU_MetalMeshPipeline.h"
 #include "KGPU_MetalRaytracingPipeline.h"
 #include "KGPU_MetalBindlessManager.h"
+#include "KGPU_MetalResidencySet.h"
 
 #include <Metal/Metal.h>
 
@@ -60,9 +61,11 @@ namespace KGPU
     
         id<MTLDevice> GetMTLDevice() { return mDevice; }
         MetalBindlessManager* GetBindlessManager() { return mBindlessManager; }
+        MetalResidencySet* GetResidencySet() { return mResidencySet; }
     private:
         id<MTLDevice> mDevice = nil;
-
+        
+        MetalResidencySet* mResidencySet = nullptr;
         MetalBindlessManager* mBindlessManager = nullptr;
     };
 }

@@ -15,12 +15,14 @@ namespace KGPU
         mDevice = MTLCreateSystemDefaultDevice();
         KD_ASSERT_EQ(mDevice, "Failed to create Metal device!");
 
+        mResidencySet = KC_NEW(MetalResidencySet, this);
         mBindlessManager = KC_NEW(MetalBindlessManager, this);
     }
 
     MetalDevice::~MetalDevice()
     {
         KC_DELETE(mBindlessManager);
+        KC_DELETE(mResidencySet);mResidencySet = KC_NEW(MetalResidencySet, this);
     }
 
     ISurface* MetalDevice::CreateSurface(KOS::IWindow* window, ICommandQueue* graphicsQueue)
@@ -45,7 +47,7 @@ namespace KGPU
 
     ISync* MetalDevice::CreateSync(ISurface* surface, ICommandQueue* queue)
     {
-    return KC_NEW(MetalSync, this, static_cast<MetalSurface*>(surface), static_cast<MetalCommandQueue*>(queue));
+        return KC_NEW(MetalSync, this, static_cast<MetalSurface*>(surface), static_cast<MetalCommandQueue*>(queue));
     }
 
     IGraphicsPipeline* MetalDevice::CreateGraphicsPipeline(GraphicsPipelineDesc desc)

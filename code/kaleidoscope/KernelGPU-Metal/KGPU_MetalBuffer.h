@@ -31,5 +31,6 @@ namespace KGPU
         MetalDevice* mParentDevice;
         
         id<MTLBuffer> mBuffer = nil;
+        NSString* mLabel = nil;
     };
 }

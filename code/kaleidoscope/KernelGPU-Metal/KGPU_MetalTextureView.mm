@@ -18,14 +18,17 @@ namespace KGPU
                                              textureType:TranslateToMTLTextureType(viewDesc)
                                              levels:NSMakeRange(0, viewDesc.Texture->GetDesc().Depth)
                                              slices:NSMakeRange(viewDesc.ArrayLayer, 1)];
+        device->GetResidencySet()->WriteTextureView(this);
 
-        mBindless.Index = device->GetBindlessManager()->WriteTextureView(this);
+        if (viewDesc.Type != TextureViewType::kRenderTarget && viewDesc.Type != TextureViewType::kDepthTarget)
+            mBindless.Index = device->GetBindlessManager()->WriteTextureView(this);
 
         KD_WHATEVER("Created Metal texture view");
     }
 
     MetalTextureView::~MetalTextureView()
     {
+        mParentDevice->GetResidencySet()->FreeTextureView(this);
         mParentDevice->GetBindlessManager()->Free(mBindless.Index);
     }
 

@@ -13,6 +13,8 @@ namespace KGPU
         : mParentDevice(device)
     {
         mCommandQueue = [device->GetMTLDevice() newCommandQueue];
+        mCommandQueue.label = @"KGPU Command Queue";
+        [mCommandQueue addResidencySet:device->GetResidencySet()->GetResidencySet()];
     }
 
     MetalCommandQueue::~MetalCommandQueue()

@@ -87,5 +87,6 @@ namespace KGPU
         id<MTLComputeCommandEncoder> mComputeEncoder;
 
         IBuffer* mBoundIndexBuffer = nullptr;
+        NSString* mCurrentLabel = nil;
     };
 }

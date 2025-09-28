@@ -25,6 +25,8 @@ namespace KGPU
     private:
         friend class MetalSurface;
 
+        MetalDevice* mParentDevice;
+
         id<MTLTexture> mTexture = nullptr;
         NSString* mLabel;
 

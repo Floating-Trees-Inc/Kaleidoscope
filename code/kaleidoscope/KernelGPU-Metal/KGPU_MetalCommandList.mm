@@ -47,7 +47,7 @@ namespace KGPU
 
     void MetalCommandList::Begin()
     {
-        // NO OP
+        mParentDevice->GetResidencySet()->UpdateIfDirty();
     }
 
     void MetalCommandList::End()
@@ -83,6 +83,7 @@ namespace KGPU
         }
 
         mRenderEncoder = [mBuffer renderCommandEncoderWithDescriptor:passDesc];
+        if (mCurrentLabel) mRenderEncoder.label = mCurrentLabel;
     }
 
     void MetalCommandList::EndRendering()
@@ -93,6 +94,7 @@ namespace KGPU
     void MetalCommandList::BeginCompute()
     {
         mComputeEncoder = [mBuffer computeCommandEncoder];
+        if (mCurrentLabel) mComputeEncoder.label = mCurrentLabel;
     }
 
     void MetalCommandList::EndCompute()
@@ -379,12 +381,11 @@ namespace KGPU
 
     void MetalCommandList::PushMarker(const KC::String& name)
     {
-        NSString* nsName = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
-        [mBuffer pushDebugGroup:nsName];
+        mCurrentLabel = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
     }
 
     void MetalCommandList::PopMarker()
     {
-        [mBuffer popDebugGroup];
+        mCurrentLabel = nil;
     }
 }

@@ -14,17 +14,20 @@ namespace KGPU
         mDesc = desc;
 
         mBuffer = [device->GetMTLDevice() newBufferWithLength:desc.Size options:MTLResourceStorageModeShared];
+        device->GetResidencySet()->WriteBuffer(this);
 
         KD_WHATEVER("Created Metal buffer");
     }
 
     MetalBuffer::~MetalBuffer()
     {
+        mParentDevice->GetResidencySet()->FreeBuffer(this);
     }
 
     void MetalBuffer::SetName(const KC::String& name)
     {
-        // TODO
+        mLabel = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
+        mBuffer.label = mLabel;
     }
 
     void* MetalBuffer::Map()
