@@ -193,10 +193,19 @@ namespace KGPU
 
     void MetalCommandList::SetComputePipeline(IComputePipeline* pipeline)
     {
+        MetalComputePipeline* metalPipeline = static_cast<MetalComputePipeline*>(pipeline);
+        [mComputeEncoder setComputePipelineState:metalPipeline->GetPipelineState()];
+
+        id<MTLBuffer> descriptorHeap = mParentDevice->GetBindlessManager()->GetHandle();
+        [mComputeEncoder setBuffer:descriptorHeap offset:0 atIndex:kIRDescriptorHeapBindPoint];
+
+        id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
+        [mComputeEncoder setBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
     }
 
     void MetalCommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)
     {
+        [mComputeEncoder setBytes:data length:size atIndex:kIRArgumentBufferBindPoint];
     }
 
     void MetalCommandList::SetMeshPipeline(IMeshPipeline* pipeline)
@@ -245,10 +254,8 @@ namespace KGPU
 
     void MetalCommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)
     {
-#if 0
         [mComputeEncoder dispatchThreadgroups:MTLSizeMake(numberGroups.x, numberGroups.y, numberGroups.z)
                            threadsPerThreadgroup:MTLSizeMake(threadsPerGroup.x, threadsPerGroup.y, threadsPerGroup.z)];
-#endif
     }
 
     void MetalCommandList::DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup)

@@ -4,6 +4,6 @@
 - TextureCube test
 - Texture2DArray test
 - TextureView(Slice/Mip) test
-- BC texture test
+- Compressed texture test
 - Transparent RayQuery
 - Transparent RayPipeline

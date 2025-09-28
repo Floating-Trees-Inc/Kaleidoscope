@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_ComputePipeline.h>
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -16,5 +17,9 @@ namespace KGPU
     public:
         MetalComputePipeline(MetalDevice* device, ComputePipelineDesc desc);
         ~MetalComputePipeline();
+
+        id<MTLComputePipelineState> GetPipelineState() const { return mPipelineState; }
+    private:
+        id<MTLComputePipelineState> mPipelineState = nil;
     };
 }

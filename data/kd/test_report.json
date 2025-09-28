@@ -39,7 +39,7 @@
         "goldenPath": "tests/golden/SimpleComputeGolden.png",
         "magmaPath": "tests/SimpleComputeMagma.png",
         "outputPath": "tests/SimpleCompute.png",
-        "result": false
+        "result": true
     },
     "SimpleComputeIndirect": {
         "goldenPath": "tests/golden/SimpleComputeIndirectGolden.png",
