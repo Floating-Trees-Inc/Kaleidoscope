@@ -71,12 +71,12 @@ namespace KGPU
         uint32 TransferQueueFamilyIndex() const { return mTransferQueueFamilyIndex; } 
 
     private:
-        VkInstance mInstance;
-        VkDebugUtilsMessengerEXT mMessenger;
-        VkPhysicalDevice mPhysicalDevice;
-        VkDevice mDevice;
+        VkInstance mInstance = VK_NULL_HANDLE;
+        VkDebugUtilsMessengerEXT mMessenger = VK_NULL_HANDLE;
+        VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
+        VkDevice mDevice = VK_NULL_HANDLE;
 
-        VmaAllocator mAllocator;
+        VmaAllocator mAllocator = VK_NULL_HANDLE;
 
         bool mSupportsRT = false;
         bool mSupportsMS = false;

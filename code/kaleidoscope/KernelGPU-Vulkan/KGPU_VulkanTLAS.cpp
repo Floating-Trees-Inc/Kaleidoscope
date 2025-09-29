@@ -6,7 +6,7 @@
 #include "KGPU_VulkanTLAS.h"
 #include "KGPU_VulkanDevice.h"
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace KGPU
 {
@@ -85,7 +85,7 @@ namespace KGPU
         mBindless = mParentDevice->GetBindlessManager()->WriteAS(this);
 
         // Instance buffer
-        mInstanceBuffer = mParentDevice->CreateBuffer(BufferDesc(sizeof(VkAccelerationStructureInstanceKHR) * MAX_TLAS_INSTANCES, 0, BufferUsage::kShaderRead | BufferUsage::kShaderWrite));
+        mInstanceBuffer = mParentDevice->CreateBuffer(BufferDesc(sizeof(VkAccelerationStructureInstanceKHR) * MAX_TLAS_INSTANCES, sizeof(VkAccelerationStructureInstanceKHR), BufferUsage::kStaging));
         
         KD_WHATEVER("Created Vulkan TLAS");
     }
@@ -94,6 +94,9 @@ namespace KGPU
     {
         if (!mParentDevice->SupportsRaytracing())
             return;
+
+        mInstances.clear();
+        mInstanceCount = 0;
 
         mParentDevice->GetBindlessManager()->FreeAS(mBindless.Index);
         KC_DELETE(mInstanceBuffer);
@@ -105,7 +108,7 @@ namespace KGPU
     void VulkanTLAS::ResetInstanceBuffer()
     {
         mInstances.clear();
-        mInstanceCount++;
+        mInstanceCount = 0;
     }
 
     void VulkanTLAS::AddInstance(IBLAS* blas, const KGPU::float4x4& transform, bool opaque)
@@ -113,15 +116,15 @@ namespace KGPU
         KGPU::float3x4 d3dTransform = KGPU::float3x4(transform);
 
         VkAccelerationStructureInstanceKHR instance = {};
-        memcpy(&instance.transform, &d3dTransform, sizeof(d3dTransform));
+        memcpy(&instance.transform, glm::value_ptr(d3dTransform), sizeof(d3dTransform));
         instance.instanceCustomIndex = 0;
-        instance.mask = 0xFF;
+        instance.mask = 1;
         instance.instanceShaderBindingTableRecordOffset = 0;
         instance.flags = opaque ? TLAS_INSTANCE_OPAQUE : TLAS_INSTANCE_NON_OPAQUE;
         instance.accelerationStructureReference = blas->GetAddress();
 
         mInstances.push_back(instance);
-        mInstanceCount = (uint)mInstances.size();
+        mInstanceCount++;
     }
 
     void VulkanTLAS::Upload()

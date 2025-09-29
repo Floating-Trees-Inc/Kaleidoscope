@@ -55,8 +55,8 @@ namespace KGPU
     
     D3D12BLAS::~D3D12BLAS() 
     {
-        if (mMemory) KC_DELETE(mMemory);
         if (mScratch) KC_DELETE(mScratch);
+        if (mMemory) KC_DELETE(mMemory);
     }
     
     uint64 D3D12BLAS::GetAddress()

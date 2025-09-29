@@ -8,6 +8,7 @@
 #include "KGPU_ShaderCompat.h"
 #include "KGPU_Bindless.h"
 #include "KGPU_Buffer.h"
+#include "KGPU_BLAS.h"
 
 #include <glm/glm.hpp>
 

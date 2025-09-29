@@ -37,7 +37,6 @@ namespace KGPU
         VkAccelerationStructureBuildRangeInfoKHR mRangeInfo;
         VkAccelerationStructureGeometryKHR mGeometry;
 
-        IBuffer* mInstanceBuffer;
         KC::Array<VkAccelerationStructureInstanceKHR> mInstances;
     };
 }
