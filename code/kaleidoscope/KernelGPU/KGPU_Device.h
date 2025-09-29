@@ -55,5 +55,8 @@ namespace KGPU
         virtual uint64 GetOptimalRowPitchAlignment() = 0;
         virtual uint64 GetBufferImageGranularity() = 0;
         virtual KGPU::ShaderBytecodeType GetTargetBytecode() = 0;
+    
+        // For Metal only
+        virtual void MarkResourcesResident() {}
     };
 }

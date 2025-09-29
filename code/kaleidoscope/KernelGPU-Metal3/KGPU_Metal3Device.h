@@ -62,6 +62,7 @@ namespace KGPU
         id<MTLDevice> GetMTLDevice() { return mDevice; }
         Metal3BindlessManager* GetBindlessManager() { return mBindlessManager; }
         Metal3ResidencySet* GetResidencySet() { return mResidencySet; }
+        void MarkResourcesResident() override { mResidencySet->UpdateIfDirty(); }
     private:
         id<MTLDevice> mDevice = nil;
         

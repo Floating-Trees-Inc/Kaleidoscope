@@ -41,11 +41,9 @@ namespace Gfx
 
         KGPU::TextureViewDesc cubeViewDesc;
         cubeViewDesc.Texture = sky.EnvironmentMap;
-        cubeViewDesc.ArrayLayer = KGPU::VIEW_ALL_MIPS;
         cubeViewDesc.Dimension = KGPU::TextureViewDimension::kTextureCube;
         cubeViewDesc.ViewFormat = KGPU::TextureFormat::kR16G16B16A16_FLOAT;
         cubeViewDesc.Type = KGPU::TextureViewType::kShaderRead;
-        cubeViewDesc.ViewMip = KGPU::VIEW_ALL_MIPS;
         sky.CubeView = Manager::GetDevice()->CreateTextureView(cubeViewDesc);
         //
 
@@ -105,5 +103,7 @@ namespace Gfx
         cmdList->Dispatch(KGPU::uint3(2048 / 32, 2048 / 32, 6), KGPU::uint3(32, 32, 1));
         cmdList->EndCompute();
         cmdList->Barrier(endBarrier);
+        
+        CommandListRecycler::FlushCommandLists();
     }
 }

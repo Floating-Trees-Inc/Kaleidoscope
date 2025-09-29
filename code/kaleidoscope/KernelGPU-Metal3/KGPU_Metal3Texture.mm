@@ -27,13 +27,13 @@ namespace KGPU
         MTLTextureDescriptor* textureDescriptor = [MTLTextureDescriptor new];
         textureDescriptor.width = desc.Width;
         textureDescriptor.height = desc.Height;
-        textureDescriptor.arrayLength = 1;
+        textureDescriptor.arrayLength = desc.Depth;
         textureDescriptor.depth = 1;
         textureDescriptor.pixelFormat = TranslateToMTLPixelFormat(desc.Format);
         textureDescriptor.mipmapLevelCount = desc.MipLevels;
         textureDescriptor.textureType = desc.Depth == 6 ? MTLTextureType2DArray : MTLTextureType2D;
         textureDescriptor.usage = TranslateToMTLTextureUsage(desc.Usage);
-        textureDescriptor.storageMode = MTLStorageModePrivate;
+        textureDescriptor.storageMode = MTLStorageModeShared;
 
         mTexture = [device->GetMTLDevice() newTextureWithDescriptor:textureDescriptor];
         device->GetResidencySet()->WriteTexture(this);

@@ -24,6 +24,7 @@ namespace Gfx
             sData.mActiveList->Begin();
             sData.mRecording = true;
         }
+        Manager::GetDevice()->MarkResourcesResident(); // Cheeky bastard
         return sData.mActiveList;
     }
 

@@ -18,14 +18,18 @@ namespace KGPU
         MTLPixelFormat format = (Any(texture->GetDesc().Usage & TextureUsage::kDepthTarget))
                                 ? texture->GetMTLTexture().pixelFormat
                                 : Metal3Texture::TranslateToMTLPixelFormat(viewDesc.ViewFormat);
+        
+        NSRange sliceRange = (viewDesc.ArrayLayer == VIEW_ALL_MIPS)
+                            ? NSMakeRange(0, texture->GetDesc().Depth)
+                            : NSMakeRange(viewDesc.ArrayLayer, 1);
+        if (viewDesc.Dimension == TextureViewDimension::kTextureCube) sliceRange = NSMakeRange(0, 6);
+        NSRange levelRange = (viewDesc.ViewMip == VIEW_ALL_MIPS)
+                    ? NSMakeRange(0, texture->GetDesc().MipLevels)
+                    : NSMakeRange(viewDesc.ViewMip, 1);
         mTexture = [texture->GetMTLTexture() newTextureViewWithPixelFormat:format
                                              textureType:TranslateToMTLTextureType(viewDesc)
-                                             levels:(viewDesc.ViewMip == VIEW_ALL_MIPS)
-                                                    ? NSMakeRange(0, texture->GetDesc().MipLevels)
-                                                    : NSMakeRange(viewDesc.ViewMip, 1)
-                                             slices:(viewDesc.ArrayLayer == VIEW_ALL_MIPS)
-                                                    ? NSMakeRange(0, texture->GetDesc().Depth)
-                                                    : NSMakeRange(viewDesc.ArrayLayer, 1)];
+                                             levels:levelRange
+                                             slices:sliceRange];
         device->GetResidencySet()->WriteTextureView(this);
 
         if (viewDesc.Type != TextureViewType::kRenderTarget && viewDesc.Type != TextureViewType::kDepthTarget)
