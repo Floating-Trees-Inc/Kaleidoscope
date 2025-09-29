@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_TLAS.h>
+#include <KernelGPU/KGPU_BLAS.h>
 
 #include "KGPU_D3D12BindlessManager.h"
 

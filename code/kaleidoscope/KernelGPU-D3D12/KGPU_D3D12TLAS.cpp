@@ -6,6 +6,8 @@
 #include "KGPU_D3D12TLAS.h"
 #include "KGPU_D3D12Device.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #undef max
 
 namespace KGPU
@@ -31,11 +33,11 @@ namespace KGPU
         mScratch = device->CreateBuffer(BufferDesc(KOS::Align<uint>(scratchSize, 256), 0, BufferUsage::kShaderWrite));
         mScratch->SetName("TLAS Scratch");
     
+        mInstanceBuffer = device->CreateBuffer(BufferDesc(sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * MAX_TLAS_INSTANCES, sizeof(D3D12_RAYTRACING_INSTANCE_DESC), BufferUsage::kStaging));
+        mInstanceBuffer->SetName("TLAS Instance Buffer");
+
         mAlloc = device->GetBindlessManager()->WriteAS(this);
         mBindless.Index = mAlloc.Index;
-
-        mInstanceBuffer = device->CreateBuffer(BufferDesc(sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * MAX_TLAS_INSTANCES, 0, BufferUsage::kShaderRead | BufferUsage::kShaderWrite));
-        mInstanceBuffer->SetName("TLAS Instance Buffer");
     
         KD_WHATEVER("Created D3D12 TLAS");
     }
@@ -46,6 +48,9 @@ namespace KGPU
             return;
 
         mParentDevice->GetBindlessManager()->FreeCBVSRVUAV(mAlloc);
+
+        mInstanceCount = 0;
+        mInstanceArray.clear();
 
         KC_DELETE(mInstanceBuffer);
         KC_DELETE(mMemory);
@@ -63,15 +68,15 @@ namespace KGPU
         KGPU::float3x4 d3dTransform = KGPU::float3x4(transform);
 
         D3D12_RAYTRACING_INSTANCE_DESC desc = {};
-        memcpy(desc.Transform, &d3dTransform, sizeof(d3dTransform));
+        memcpy(desc.Transform, glm::value_ptr(d3dTransform), sizeof(d3dTransform));
         desc.InstanceID = 0;
-        desc.InstanceMask = 0xFF;
-        desc.InstanceCOntributionToHitGroupIndex = 0;
+        desc.InstanceMask = 1;
+        desc.InstanceContributionToHitGroupIndex = 0;
         desc.Flags = opaque ? TLAS_INSTANCE_OPAQUE : TLAS_INSTANCE_NON_OPAQUE;
-        desc.AccelerationStructure = blas->GetMemory()->GetAddress();
+        desc.AccelerationStructure = blas->GetAddress();
 
         mInstanceArray.push_back(desc);
-        mInstanceCount = (uint)mInstanceArray.size();
+        mInstanceCount++;
     }
 
     void D3D12TLAS::Upload()

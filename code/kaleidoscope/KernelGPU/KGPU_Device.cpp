@@ -24,7 +24,7 @@ namespace KGPU
 #if KD_WINDOWS
         switch (backend)
         {
-            case Backend::kAuto: return KC_NEW(D3D12Device, debug);
+            case Backend::kAuto: return KC_NEW(VulkanDevice, debug);
             case Backend::kD3D12: return KC_NEW(D3D12Device, debug);
             case Backend::kVulkan: return KC_NEW(VulkanDevice, debug);
             case Backend::kDummy: return KC_NEW(DummyDevice, debug);

@@ -40,7 +40,7 @@ namespace KGPU
     protected:
         BLASDesc mDesc;
     
-        IBuffer* mMemory;
-        IBuffer* mScratch;
+        IBuffer* mMemory = nullptr;
+        IBuffer* mScratch = nullptr;
     };
 }

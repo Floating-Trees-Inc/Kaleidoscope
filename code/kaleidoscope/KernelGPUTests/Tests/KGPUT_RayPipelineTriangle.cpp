@@ -87,17 +87,17 @@ namespace KGPUT
         }
 
         void Cleanup() override {
-            KC_DELETE(mVertexBuffer);
-            KC_DELETE(mIndexBuffer);
             KC_DELETE(mBLAS);
             KC_DELETE(mTLAS);
+            KC_DELETE(mVertexBuffer);
+            KC_DELETE(mIndexBuffer);
         }
 
     private:
-        KGPU::IBuffer* mVertexBuffer;
-        KGPU::IBuffer* mIndexBuffer;
-        KGPU::IBLAS* mBLAS;
-        KGPU::ITLAS* mTLAS;
+        KGPU::IBuffer* mVertexBuffer = nullptr;
+        KGPU::IBuffer* mIndexBuffer = nullptr;
+        KGPU::IBLAS* mBLAS = nullptr;
+        KGPU::ITLAS* mTLAS = nullptr;
     };
 }
 
