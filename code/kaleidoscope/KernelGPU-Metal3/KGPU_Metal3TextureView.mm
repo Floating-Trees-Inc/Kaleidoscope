@@ -47,7 +47,10 @@ namespace KGPU
             case TextureViewDimension::kTexture2D:
                 return MTLTextureType2D;
             case TextureViewDimension::kTextureCube:
-                return MTLTextureTypeCube;
+                if (desc.Type == TextureViewType::kShaderWrite)
+                    return MTLTextureType2DArray;
+                else
+                    return MTLTextureTypeCube;
         }
     }
 }

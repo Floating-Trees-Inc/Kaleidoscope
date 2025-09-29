@@ -31,7 +31,7 @@ namespace KGPU
         textureDescriptor.depth = 1;
         textureDescriptor.pixelFormat = TranslateToMTLPixelFormat(desc.Format);
         textureDescriptor.mipmapLevelCount = desc.MipLevels;
-        textureDescriptor.textureType = desc.Depth == 6 ? MTLTextureTypeCube : MTLTextureType2D;
+        textureDescriptor.textureType = desc.Depth == 6 ? MTLTextureType2DArray : MTLTextureType2D;
         textureDescriptor.usage = TranslateToMTLTextureUsage(desc.Usage);
         textureDescriptor.storageMode = MTLStorageModePrivate;
 
