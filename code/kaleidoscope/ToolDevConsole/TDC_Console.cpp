@@ -150,7 +150,7 @@ namespace TDC
     void Console::Draw(float dt, int width, int height)
     {
         bool justOpened = false;
-        if (ImGui::IsKeyPressed(ImGuiKey_F2, false)) {
+        if (ImGui::IsKeyPressed(ImGuiKey_F5, false)) {
             sData.Opened = !sData.Opened;
             if (sData.Opened) {
                 sData.WantFocus = true;
