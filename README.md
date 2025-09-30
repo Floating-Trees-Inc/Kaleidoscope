@@ -33,6 +33,7 @@ This engine is **Windows/MacOS only** for now. More platforms may be added in th
 | -------- | ------- |
 | [Hello, Triangle](code/samples/triangle/) | ![](.github/s_tri.png) |
 | [Hello, Raytraced Triangle](code/samples/raytracing_simple/) | ![](.github/s_ray.png) |
+| [Hello, Rayqueried Triangle](code/samples/raytracing_simple/) | ![](.github/s_tri.png) |
 | [ImGui, Simple](code/samples/imgui_simple/) | ![](.github/s_gui.png) |
 | [Im3D Example](code/samples/im3d_simple/) | ![](.github/s_im3d.png) |
 | [Dev Console](code/samples/dev_console/) | ![](.github/s_devc.png) |
