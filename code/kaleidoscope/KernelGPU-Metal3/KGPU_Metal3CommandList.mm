@@ -145,9 +145,11 @@ namespace KGPU
 
         if (!textures.empty()) {
             [mComputeEncoder memoryBarrierWithResources:textures.data() count:textures.size()];
+            [mComputeEncoder useResources:textures.data() count:textures.size() usage:MTLResourceUsageRead | MTLResourceUsageWrite];
         }
         if (!buffers.empty()) {
             [mComputeEncoder memoryBarrierWithResources:buffers.data() count:buffers.size()];
+            [mComputeEncoder useResources:textures.data() count:textures.size() usage:MTLResourceUsageRead | MTLResourceUsageWrite];
         }
 
         mPendingTexBarriers.clear();
