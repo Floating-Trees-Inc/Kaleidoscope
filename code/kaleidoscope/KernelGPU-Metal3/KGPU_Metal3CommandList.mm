@@ -30,6 +30,7 @@ namespace KGPU
         // KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
         
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
+        mEncoderFence = [device->GetMTLDevice() newFence];
 
         KD_WHATEVER("Created Metal3 command list");
     }
@@ -39,9 +40,6 @@ namespace KGPU
         mPendingTexBarriers.clear();
         mPendingBufBarriers.clear();
         mPendingMemBarriers.clear();
-        
-        // auto captureManager = [MTLCaptureManager sharedCaptureManager];
-        // [captureManager stopCapture];
     }
 
     void Metal3CommandList::Reset()
@@ -87,6 +85,7 @@ namespace KGPU
 
         mRenderEncoder = [mBuffer renderCommandEncoderWithDescriptor:passDesc];
         if (mCurrentLabel) mRenderEncoder.label = mCurrentLabel;
+        [mRenderEncoder waitForFence:mEncoderFence beforeStages:MTLRenderStageVertex | MTLRenderStageFragment | MTLRenderStageMesh];
 
         // Flush barriers
         KC::Array<id<MTLTexture>> textures;
@@ -115,10 +114,15 @@ namespace KGPU
                                       afterStages:MTLRenderStageVertex | MTLRenderStageMesh
                                      beforeStages:MTLRenderStageVertex | MTLRenderStageFragment | MTLRenderStageMesh];
         }
+
+        mPendingTexBarriers.clear();
+        mPendingBufBarriers.clear();
+        mPendingMemBarriers.clear();
     }
 
     void Metal3CommandList::EndRendering()
     {
+        [mRenderEncoder updateFence:mEncoderFence afterStages:MTLRenderStageVertex | MTLRenderStageFragment | MTLRenderStageMesh];
         [mRenderEncoder endEncoding];
     }
 
@@ -126,6 +130,7 @@ namespace KGPU
     {
         mComputeEncoder = [mBuffer computeCommandEncoder];
         if (mCurrentLabel) mComputeEncoder.label = mCurrentLabel;
+        [mComputeEncoder waitForFence:mEncoderFence];
 
         // Flush barriers
         KC::Array<id<MTLTexture>> textures;
@@ -145,11 +150,9 @@ namespace KGPU
 
         if (!textures.empty()) {
             [mComputeEncoder memoryBarrierWithResources:textures.data() count:textures.size()];
-            [mComputeEncoder useResources:textures.data() count:textures.size() usage:MTLResourceUsageRead | MTLResourceUsageWrite];
         }
         if (!buffers.empty()) {
             [mComputeEncoder memoryBarrierWithResources:buffers.data() count:buffers.size()];
-            [mComputeEncoder useResources:textures.data() count:textures.size() usage:MTLResourceUsageRead | MTLResourceUsageWrite];
         }
 
         mPendingTexBarriers.clear();
@@ -159,6 +162,7 @@ namespace KGPU
 
     void Metal3CommandList::EndCompute()
     {
+        [mComputeEncoder updateFence:mEncoderFence];
         [mComputeEncoder endEncoding];
     }
 
@@ -349,7 +353,9 @@ namespace KGPU
         Metal3Buffer* srcBuffer = static_cast<Metal3Buffer*>(src);
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit waitForFence:mEncoderFence];
         [blit copyFromBuffer:srcBuffer->GetMTLBuffer() sourceOffset:0 toBuffer:dstBuffer->GetMTLBuffer() destinationOffset:0 size:srcBuffer->GetDesc().Size];
+        [blit updateFence:mEncoderFence];
         [blit endEncoding];
     }
 
@@ -363,6 +369,7 @@ namespace KGPU
         uint mipLevels = bufferHasMips ? textureDesc.MipLevels : 1;
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit waitForFence:mEncoderFence];
 
         for (uint mip = 0; mip < mipLevels; ++mip) {
             uint width = std::max(1u, textureDesc.Width >> mip);
@@ -389,6 +396,7 @@ namespace KGPU
             bufferOffset += bytesPerImage;
         }
 
+        [blit updateFence:mEncoderFence];
         [blit endEncoding];
     }
 
@@ -398,6 +406,7 @@ namespace KGPU
         Metal3Texture* texture = static_cast<Metal3Texture*>(src);
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit waitForFence:mEncoderFence];
 
         const NSUInteger bpp = 4; // RGBA8
         const NSUInteger width  = texture->GetDesc().Width;
@@ -423,6 +432,7 @@ namespace KGPU
                 destinationBytesPerRow:bytesPerRow
                 destinationBytesPerImage:bytesPerImage];
 
+        [blit updateFence:mEncoderFence];
         [blit endEncoding];
     }
 
@@ -432,7 +442,9 @@ namespace KGPU
         Metal3Texture* source = static_cast<Metal3Texture*>(src);
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        [blit waitForFence:mEncoderFence];
         [blit copyFromTexture:source->GetMTLTexture() sourceSlice:0 sourceLevel:0 toTexture:dest->GetMTLTexture() destinationSlice:0 destinationLevel:0 sliceCount:1 levelCount:1];
+        [blit updateFence:mEncoderFence];
         [blit endEncoding];
     }
 
@@ -448,11 +460,13 @@ namespace KGPU
 
         id<MTLAccelerationStructureCommandEncoder> asEncoder = [mBuffer accelerationStructureCommandEncoder];
         if (mCurrentLabel) asEncoder.label = mCurrentLabel;
+        [asEncoder waitForFence:mEncoderFence];
 
         [asEncoder buildAccelerationStructure:metalBLAS->GetAccelerationStructure()
                            descriptor:metalBLAS->GetDescriptor()
                            scratchBuffer:static_cast<Metal3Buffer*>(metalBLAS->GetScratch())->GetMTLBuffer()
                            scratchBufferOffset:0];
+        [asEncoder updateFence:mEncoderFence];
         [asEncoder endEncoding];
     }
 
@@ -476,11 +490,13 @@ namespace KGPU
 
         id<MTLAccelerationStructureCommandEncoder> asEncoder = [mBuffer accelerationStructureCommandEncoder];
         if (mCurrentLabel) asEncoder.label = mCurrentLabel;
+        [asEncoder waitForFence:mEncoderFence];
 
         [asEncoder buildAccelerationStructure:metalTLAS->GetAccelerationStructure()
                            descriptor:metalTLAS->GetDescriptor()
                            scratchBuffer:static_cast<Metal3Buffer*>(metalTLAS->GetScratch())->GetMTLBuffer()
                            scratchBufferOffset:0];
+        [asEncoder updateFence:mEncoderFence];
         [asEncoder endEncoding];
     }
 
