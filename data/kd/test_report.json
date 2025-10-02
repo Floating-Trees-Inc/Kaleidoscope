@@ -15,7 +15,7 @@
         "goldenPath": "tests/golden/MeshTriangleIndirectGolden.png",
         "magmaPath": "tests/MeshTriangleIndirectMagma.png",
         "outputPath": "tests/MeshTriangleIndirect.png",
-        "result": true
+        "result": false
     },
     "PushConstants": {
         "goldenPath": "tests/golden/PushConstantsGolden.png",
@@ -27,7 +27,7 @@
         "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
         "magmaPath": "tests/RayPipelineTriangleMagma.png",
         "outputPath": "tests/RayPipelineTriangle.png",
-        "result": true
+        "result": false
     },
     "RayQueryTriangle": {
         "goldenPath": "tests/golden/RayQueryTriangleGolden.png",
@@ -45,7 +45,7 @@
         "goldenPath": "tests/golden/SimpleComputeIndirectGolden.png",
         "magmaPath": "tests/SimpleComputeIndirectMagma.png",
         "outputPath": "tests/SimpleComputeIndirect.png",
-        "result": true
+        "result": false
     },
     "StreamedTriangle": {
         "goldenPath": "tests/golden/StreamedTriangleGolden.png",
@@ -63,12 +63,12 @@
         "goldenPath": "tests/golden/StreamedTriangleIndexIndirectGolden.png",
         "magmaPath": "tests/StreamedTriangleIndexIndirectMagma.png",
         "outputPath": "tests/StreamedTriangleIndexIndirect.png",
-        "result": true
+        "result": false
     },
     "StreamedTriangleIndirect": {
         "goldenPath": "tests/golden/StreamedTriangleIndirectGolden.png",
         "magmaPath": "tests/StreamedTriangleIndirectMagma.png",
         "outputPath": "tests/StreamedTriangleIndirect.png",
-        "result": true
+        "result": false
     }
 }

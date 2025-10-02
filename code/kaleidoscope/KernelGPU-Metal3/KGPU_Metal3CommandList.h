@@ -88,5 +88,9 @@ namespace KGPU
 
         IBuffer* mBoundIndexBuffer = nullptr;
         NSString* mCurrentLabel = nil;
+
+        KC::Array<TextureBarrier> mPendingTexBarriers;
+        KC::Array<BufferBarrier> mPendingBufBarriers;
+        KC::Array<MemoryBarrier> mPendingMemBarriers;
     };
 }

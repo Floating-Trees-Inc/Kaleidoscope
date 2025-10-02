@@ -36,12 +36,20 @@ namespace KGPU
 
     Metal3CommandList::~Metal3CommandList()
     {
+        mPendingTexBarriers.clear();
+        mPendingBufBarriers.clear();
+        mPendingMemBarriers.clear();
+        
         // auto captureManager = [MTLCaptureManager sharedCaptureManager];
         // [captureManager stopCapture];
     }
 
     void Metal3CommandList::Reset()
     {
+        mPendingTexBarriers.clear();
+        mPendingBufBarriers.clear();
+        mPendingMemBarriers.clear();
+        
         mBuffer = [mParentQueue->GetMTLCommandQueue() commandBuffer];
     }
 
@@ -79,6 +87,34 @@ namespace KGPU
 
         mRenderEncoder = [mBuffer renderCommandEncoderWithDescriptor:passDesc];
         if (mCurrentLabel) mRenderEncoder.label = mCurrentLabel;
+
+        // Flush barriers
+        KC::Array<id<MTLTexture>> textures;
+        KC::Array<id<MTLBuffer>> buffers;
+        for (const auto& barrier : mPendingTexBarriers) {
+            if (barrier.Texture)
+                textures.push_back(static_cast<Metal3Texture*>(barrier.Texture)->GetMTLTexture());
+        }
+        for (const auto& barrier : mPendingBufBarriers) {
+            if (barrier.Buffer)
+                buffers.push_back(static_cast<Metal3Buffer*>(barrier.Buffer)->GetMTLBuffer());
+        }
+        for (const auto& barrier : mPendingMemBarriers) {
+            [mRenderEncoder memoryBarrierWithScope:MTLBarrierScopeBuffers | MTLBarrierScopeTextures
+                                      afterStages:MTLRenderStageVertex | MTLRenderStageMesh
+                                     beforeStages:MTLRenderStageVertex | MTLRenderStageFragment | MTLRenderStageMesh];
+        }
+
+        if (!textures.empty()) {
+            [mRenderEncoder memoryBarrierWithResources:textures.data() count:textures.size()
+                                      afterStages:MTLRenderStageVertex | MTLRenderStageMesh
+                                     beforeStages:MTLRenderStageVertex | MTLRenderStageFragment | MTLRenderStageMesh];
+        }
+        if (!buffers.empty()) {
+            [mRenderEncoder memoryBarrierWithResources:buffers.data() count:buffers.size()
+                                      afterStages:MTLRenderStageVertex | MTLRenderStageMesh
+                                     beforeStages:MTLRenderStageVertex | MTLRenderStageFragment | MTLRenderStageMesh];
+        }
     }
 
     void Metal3CommandList::EndRendering()
@@ -90,6 +126,33 @@ namespace KGPU
     {
         mComputeEncoder = [mBuffer computeCommandEncoder];
         if (mCurrentLabel) mComputeEncoder.label = mCurrentLabel;
+
+        // Flush barriers
+        KC::Array<id<MTLTexture>> textures;
+        KC::Array<id<MTLBuffer>> buffers;
+
+        for (const auto& barrier : mPendingTexBarriers) {
+            if (barrier.Texture)
+                textures.push_back(static_cast<Metal3Texture*>(barrier.Texture)->GetMTLTexture());
+        }
+        for (const auto& barrier : mPendingBufBarriers) {
+            if (barrier.Buffer)
+                buffers.push_back(static_cast<Metal3Buffer*>(barrier.Buffer)->GetMTLBuffer());
+        }
+        for (const auto& barrier : mPendingMemBarriers) {
+            [mComputeEncoder memoryBarrierWithScope:MTLBarrierScopeBuffers | MTLBarrierScopeTextures];
+        }
+
+        if (!textures.empty()) {
+            [mComputeEncoder memoryBarrierWithResources:textures.data() count:textures.size()];
+        }
+        if (!buffers.empty()) {
+            [mComputeEncoder memoryBarrierWithResources:buffers.data() count:buffers.size()];
+        }
+
+        mPendingTexBarriers.clear();
+        mPendingBufBarriers.clear();
+        mPendingMemBarriers.clear();
     }
 
     void Metal3CommandList::EndCompute()
@@ -429,10 +492,34 @@ namespace KGPU
         mCurrentLabel = nil;
     }
 
-    void Metal3CommandList::Barrier(const TextureBarrier& barrier) {}
-    void Metal3CommandList::Barrier(const BufferBarrier& barrier) {}
-    void Metal3CommandList::Barrier(const MemoryBarrier& barrier) {}
-    void Metal3CommandList::Barrier(const BarrierGroup& barrierGroup) {}
+    void Metal3CommandList::Barrier(const TextureBarrier& barrier)
+    {
+        mPendingTexBarriers.push_back(barrier);
+    }
+
+    void Metal3CommandList::Barrier(const BufferBarrier& barrier)
+    {
+        mPendingBufBarriers.push_back(barrier);
+    }
+
+    void Metal3CommandList::Barrier(const MemoryBarrier& barrier)
+    {
+        mPendingMemBarriers.push_back(barrier);
+    }
+
+    void Metal3CommandList::Barrier(const BarrierGroup& barrierGroup)
+    {
+        for (const auto& barrier : barrierGroup.TextureBarriers) {
+            Barrier(barrier);
+        }
+        for (const auto& barrier : barrierGroup.BufferBarriers) {
+            Barrier(barrier);
+        }
+        for (const auto& barrier : barrierGroup.MemoryBarriers) {
+            Barrier(barrier);
+        }
+    }
+
     void Metal3CommandList::ClearColor(ITextureView* view, float r, float g, float b) {}
     void Metal3CommandList::End() {}
 }
