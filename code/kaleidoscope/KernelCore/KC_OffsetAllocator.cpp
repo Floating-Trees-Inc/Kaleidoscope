@@ -5,6 +5,7 @@
 
 #include "KC_OffsetAllocator.h"
 #include "KC_Context.h"
+#include "KC_Bits.h"
 
 #include <KernelOS/KOS_DirectAllocation.h>
 
@@ -17,28 +18,6 @@ namespace KC {
     static constexpr uint32 MANTISSA_VALUE = 1 << MANTISSA_BITS;
     static constexpr uint32 MANTISSA_MASK = MANTISSA_VALUE - 1;
 
-    inline uint lzcnt_nonzero(uint v)
-    {
-#ifdef _MSC_VER
-        unsigned long retValue;
-        _BitScanReverse(&retValue, v);
-        return 31 - retValue;
-#else
-        return __builtin_clz(v);
-#endif
-    }
-
-    inline uint tzcnt_nonzero(uint v)
-    {
-#ifdef _MSC_VER
-        unsigned long retValue;
-        _BitScanForward(&retValue, v);
-        return retValue;
-#else
-        return __builtin_ctz(v);
-#endif
-    }
-
     uint32 UIntToFloatRoundUp(uint32 size)
     {
         uint32 exp = 0;
@@ -47,7 +26,7 @@ namespace KC {
         if (size < MANTISSA_VALUE) {
             mantissa = size;
         } else {
-            uint32 leadingZeros = lzcnt_nonzero(size);
+            uint32 leadingZeros = Bits::ScanBitReverse(size);
             uint32 highestSetBit = 31 - leadingZeros;
             
             uint32 mantissaStartBit = highestSetBit - MANTISSA_BITS;
@@ -70,7 +49,7 @@ namespace KC {
         if (size < MANTISSA_VALUE) {
             mantissa = size;
         } else {
-            uint32 leadingZeros = lzcnt_nonzero(size);
+            uint32 leadingZeros = Bits::ScanBitReverse(size);
             uint32 highestSetBit = 31 - leadingZeros;
             
             uint32 mantissaStartBit = highestSetBit - MANTISSA_BITS;
@@ -97,7 +76,7 @@ namespace KC {
         uint32 maskAfterStartIndex = ~maskBeforeStartIndex;
         uint32 bitsAfter = bitMask & maskAfterStartIndex;
         if (bitsAfter == 0) return OFFSET_ALLOCATOR_INVALID;
-        return tzcnt_nonzero(bitsAfter);
+        return Bits::ScanBitForward(bitsAfter);
     }
 
     OffsetAllocator::OffsetAllocator(uint size)
@@ -164,7 +143,7 @@ namespace KC {
                     .Metadata = OFFSET_ALLOCATOR_INVALID
                 };
             }
-            leafBinIndex = tzcnt_nonzero(mUsedBins[topBinIndex]);
+            leafBinIndex = Bits::ScanBitForward(mUsedBins[topBinIndex]);
         }
 
         uint32 binIndex = (topBinIndex << OFFSET_ALLOCATOR_TOP_BINS_INDEX_SHIFT) | leafBinIndex;

@@ -9,27 +9,13 @@
 #include <Graphics/Gfx_Manager.h>
 
 #include <KernelInput/KI_InputSystem.h>
+#include <KernelCore/KC_Bits.h>
 
 #include <im3d.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#ifdef _MSC_VER
-    #include <intrin.h>
-#endif
-
 namespace ToolIm3D
 {
-    inline uint lzcnt_nonzero(uint v)
-    {
-#ifdef _MSC_VER
-        unsigned long retValue;
-        _BitScanReverse(&retValue, v);
-        return 31 - retValue;
-#else
-        return __builtin_clz(v);
-#endif
-    }
-
     struct UploadRing {
         KGPU::IBuffer* Buf = nullptr;
         KGPU::IBufferView* SRV = nullptr;
@@ -45,7 +31,7 @@ namespace ToolIm3D
         void Ensure(uint need)
         {
             if (Buf && Cap >= need) return;
-            uint newCap = 1u << std::max(20u, lzcnt_nonzero(need));
+            uint newCap = 1u << std::max(20u, KC::Bits::ScanBitReverse(need));
             if (Buf) {
                 Buf->Unmap();
                 KC_DELETE(SRV);

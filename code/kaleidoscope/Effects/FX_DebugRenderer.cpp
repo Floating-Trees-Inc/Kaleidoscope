@@ -11,20 +11,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <KernelCore/KC_Math.h>
+
 namespace FX
 {
     DebugRenderer::Data DebugRenderer::sData;
-
-    float3 GetNormalizedPerpendicular(float3 base)
-    {
-        if (abs(base.x) > abs(base.y)) {
-            float len = sqrt(base.x * base.x + base.y * base.y);
-            return float3(base.z, 0.0f, -base.x) / len;
-        } else {
-            float len = sqrt(base.y * base.y + base.z * base.z);
-            return float3(0.0f, base.z, -base.y) / len;
-        }
-    }
 
     void DebugRenderer::Initialize()
     {
@@ -152,7 +143,7 @@ namespace FX
                 dir = dir * (size / len);
             else
                 dir = float3(size, 0, 0);
-            float3 perp = size * GetNormalizedPerpendicular(dir);
+            float3 perp = size * KC::Math::GetNormalizedPerpendicular(dir);
             DrawLine(to - dir + perp, to, color);
             DrawLine(to - dir - perp, to, color);
         }

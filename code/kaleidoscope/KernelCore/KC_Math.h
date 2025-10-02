@@ -21,5 +21,7 @@ namespace KC
     {
     public:
         static KC::Array<glm::vec4> GetFrustumCorners(glm::mat4 view, glm::mat4 proj);
+    
+        static glm::vec3 GetNormalizedPerpendicular(glm::vec3 base);
     };
 }
