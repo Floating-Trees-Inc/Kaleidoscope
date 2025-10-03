@@ -32,12 +32,21 @@ namespace KGPU
             createInfo.subresourceRange.baseMipLevel = viewDesc.ViewMip;
             createInfo.subresourceRange.levelCount = 1;
         }
-        if (viewDesc.ArrayLayer == VIEW_ALL_MIPS) {
+        
+        const bool allLayers = (viewDesc.ArrayLayer == VIEW_ALL_MIPS);
+        if (viewDesc.Dimension == TextureViewDimension::kTextureCube &&
+            viewDesc.Type == TextureViewType::kShaderWrite) // 2D_ARRAY view for UAV
+        {
             createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = desc.Depth;
+            createInfo.subresourceRange.layerCount     = 6;
         } else {
-            createInfo.subresourceRange.baseArrayLayer = viewDesc.ArrayLayer;
-            createInfo.subresourceRange.layerCount = 1;   
+            if (allLayers) {
+                createInfo.subresourceRange.baseArrayLayer = 0;
+                createInfo.subresourceRange.layerCount     = VK_REMAINING_ARRAY_LAYERS;
+            } else {
+                createInfo.subresourceRange.baseArrayLayer = viewDesc.ArrayLayer;
+                createInfo.subresourceRange.layerCount     = 1;
+            }
         }
 
         VkResult result = vkCreateImageView(mParentDevice->Device(), &createInfo, nullptr, &mImageView);
