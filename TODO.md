@@ -1,31 +1,32 @@
 ## RHI tests
-- Texture2D test
+- Texture2D load test
 - Sampler tests
 - Comparison sampler test
-- TextureCube test
-- Texture2DArray test
-- TextureView(Slice/Mip) test
-- Compressed texture test
-- Transparent RayQuery
-- Transparent RayPipeline
+- Write to mip test
+- Write to face test
+- Write to face + mip test
+- TextureCube sample test
+- ASTC test
+- BC7 test
+- Alpha RayQuery
+- Alpha RayPipeline
 
 ## Metal
-- Hazard tracking
-- Figure out kernel to go from ExecuteIndirect to ICB
+- Figure out MDI drawID
 - Figure out SBT and raytracing pipeline (if i ever use it that is...)
-- Figure out font and high DPI issues with ImGui
 
 ## ToolIm3D
 - Mesh shader variant if supported
 
 ## KernelGPU
 - GPU timestamps
+- BLAS compaction
 - RenderDoc/PIX/NSight integration
 - CopyBufferRange
 - Get GPU info (name, architecture, support levels)
 
 ## Long-term
-- Slowly start removing every unecessary third party libraries
+- Remove Effects module
 - Reflection/Serialization
 - ECS
 - Animation
