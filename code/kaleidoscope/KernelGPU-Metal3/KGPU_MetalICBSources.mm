@@ -1,0 +1,39 @@
+
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-05 19:04:09
+//
+
+static const char* sICBConversionDrawShaderSrc = R"MSL(
+#include <metal_stdlib>
+using namespace metal;
+
+struct KD_DrawCmd
+{
+    uint drawID;
+    uint vertexCount;
+    uint instanceCount;
+    uint vertexStart;
+    uint instanceStart;
+};
+
+struct arguments {
+    command_buffer cmd_buffer;
+};
+
+kernel void encode_draws
+    (device const KD_DrawCmd* cmdIn [[buffer(0)]],
+     device const uint* drawCount [[buffer(1)]],
+     device arguments &args,
+     uint gid [[thread_position_in_grid]])
+{
+    if (gid >= *drawCount) return;
+
+    const KD_DrawCmd d = cmdIn[gid];
+
+    render_command cmd(args.cmd_buffer, gid);
+    cmd.reset();
+    // TODO: Set DrawID????
+    cmd.draw_primitives(primitive_type::triangle, d.vertexCount, d.instanceCount, d.vertexStart, d.instanceStart);
+}
+)MSL";

@@ -30,6 +30,7 @@ namespace KGPU
         // Configure compute pipeline descriptor
         MTLComputePipelineDescriptor* pipelineDescriptor = [MTLComputePipelineDescriptor new];
         pipelineDescriptor.computeFunction = computeFunction;
+        pipelineDescriptor.supportIndirectCommandBuffers = YES;
 
         // Create the compute pipeline state
         mPipelineState = [device->GetMTLDevice() newComputePipelineStateWithFunction:computeFunction error:&error];

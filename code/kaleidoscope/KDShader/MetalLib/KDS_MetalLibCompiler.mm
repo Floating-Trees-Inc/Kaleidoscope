@@ -136,7 +136,7 @@ namespace KDS
 
     MetalLibCompiler::MetalLibCompiler()
     {
-        IRRootParameter1 rootSigParams[1];
+        IRRootParameter1 rootSigParams[2];
         rootSigParams[0] = {
             .ParameterType = IRRootParameterType32BitConstants,
             .Constants = {
@@ -146,12 +146,21 @@ namespace KDS
             },
             .ShaderVisibility = IRShaderVisibilityAll
         };
+        rootSigParams[1] = {
+            .ParameterType = IRRootParameterType32BitConstants,
+            .Constants = {
+                .ShaderRegister = 998,
+                .RegisterSpace = 0,
+                .Num32BitValues = 1
+            },
+            .ShaderVisibility = IRShaderVisibilityAll
+        };
 
         IRVersionedRootSignatureDescriptor rootSignature = {};
         rootSignature.version = IRRootSignatureVersion_1_1;
         rootSignature.desc_1_1.Flags = IRRootSignatureFlags(IRRootSignatureFlagSamplerHeapDirectlyIndexed | IRRootSignatureFlagCBVSRVUAVHeapDirectlyIndexed);
         rootSignature.desc_1_1.pParameters = rootSigParams;
-        rootSignature.desc_1_1.NumParameters = 1;
+        rootSignature.desc_1_1.NumParameters = 2;
 
         IRError* pRootSigError = nullptr;
         mRootSignature = IRRootSignatureCreateFromDescriptor(&rootSignature, &pRootSigError);

@@ -54,6 +54,7 @@ namespace KGPUT
             Gfx::Uploader::EnqueueBufferUpload(indices, sizeof(uint) * 3, mIndexBuffer, mCommandList);
 
             mCommandList->Barrier(beginRenderBarrier);
+            mCommandList->MarkForDrawIndexedIndirect(mIndirectBuffer, 0, 1);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
             mCommandList->SetGraphicsPipeline(Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds"));

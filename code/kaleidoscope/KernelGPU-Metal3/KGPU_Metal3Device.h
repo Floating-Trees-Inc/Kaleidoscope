@@ -28,6 +28,21 @@
 
 namespace KGPU
 {
+    struct ICBConversionPipe
+    {
+        id<MTLFunction> Function;
+        id<MTLComputePipelineState> State;
+        id<MTLArgumentEncoder> ArgumentEncoder;
+    };
+
+    struct ICBConversionPipelines
+    {
+        ICBConversionPipe EIToICBDraw;
+        ICBConversionPipe EIToICBDrawIndexed;
+        ICBConversionPipe EIToICBDispatch;
+        ICBConversionPipe EIToICBDispatchMesh;
+    };
+
     class Metal3Device : public IDevice
     {
     public:
@@ -63,8 +78,14 @@ namespace KGPU
         Metal3BindlessManager* GetBindlessManager() { return mBindlessManager; }
         Metal3ResidencySet* GetResidencySet() { return mResidencySet; }
         void MarkResourcesResident() override { mResidencySet->UpdateIfDirty(); }
+
+        ICBConversionPipe GetDrawICBConversionPipeline() { return mICBConversionPipelines.EIToICBDraw; }
+        ICBConversionPipe GetDrawIndexedICBConversionPipeline() { return mICBConversionPipelines.EIToICBDrawIndexed; }
+        ICBConversionPipe GetDispatchICBConversionPipeline() { return mICBConversionPipelines.EIToICBDispatch; }
+        ICBConversionPipe GetDispatchMeshICBConversionPipeline() { return mICBConversionPipelines.EIToICBDispatchMesh; }
     private:
         id<MTLDevice> mDevice = nil;
+        ICBConversionPipelines mICBConversionPipelines;
         
         Metal3ResidencySet* mResidencySet = nullptr;
         Metal3BindlessManager* mBindlessManager = nullptr;

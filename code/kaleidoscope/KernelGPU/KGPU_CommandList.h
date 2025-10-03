@@ -206,9 +206,16 @@ namespace KGPU
         virtual void DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup) = 0;
         virtual void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) = 0;
 
+        virtual void MarkForDrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}
         virtual void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
+
+        virtual void MarkForDrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}
         virtual void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
+
+        virtual void MarkForDispatchIndirect(IBuffer* buffer, uint offset) {}
         virtual void DispatchIndirect(IBuffer* buffer, uint offset) = 0;
+
+        virtual void MarkForDispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}
         virtual void DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
 
         virtual void CopyBufferToBufferFull(IBuffer* dest, IBuffer* src) = 0;

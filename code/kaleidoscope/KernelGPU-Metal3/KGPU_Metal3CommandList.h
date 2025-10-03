@@ -13,6 +13,12 @@ namespace KGPU
     class Metal3Device;
     class Metal3CommandQueue;
 
+    struct ICBDataCache
+    {
+        id<MTLIndirectCommandBuffer> mICB = nil;
+        id<MTLBuffer> mArgBuffer = nil;
+    };
+
     class Metal3CommandList : public ICommandList
     {
     public:
@@ -60,6 +66,11 @@ namespace KGPU
         void DispatchMesh(uint3 numberGroups, uint3 threadsPerGroup) override;
         void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) override;
 
+        void MarkForDrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+        void MarkForDrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+        void MarkForDispatchIndirect(IBuffer* buffer, uint offset) override;
+        void MarkForDispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+
         void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
         void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
         void DispatchIndirect(IBuffer* buffer, uint offset) override;
@@ -93,5 +104,7 @@ namespace KGPU
         KC::Array<TextureBarrier> mPendingTexBarriers;
         KC::Array<BufferBarrier> mPendingBufBarriers;
         KC::Array<MemoryBarrier> mPendingMemBarriers;
+
+        KC::HashMap<IBuffer*, ICBDataCache> mIndirectBufferCache;
     };
 }

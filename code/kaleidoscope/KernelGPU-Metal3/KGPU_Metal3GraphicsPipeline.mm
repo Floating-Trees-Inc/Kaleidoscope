@@ -43,6 +43,7 @@ namespace KGPU
         MTLRenderPipelineDescriptor* pipelineDescriptor = [MTLRenderPipelineDescriptor new];
         pipelineDescriptor.vertexFunction = vertexFunction;
         pipelineDescriptor.fragmentFunction = fragmentFunction;
+        pipelineDescriptor.supportIndirectCommandBuffers = YES;
 
         for (int i = 0; i < desc.RenderTargetFormats.size(); i++) {
             pipelineDescriptor.colorAttachments[i].pixelFormat = Metal3Texture::TranslateToMTLPixelFormat(desc.RenderTargetFormats[i]);

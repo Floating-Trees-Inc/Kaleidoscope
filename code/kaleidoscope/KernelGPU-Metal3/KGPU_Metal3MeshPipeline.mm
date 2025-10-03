@@ -44,6 +44,9 @@ namespace KGPU
         MTLMeshRenderPipelineDescriptor* pipelineDescriptor = [MTLMeshRenderPipelineDescriptor new];
         pipelineDescriptor.meshFunction = meshFunction;
         pipelineDescriptor.fragmentFunction = fragmentFunction;
+        if ([device->GetMTLDevice() supportsFamily: MTLGPUFamilyApple9]) {
+            pipelineDescriptor.supportIndirectCommandBuffers = YES;   
+        }
 
         for (int i = 0; i < desc.RenderTargetFormats.size(); i++) {
             pipelineDescriptor.colorAttachments[i].pixelFormat = Metal3Texture::TranslateToMTLPixelFormat(desc.RenderTargetFormats[i]);

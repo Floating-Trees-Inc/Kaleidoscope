@@ -47,7 +47,9 @@ RaytracingAccelerationStructure LoadRaytracingWorld(uint index)
         return gDrawID;
     }
 #elif METAL
-    // TODO
+    struct WhyTheFuckDoINeedThis { uint id; };
+
+    ConstantBuffer<WhyTheFuckDoINeedThis> gDrawID : register(b998);
     uint GetDrawID()
     {
         return 0;
