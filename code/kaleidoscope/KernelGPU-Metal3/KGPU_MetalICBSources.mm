@@ -73,3 +73,32 @@ kernel void encode_draws
     cmd.draw_indexed_primitives(primitive_type::triangle, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }
 )MSL";
+
+static const char* sICBConversionDispatchShaderSrc = R"MSL(
+#include <metal_stdlib>
+using namespace metal;
+
+struct KD_DispatchCmd
+{
+    uint x;
+    uint y;
+    uint z;
+};
+
+struct arguments {
+    command_buffer cmd_buffer;
+};
+
+kernel void encode_dispatches
+    (device const KD_DispatchCmd* cmdIn [[buffer(0)]],
+     device const uint4* threadsPerGroup [[buffer(1)]],
+     device arguments &args,
+     uint gid [[thread_position_in_grid]])
+{
+    const KD_DispatchCmd d = cmdIn[0];
+
+    compute_command cmd(args.cmd_buffer, gid);
+    cmd.reset();
+    cmd.concurrent_dispatch_threadgroups(uint3(d.x, d.y, d.z), uint3(threadsPerGroup[0]));
+}
+)MSL";

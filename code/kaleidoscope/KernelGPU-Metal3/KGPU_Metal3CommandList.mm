@@ -16,21 +16,23 @@
 
 #include <metal_irconverter_runtime.h>
 
+#define DO_STUPID_XCODE_CAPTURE 0
+
 namespace KGPU
 {
     Metal3CommandList::Metal3CommandList(Metal3Device* device, Metal3CommandQueue* queue, bool singleTime)
         : mParentDevice(device), mParentQueue(queue)
     {
-#if 0
+#if DO_STUPID_XCODE_CAPTURE
         MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
         MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
         descriptor.captureObject = device->GetMTLDevice();
         
         NSError* error = nil;
         [captureManager startCaptureWithDescriptor:descriptor error:&error];
-        KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
-#endif    
-    
+        KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");  
+#endif
+
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
         mEncoderFence = [device->GetMTLDevice() newFence];
 
@@ -43,7 +45,7 @@ namespace KGPU
         mPendingBufBarriers.clear();
         mPendingMemBarriers.clear();
 
-#if 0
+#if DO_STUPID_XCODE_CAPTURE
         MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
         [captureManager stopCapture];
 #endif
@@ -434,9 +436,52 @@ namespace KGPU
         [computeEncoder endEncoding];
     }
 
-    void Metal3CommandList::MarkForDispatchIndirect(IBuffer* buffer, uint offset)
+    void Metal3CommandList::MarkForDispatchIndirect(IBuffer* buffer, uint offset, uint3 threadsPerGroup)
     {
+        id<MTLComputePipelineState> pipeline = mParentDevice->GetDispatchICBConversionPipeline().State;
+        id<MTLArgumentEncoder> argumentEncoder = mParentDevice->GetDispatchICBConversionPipeline().ArgumentEncoder;
 
+        if (mIndirectBufferCache.find(buffer) == mIndirectBufferCache.end()) {
+            // Create ICB
+            MTLIndirectCommandBufferDescriptor* icbDesc = [MTLIndirectCommandBufferDescriptor new];
+            icbDesc.commandTypes = MTLIndirectCommandTypeConcurrentDispatch;
+            icbDesc.inheritPipelineState = YES;
+            icbDesc.inheritBuffers = YES;
+            icbDesc.maxVertexBufferBindCount = 31;
+            icbDesc.maxFragmentBufferBindCount = 31;
+        
+            id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:1 options:MTLResourceStorageModeShared];
+            id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
+            argBuffer.label = @"ICB Argument Buffer";
+            [argumentEncoder setArgumentBuffer:argBuffer offset:0];
+            [argumentEncoder setIndirectCommandBuffer:icb atIndex:0];
+
+            mIndirectBufferCache[buffer] = { icb, argBuffer };
+        }
+
+        auto& icbData = mIndirectBufferCache[buffer];
+
+        // Reset
+        id<MTLBlitCommandEncoder> resetBlitEncoder = [mBuffer blitCommandEncoder];
+        resetBlitEncoder.label = @"ICB Reset Encoder";
+        [resetBlitEncoder waitForFence:mEncoderFence];
+        [resetBlitEncoder resetCommandsInBuffer:icbData.mICB withRange:NSMakeRange(0, 1)];
+        [resetBlitEncoder updateFence:mEncoderFence];
+        [resetBlitEncoder endEncoding];
+
+        // Fill
+        uint4 threadsPerGroupArr = { threadsPerGroup.x, threadsPerGroup.y, threadsPerGroup.z, 0 };
+
+        id<MTLComputeCommandEncoder> computeEncoder = [mBuffer computeCommandEncoder];
+        computeEncoder.label = @"ICB Conversion Encoder";
+        [computeEncoder waitForFence:mEncoderFence];
+        [computeEncoder setComputePipelineState:pipeline];
+        [computeEncoder setBuffer:static_cast<Metal3Buffer*>(buffer)->GetMTLBuffer() offset:offset atIndex:0];
+        [computeEncoder setBytes:&threadsPerGroupArr length:sizeof(threadsPerGroupArr) atIndex:1];
+        [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:2];
+        [computeEncoder dispatchThreadgroups:MTLSizeMake(1, 1, 1) threadsPerThreadgroup:MTLSizeMake(1, 1, 1)];
+        [computeEncoder updateFence:mEncoderFence];
+        [computeEncoder endEncoding];
     }
 
     void Metal3CommandList::MarkForDispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
@@ -470,7 +515,14 @@ namespace KGPU
 
     void Metal3CommandList::DispatchIndirect(IBuffer* buffer, uint offset)
     {
-        // TODO: Run ICB kernel
+        if (mIndirectBufferCache.find(buffer) == mIndirectBufferCache.end()) {
+            KD_ASSERT_EQ(false, "No ICB found for the given buffer! Did you call MarkForDispatchIndirect before?");
+            return;
+        }
+
+        // Run ICB
+        auto& icbData = mIndirectBufferCache[buffer];
+        [mComputeEncoder executeCommandsInBuffer:icbData.mICB withRange:NSMakeRange(0, 1)];
     }
 
     void Metal3CommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)

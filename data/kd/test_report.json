@@ -45,7 +45,7 @@
         "goldenPath": "tests/golden/SimpleComputeIndirectGolden.png",
         "magmaPath": "tests/SimpleComputeIndirectMagma.png",
         "outputPath": "tests/SimpleComputeIndirect.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangle": {
         "goldenPath": "tests/golden/StreamedTriangleGolden.png",

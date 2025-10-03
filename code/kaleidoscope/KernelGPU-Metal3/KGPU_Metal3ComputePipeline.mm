@@ -33,7 +33,8 @@ namespace KGPU
         pipelineDescriptor.supportIndirectCommandBuffers = YES;
 
         // Create the compute pipeline state
-        mPipelineState = [device->GetMTLDevice() newComputePipelineStateWithFunction:computeFunction error:&error];
+        mPipelineState = [device->GetMTLDevice() newComputePipelineStateWithDescriptor:pipelineDescriptor options:MTLPipelineOptionNone
+ reflection:nil error:&error];
         KD_ASSERT_EQ(mPipelineState, "Failed to create Metal3 compute pipeline!");
 
         KD_WHATEVER("Created Metal3 compute pipeline state!");

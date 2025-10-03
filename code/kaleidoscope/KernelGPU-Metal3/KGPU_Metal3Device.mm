@@ -55,6 +55,24 @@ namespace KGPU
             }
             mICBConversionPipelines.EIToICBDrawIndexed.ArgumentEncoder = [mICBConversionPipelines.EIToICBDrawIndexed.Function newArgumentEncoderWithBufferIndex:3];
         }
+
+        CODE_BLOCK("Dispatch ICB") {
+            NSError* err = nil;
+            MTLCompileOptions* copts = [MTLCompileOptions new];
+            NSString* kMSL = [NSString stringWithUTF8String:sICBConversionDispatchShaderSrc];
+            id<MTLLibrary> lib = [mDevice newLibraryWithSource:kMSL options:copts error:&err];
+            if (err) {
+                KD_ASSERT_EQ(false, [[err localizedDescription] UTF8String]);
+            }
+
+            mICBConversionPipelines.EIToICBDispatch.Function = [lib newFunctionWithName:@"encode_dispatches"];
+            mICBConversionPipelines.EIToICBDispatch.State = [mDevice newComputePipelineStateWithFunction:mICBConversionPipelines.EIToICBDispatch.Function error:&err];
+            if (err) {
+                KD_ERROR([[err localizedDescription] UTF8String]);
+                KD_ASSERT_EQ(false, "Failed to create Dispatch ICB conversion pipeline!");
+            }
+            mICBConversionPipelines.EIToICBDispatch.ArgumentEncoder = [mICBConversionPipelines.EIToICBDispatch.Function newArgumentEncoderWithBufferIndex:2];
+        }
     }
 
     Metal3Device::~Metal3Device()
