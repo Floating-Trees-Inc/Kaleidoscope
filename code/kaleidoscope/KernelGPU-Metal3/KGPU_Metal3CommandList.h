@@ -67,8 +67,8 @@ namespace KGPU
         void DispatchRays(IRaytracingPipeline* pipeline, uint width, uint height, uint depth) override;
 
         void MarkForDrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
-        void MarkForDrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
-        void MarkForDispatchIndirect(IBuffer* buffer, uint offset) override;
+        void MarkForDrawIndexedIndirect(IBuffer* indexBuffer, IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
+        void MarkForDispatchIndirect(IBuffer* buffer, uint offset, KGPU::uint3 threadsPerGroup) override;
         void MarkForDispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;
 
         void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) override;

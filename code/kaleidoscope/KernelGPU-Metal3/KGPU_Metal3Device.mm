@@ -37,6 +37,24 @@ namespace KGPU
             }
             mICBConversionPipelines.EIToICBDraw.ArgumentEncoder = [mICBConversionPipelines.EIToICBDraw.Function newArgumentEncoderWithBufferIndex:2];
         }
+
+        CODE_BLOCK("DrawIndexed ICB") {
+            NSError* err = nil;
+            MTLCompileOptions* copts = [MTLCompileOptions new];
+            NSString* kMSL = [NSString stringWithUTF8String:sICBConversionDrawIndexedShaderSrc];
+            id<MTLLibrary> lib = [mDevice newLibraryWithSource:kMSL options:copts error:&err];
+            if (err) {
+                KD_ASSERT_EQ(false, [[err localizedDescription] UTF8String]);
+            }
+
+            mICBConversionPipelines.EIToICBDrawIndexed.Function = [lib newFunctionWithName:@"encode_draws"];
+            mICBConversionPipelines.EIToICBDrawIndexed.State = [mDevice newComputePipelineStateWithFunction:mICBConversionPipelines.EIToICBDrawIndexed.Function error:&err];
+            if (err) {
+                KD_ERROR([[err localizedDescription] UTF8String]);
+                KD_ASSERT_EQ(false, "Failed to create Draw ICB conversion pipeline!");
+            }
+            mICBConversionPipelines.EIToICBDrawIndexed.ArgumentEncoder = [mICBConversionPipelines.EIToICBDrawIndexed.Function newArgumentEncoderWithBufferIndex:3];
+        }
     }
 
     Metal3Device::~Metal3Device()

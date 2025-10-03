@@ -34,6 +34,42 @@ kernel void encode_draws
     render_command cmd(args.cmd_buffer, gid);
     cmd.reset();
     // TODO: Set DrawID????
-    cmd.draw_primitives(primitive_type::triangle, d.vertexCount, d.instanceCount, d.vertexStart, d.instanceStart);
+    cmd.draw_primitives(primitive_type::triangle, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
+}
+)MSL";
+
+static const char* sICBConversionDrawIndexedShaderSrc = R"MSL(
+#include <metal_stdlib>
+using namespace metal;
+
+struct KD_DrawIndexedCmd
+{
+    uint drawID;
+    uint indexCount;
+    uint instanceCount;
+    uint firstIndex;
+    uint vertexOffset;
+    uint firstInstance;
+};
+
+struct arguments {
+    command_buffer cmd_buffer;
+};
+
+kernel void encode_draws
+    (device const KD_DrawIndexedCmd* cmdIn [[buffer(0)]],
+     device const uint* drawCount [[buffer(1)]],
+     device const uint* indexBuffer [[buffer(2)]], // Bro XD
+     device arguments &args,
+     uint gid [[thread_position_in_grid]])
+{
+    if (gid >= *drawCount) return;
+
+    const KD_DrawIndexedCmd d = cmdIn[gid];
+
+    render_command cmd(args.cmd_buffer, gid);
+    cmd.reset();
+    // TODO: Set DrawID????
+    cmd.draw_indexed_primitives(primitive_type::triangle, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }
 )MSL";

@@ -209,10 +209,10 @@ namespace KGPU
         virtual void MarkForDrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}
         virtual void DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
 
-        virtual void MarkForDrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}
+        virtual void MarkForDrawIndexedIndirect(IBuffer* indexBuffer, IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}
         virtual void DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) = 0;
 
-        virtual void MarkForDispatchIndirect(IBuffer* buffer, uint offset) {}
+        virtual void MarkForDispatchIndirect(IBuffer* buffer, uint offset, KGPU::uint3 threadsPerGroup) {}
         virtual void DispatchIndirect(IBuffer* buffer, uint offset) = 0;
 
         virtual void MarkForDispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer = nullptr) {}

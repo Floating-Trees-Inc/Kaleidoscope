@@ -50,7 +50,7 @@ namespace KGPUT
             Gfx::Uploader::EnqueueBufferUpload(drawCommands, sizeof(uint) * 4, mIndirectBuffer, mCommandList);
 
             mCommandList->Barrier(beginRenderBarrier);
-            mCommandList->MarkForDrawIndexedIndirect(mIndirectBuffer, 0, 1);
+            mCommandList->MarkForDispatchMeshIndirect(mIndirectBuffer, 0, 1);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
             mCommandList->SetMeshPipeline(Gfx::ShaderManager::GetMesh("data/kd/shaders/tests/mesh_triangle.kds"));

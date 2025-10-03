@@ -21,14 +21,16 @@ namespace KGPU
     Metal3CommandList::Metal3CommandList(Metal3Device* device, Metal3CommandQueue* queue, bool singleTime)
         : mParentDevice(device), mParentQueue(queue)
     {
-        // MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
-        // MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
-        // descriptor.captureObject = device->GetMTLDevice();
-        // 
-        // NSError* error = nil;
-        // [captureManager startCaptureWithDescriptor:descriptor error:&error];
-        // KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
+#if 0
+        MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
+        MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
+        descriptor.captureObject = device->GetMTLDevice();
         
+        NSError* error = nil;
+        [captureManager startCaptureWithDescriptor:descriptor error:&error];
+        KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
+#endif    
+    
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
         mEncoderFence = [device->GetMTLDevice() newFence];
 
@@ -40,6 +42,11 @@ namespace KGPU
         mPendingTexBarriers.clear();
         mPendingBufBarriers.clear();
         mPendingMemBarriers.clear();
+
+#if 0
+        MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
+        [captureManager stopCapture];
+#endif
     }
 
     void Metal3CommandList::Reset()
@@ -377,9 +384,54 @@ namespace KGPU
         [computeEncoder endEncoding];
     }
 
-    void Metal3CommandList::MarkForDrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    void Metal3CommandList::MarkForDrawIndexedIndirect(IBuffer* indexBuffer, IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
+        id<MTLComputePipelineState> pipeline = mParentDevice->GetDrawIndexedICBConversionPipeline().State;
+        id<MTLArgumentEncoder> argumentEncoder = mParentDevice->GetDrawIndexedICBConversionPipeline().ArgumentEncoder;
 
+        if (mIndirectBufferCache.find(buffer) == mIndirectBufferCache.end()) {
+            // Create ICB
+            MTLIndirectCommandBufferDescriptor* icbDesc = [MTLIndirectCommandBufferDescriptor new];
+            icbDesc.commandTypes = MTLIndirectCommandTypeDrawIndexed;
+            icbDesc.inheritPipelineState = YES;
+            icbDesc.inheritBuffers = YES;
+            icbDesc.maxVertexBufferBindCount = 31;
+            icbDesc.maxFragmentBufferBindCount = 31;
+        
+            id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:maxDrawCount options:MTLResourceStorageModeShared];
+            id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
+            argBuffer.label = @"ICB Argument Buffer";
+            [argumentEncoder setArgumentBuffer:argBuffer offset:0];
+            [argumentEncoder setIndirectCommandBuffer:icb atIndex:0];
+
+            mIndirectBufferCache[buffer] = { icb, argBuffer };
+        }
+
+        auto& icbData = mIndirectBufferCache[buffer];
+
+        // Reset
+        id<MTLBlitCommandEncoder> resetBlitEncoder = [mBuffer blitCommandEncoder];
+        resetBlitEncoder.label = @"ICB Reset Encoder";
+        [resetBlitEncoder waitForFence:mEncoderFence];
+        [resetBlitEncoder resetCommandsInBuffer:icbData.mICB withRange:NSMakeRange(0, maxDrawCount)];
+        [resetBlitEncoder updateFence:mEncoderFence];
+        [resetBlitEncoder endEncoding];
+
+        // Fill
+        id<MTLComputeCommandEncoder> computeEncoder = [mBuffer computeCommandEncoder];
+        computeEncoder.label = @"ICB Conversion Encoder";
+        [computeEncoder waitForFence:mEncoderFence];
+        [computeEncoder setComputePipelineState:pipeline];
+        [computeEncoder setBuffer:static_cast<Metal3Buffer*>(buffer)->GetMTLBuffer() offset:offset atIndex:0];
+        if (countBuffer)
+            [computeEncoder setBuffer:static_cast<Metal3Buffer*>(countBuffer)->GetMTLBuffer() offset:0 atIndex:1];
+        else
+            [computeEncoder setBytes:&maxDrawCount length:sizeof(uint) atIndex:1];
+        [computeEncoder setBuffer:static_cast<Metal3Buffer*>(indexBuffer)->GetMTLBuffer() offset:0 atIndex:2];
+        [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:3];
+        [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
+        [computeEncoder updateFence:mEncoderFence];
+        [computeEncoder endEncoding];
     }
 
     void Metal3CommandList::MarkForDispatchIndirect(IBuffer* buffer, uint offset)
@@ -406,7 +458,14 @@ namespace KGPU
 
     void Metal3CommandList::DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
-        // TODO: Run ICB kernel
+        if (mIndirectBufferCache.find(buffer) == mIndirectBufferCache.end()) {
+            KD_ASSERT_EQ(false, "No ICB found for the given buffer! Did you call MarkForDrawIndexedIndirect before?");
+            return;
+        }
+
+        // Run ICB
+        auto& icbData = mIndirectBufferCache[buffer];
+        [mRenderEncoder executeCommandsInBuffer:icbData.mICB withRange:NSMakeRange(0, maxDrawCount)];
     }
 
     void Metal3CommandList::DispatchIndirect(IBuffer* buffer, uint offset)

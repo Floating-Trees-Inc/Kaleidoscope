@@ -63,12 +63,12 @@
         "goldenPath": "tests/golden/StreamedTriangleIndexIndirectGolden.png",
         "magmaPath": "tests/StreamedTriangleIndexIndirectMagma.png",
         "outputPath": "tests/StreamedTriangleIndexIndirect.png",
-        "result": false
+        "result": true
     },
     "StreamedTriangleIndirect": {
         "goldenPath": "tests/golden/StreamedTriangleIndirectGolden.png",
         "magmaPath": "tests/StreamedTriangleIndirectMagma.png",
         "outputPath": "tests/StreamedTriangleIndirect.png",
-        "result": false
+        "result": true
     }
 }

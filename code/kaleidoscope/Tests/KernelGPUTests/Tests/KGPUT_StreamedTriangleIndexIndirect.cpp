@@ -46,7 +46,7 @@ namespace KGPUT
             KGPU::RenderAttachment attachment(Gfx::ViewRecycler::GetRTV(Data.RenderTexture));
             KGPU::RenderBegin renderBegin(TEST_WIDTH, TEST_HEIGHT, { attachment }, {});
 
-            // DrawID, VertexCount, InstanceCount, VertexStart, InstanceStart
+            // DrawID, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance
             uint drawCommands[] = { 0, 3, 1, 0, 0, 0 };
             Gfx::Uploader::EnqueueBufferUpload(drawCommands, sizeof(uint) * 6, mIndirectBuffer, mCommandList);
 
@@ -54,7 +54,7 @@ namespace KGPUT
             Gfx::Uploader::EnqueueBufferUpload(indices, sizeof(uint) * 3, mIndexBuffer, mCommandList);
 
             mCommandList->Barrier(beginRenderBarrier);
-            mCommandList->MarkForDrawIndexedIndirect(mIndirectBuffer, 0, 1);
+            mCommandList->MarkForDrawIndexedIndirect(mIndexBuffer, mIndirectBuffer, 0, 1);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
             mCommandList->SetGraphicsPipeline(Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds"));
