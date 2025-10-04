@@ -14,18 +14,14 @@ namespace World
     class SceneTree
     {
     public:
-        SceneTree() = default;
-        ~SceneTree() = default;
+        SceneTree();
+        ~SceneTree();
 
         Node* GetRoot() const { return mRoot; }
     
         void PhysicsStep(float fixedDelta);
         void FrameStep(float delta);
-
-        const KC::Array<Node*>& GetGroup(const KC::String& name) const;
     private:
         Node* mRoot = nullptr;
-
-        KC::HashMap<KC::String, KC::Array<Node*>> mGroups;
     };
 }

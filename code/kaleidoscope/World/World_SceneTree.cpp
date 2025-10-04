@@ -8,11 +8,31 @@
 
 namespace World
 {
+    SceneTree::SceneTree()
+    {
+        mRoot = KC_NEW(Node, "Root");
+    }
+
+    SceneTree::~SceneTree()
+    {
+        KC::Array<Node*> toDelete;
+        IterativeDFS(mRoot, [&toDelete](Node* node)
+        {
+            node->SetIsInsideTree(false);
+            node->SetWasReadyCalled(false);
+            node->OnExitTree();
+            toDelete.push_back(node);
+        });
+        for (auto& node : toDelete) {
+            KC_DELETE(node);
+        }
+    }
+
     void SceneTree::PhysicsStep(float fixedDelta)
     {
         IterativeDFS(mRoot, [&](Node* node)
         {
-            node->OnPhysicsProcess(fixedDelta);
+            if (node->ShouldPhysicsProcess()) node->OnPhysicsProcess(fixedDelta);
         });
     }
 
@@ -20,7 +40,7 @@ namespace World
     {
         IterativeDFS(mRoot, [&](Node* node)
         {
-            node->OnProcess(delta);
+            if (node->ShouldProcess()) node->OnProcess(delta);
         });
     }
 }

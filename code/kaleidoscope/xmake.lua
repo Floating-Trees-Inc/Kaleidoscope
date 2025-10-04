@@ -19,6 +19,7 @@ includes("ToolIm3D")
 includes("ToolImGui")
 includes("World")
 includes("Tests")
+includes("ToolEditor")
 
 -- GPU backends
 includes("KernelGPU-Dummy")

@@ -141,4 +141,36 @@ namespace World
     {
         return BuildPath(this);
     }
+
+    void Node::SetLocalTransform(const glm::mat4& local)
+    {
+        mLocal = local;
+        MarkTransformDirty();
+    }
+
+    const glm::mat4& Node::GetLocalTransform() const
+    {
+        return mLocal;
+    }
+
+    const glm::mat4& Node::GetWorldTransform()
+    {
+        if (mDirty) {
+            if (mParent) {
+                mWorld = mParent->GetWorldTransform() * mLocal;
+            } else {
+                mWorld = mLocal;
+            }
+            mDirty = false;
+        }
+        return mWorld;
+    }
+
+    void Node::MarkTransformDirty()
+    {
+        if (mDirty) return;
+        mDirty = true;
+        for (auto* c : mChildren)
+            c->MarkTransformDirty();
+    }
 }
