@@ -177,7 +177,7 @@ namespace KDS
         IRRootSignatureDestroy(mRootSignature);
     }
 
-    KGPU::ShaderModule MetalLibCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage)
+    KGPU::ShaderModule MetalLibCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage, bool point)
     {
         KGPU::ShaderModule module = CompileDXIL(source, entry, stage);
         if (module.Data.size() == 0) {
@@ -191,6 +191,8 @@ namespace KDS
         IRCompilerSetEntryPointName(compiler, entry.c_str());
         IRCompilerSetMinimumDeploymentTarget(compiler, IROperatingSystem_macOS, "14.0");
         IRCompilerSetGlobalRootSignature(compiler, mRootSignature);
+        if (point)
+            IRCompilerSetInputTopology(compiler, IRInputTopologyPoint);
 
         IRError* compileError = nullptr;
         auto metalIR = IRCompilerAllocCompileAndLink(compiler, entry.c_str(), dxil, &compileError);

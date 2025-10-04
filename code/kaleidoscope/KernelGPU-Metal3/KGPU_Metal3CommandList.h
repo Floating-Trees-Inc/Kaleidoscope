@@ -98,6 +98,8 @@ namespace KGPU
         id<MTLComputeCommandEncoder> mComputeEncoder;
         id<MTLFence> mEncoderFence;
 
+        IGraphicsPipeline* mBoundGraphicsPipeline = nullptr;
+        IMeshPipeline* mBoundMeshPipeline = nullptr;
         IBuffer* mBoundIndexBuffer = nullptr;
         NSString* mCurrentLabel = nil;
 

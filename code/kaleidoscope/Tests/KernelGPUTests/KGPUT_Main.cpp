@@ -88,7 +88,7 @@ KD_MAIN
             stbi_write_png(magmaPath.c_str(), KGPUT::TEST_WIDTH, KGPUT::TEST_HEIGHT, 4, magmaOutput.data(), KGPUT::TEST_WIDTH * 4);
             delete[] outMagma;
 
-            bool result = meanError < 0.09f;
+            bool result = meanError < 0.01f;
             json[test->Name()]["goldenPath"] = StripDataPrefix(goldenPath);
             json[test->Name()]["outputPath"] = StripDataPrefix(outputPath);
             json[test->Name()]["magmaPath"] = StripDataPrefix(magmaPath);

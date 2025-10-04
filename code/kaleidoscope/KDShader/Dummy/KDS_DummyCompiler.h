@@ -15,6 +15,6 @@ namespace KDS
         DummyCompiler();
         ~DummyCompiler() override;
 
-        KGPU::ShaderModule Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage) override;
+        KGPU::ShaderModule Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage, bool point = false) override;
     };
 }

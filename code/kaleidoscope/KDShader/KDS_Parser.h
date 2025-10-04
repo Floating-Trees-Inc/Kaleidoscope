@@ -26,6 +26,7 @@ namespace KDS
 	{
 		KC::Array<EntryPointRecord> EntryPoints;
 		KC::Array<IncludeRecord> Includes;
+		bool IsPointTopology = false;
 	};
 
 	class Parser

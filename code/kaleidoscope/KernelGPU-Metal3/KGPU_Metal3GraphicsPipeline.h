@@ -24,6 +24,7 @@ namespace KGPU
         static MTLCullMode GetCullMode(CullMode mode);
         static MTLTriangleFillMode GetFillMode(FillMode mode);
         static MTLPrimitiveTopologyClass GetTopology(PrimitiveTopology topology);
+        static MTLPrimitiveType GetCmdListTopology(PrimitiveTopology topology);
     private:
         id<MTLRenderPipelineState> mState;
         id<MTLDepthStencilState> mDepthStencilState;

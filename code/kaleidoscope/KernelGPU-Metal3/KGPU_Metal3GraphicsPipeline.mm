@@ -132,4 +132,20 @@ namespace KGPU
             return MTLPrimitiveTopologyClassTriangle;
         }
     }
+
+    MTLPrimitiveType Metal3GraphicsPipeline::GetCmdListTopology(PrimitiveTopology topology)
+    {
+        switch (topology)
+        {
+        case PrimitiveTopology::kPoints:
+            return MTLPrimitiveTypePoint;
+        case PrimitiveTopology::kLines:
+            return MTLPrimitiveTypeLine;
+        case PrimitiveTopology::kTriangles:
+            return MTLPrimitiveTypeTriangle;
+        default:
+            KD_ASSERT_EQ(false, "Unknown PrimitiveTopology");
+            return MTLPrimitiveTypeTriangle;
+        }
+    }
 }

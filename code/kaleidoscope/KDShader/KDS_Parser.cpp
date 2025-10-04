@@ -49,6 +49,9 @@ namespace KDS
 
         for (size_t i = 0; i < lines.size(); ++i) {
             KC::String line = lines[i];
+            if (line == "#pragma point_draw")
+                result.IsPointTopology = true;
+
             KC::StringUtil::Trim(line);
             if (line.empty())
                 continue;

@@ -18,7 +18,7 @@ namespace KDS
         
     }
 
-    KGPU::ShaderModule DummyCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage)
+    KGPU::ShaderModule DummyCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage, bool point)
     {
         KGPU::ShaderModule result = {};
         result.Bytecode = KGPU::ShaderBytecodeType::kNone;

@@ -1,0 +1,60 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-26 00:17:42
+//
+
+#pragma point_draw
+
+#pragma vertex VSMain
+#pragma pixel FSMain
+
+// Hash function for pseudo-random values in [0,1]
+float Hash11(uint n)
+{
+    n = (n << 13U) ^ n;
+    return 1.0f - float((n * (n * n * 15731U + 789221U) + 1376312589U) & 0x7fffffffU) / 2147483647.0f;
+}
+
+// Hash → float3
+float3 Hash31(uint n)
+{
+    return float3(
+        Hash11(n * 0x68bc21ebU),
+        Hash11(n * 0x02e5be93U),
+        Hash11(n * 0x967a889bU)
+    );
+}
+
+// Given a VertexID, return a circle position (-0.5..0.5 radius) and random color
+void GetCircleVertex(uint vertexID, uint vertexCount, out float3 pos, out float3 col)
+{
+    float angle = (2.0f * 3.14159265f) * (vertexID % vertexCount) / vertexCount;
+
+    // Circle position scaled to radius 0.5
+    pos = float3(0.5f * cos(angle), 0.5f * sin(angle), 0.0f);
+
+    // Random but deterministic color per vertexID
+    col = Hash31(vertexID);
+}
+
+struct VertexOutput
+{
+    float4 Position : SV_Position;
+    float3 Color : COLOR;
+};
+
+VertexOutput VSMain(uint vertexID : SV_VertexID)
+{
+    VertexOutput output = (VertexOutput)0;
+
+    float3 pos;
+    GetCircleVertex(vertexID, 512, pos, output.Color);
+    output.Position = float4(pos, 1.0f);
+
+    return output;  
+}
+
+float4 FSMain(VertexOutput input) : SV_Target
+{
+    return float4(input.Color, 1.0f);
+}

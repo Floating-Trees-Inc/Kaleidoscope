@@ -66,7 +66,7 @@ namespace Gfx
 
         entry.GraphicsDesc.PushConstantSize = 0;
         for (auto& name : result.EntryPoints) {
-            entry.GraphicsDesc.Modules[name.Stage] = sData.Compiler->Compile(source, name.Name, name.Stage);
+            entry.GraphicsDesc.Modules[name.Stage] = sData.Compiler->Compile(source, name.Name, name.Stage, result.IsPointTopology);
             if (entry.GraphicsDesc.PushConstantSize == 0)
                 entry.GraphicsDesc.PushConstantSize = sData.ReflectionEngine->Reflect(entry.GraphicsDesc.Modules[name.Stage]).PushConstantSize;
         }
@@ -154,7 +154,7 @@ namespace Gfx
 
         entry.MeshDesc.PushConstantSize = 0;
         for (auto& name : result.EntryPoints) {
-            entry.MeshDesc.Modules[name.Stage] = sData.Compiler->Compile(source, name.Name, name.Stage);
+            entry.MeshDesc.Modules[name.Stage] = sData.Compiler->Compile(source, name.Name, name.Stage, result.IsPointTopology);
             if (entry.MeshDesc.PushConstantSize == 0)
                 entry.MeshDesc.PushConstantSize = sData.ReflectionEngine->Reflect(entry.MeshDesc.Modules[name.Stage]).PushConstantSize;
         }

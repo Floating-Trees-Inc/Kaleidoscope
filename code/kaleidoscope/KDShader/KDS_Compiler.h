@@ -17,6 +17,6 @@ namespace KDS
 
         static ICompiler* Create(KGPU::ShaderBytecodeType compilerType);
 
-        virtual KGPU::ShaderModule Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage) = 0;
+        virtual KGPU::ShaderModule Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage, bool point = false) = 0;
     };
 }

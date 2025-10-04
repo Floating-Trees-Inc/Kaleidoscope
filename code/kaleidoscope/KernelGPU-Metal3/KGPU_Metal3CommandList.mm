@@ -178,7 +178,7 @@ namespace KGPU
 
     void Metal3CommandList::SetGraphicsPipeline(IGraphicsPipeline* pipeline)
     {
-        // TODO: Set depth stencil state
+        mBoundGraphicsPipeline = pipeline;
         
         Metal3GraphicsPipeline* metalPipeline = static_cast<Metal3GraphicsPipeline*>(pipeline);
         [mRenderEncoder setRenderPipelineState:metalPipeline->GetState()];
@@ -267,6 +267,8 @@ namespace KGPU
 
     void Metal3CommandList::SetMeshPipeline(IMeshPipeline* pipeline)
     {
+        mBoundMeshPipeline = pipeline;
+
         Metal3MeshPipeline* metalPipeline = static_cast<Metal3MeshPipeline*>(pipeline);
         [mRenderEncoder setRenderPipelineState:metalPipeline->GetPipelineState()];
         [mRenderEncoder setCullMode:Metal3GraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
@@ -308,15 +310,15 @@ namespace KGPU
 
     void Metal3CommandList::Draw(uint vertexCount, uint instanceCount, uint firstVertex, uint firstInstance)
     {
-        // TODO: Change primitive type depending on pipeline state...
-        IRRuntimeDrawPrimitives(mRenderEncoder, MTLPrimitiveTypeTriangle, firstVertex, vertexCount, instanceCount, firstInstance);
+        MTLPrimitiveType primitiveType = Metal3GraphicsPipeline::GetCmdListTopology(mBoundGraphicsPipeline->GetDesc().Topology);
+        IRRuntimeDrawPrimitives(mRenderEncoder, primitiveType, firstVertex, vertexCount, instanceCount, firstInstance);
     }
 
     void Metal3CommandList::DrawIndexed(uint indexCount, uint instanceCount, uint firstIndex, uint vertexOffset, uint firstInstance)
     {
-        // TODO: Change primitive type depending on pipeline state...
+        MTLPrimitiveType primitiveType = Metal3GraphicsPipeline::GetCmdListTopology(mBoundGraphicsPipeline->GetDesc().Topology);
         Metal3Buffer* indexBuffer = static_cast<Metal3Buffer*>(mBoundIndexBuffer);
-        IRRuntimeDrawIndexedPrimitives(mRenderEncoder, MTLPrimitiveTypeTriangle, indexCount, MTLIndexTypeUInt32, indexBuffer->GetMTLBuffer(), firstIndex * 4, instanceCount);
+        IRRuntimeDrawIndexedPrimitives(mRenderEncoder, primitiveType, indexCount, MTLIndexTypeUInt32, indexBuffer->GetMTLBuffer(), firstIndex * 4, instanceCount);
     }
 
     void Metal3CommandList::Dispatch(uint3 numberGroups, uint3 threadsPerGroup)

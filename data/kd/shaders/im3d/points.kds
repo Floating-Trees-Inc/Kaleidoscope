@@ -8,6 +8,8 @@
 
 #define ANTI_ALIASING 2.0F
 
+#pragma point_draw
+
 #pragma vertex VSMain
 #pragma geometry GSMain
 #pragma pixel PSMain

@@ -5,6 +5,18 @@
         "outputPath": "tests/ClearColor.png",
         "result": true
     },
+    "DrawLines": {
+        "goldenPath": "tests/golden/DrawLinesGolden.png",
+        "magmaPath": "tests/DrawLinesMagma.png",
+        "outputPath": "tests/DrawLines.png",
+        "result": true
+    },
+    "DrawPoints": {
+        "goldenPath": "tests/golden/DrawPointsGolden.png",
+        "magmaPath": "tests/DrawPointsMagma.png",
+        "outputPath": "tests/DrawPoints.png",
+        "result": true
+    },
     "MeshTriangle": {
         "goldenPath": "tests/golden/MeshTriangleGolden.png",
         "magmaPath": "tests/MeshTriangleMagma.png",

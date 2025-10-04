@@ -50,7 +50,7 @@ namespace KDS
         
     }
 
-    KGPU::ShaderModule SPIRVCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage)
+    KGPU::ShaderModule SPIRVCompiler::Compile(const KC::String& source, const KC::String& entry, KGPU::ShaderStage stage, bool point)
     {
         PFN_DxcCreateInstance dxcCreate = (PFN_DxcCreateInstance)Manager::GetDynLib()->GetFunction("DxcCreateInstance");
 
