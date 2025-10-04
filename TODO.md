@@ -14,8 +14,6 @@
 ## When implemented
 - BLAS compaction
 - Copy buffer range
-- Draw Indirect + ID
-- Draw Indexed Indirect + ID
 - Dispatch Mesh Indirect + ID
 - ASTC
 - BC7
