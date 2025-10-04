@@ -13,15 +13,16 @@
 
 namespace KGPUT
 {
-    class StreamedTriangleIndirect : public BaseTest
+    class DrawPointsIndirect : public BaseTest
     {
     public:
-        StreamedTriangleIndirect()
+        DrawPointsIndirect()
         {
             KGPU::GraphicsPipelineDesc desc = {};
             desc.RenderTargetFormats.push_back(KGPU::TextureFormat::kR8G8B8A8_UNORM);
+            desc.Topology = KGPU::PrimitiveTopology::kPoints;
 
-            Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/streamed_triangle.kds", desc);
+            Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/draw_points.kds", desc);
 
             mIndirectBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(64, 64, KGPU::BufferUsage::kIndirectCommands));
         }
@@ -46,10 +47,10 @@ namespace KGPUT
             KGPU::RenderBegin renderBegin(TEST_WIDTH, TEST_HEIGHT, { attachment }, {});
 
             // DrawID, VertexCount, InstanceCount, VertexStart, InstanceStart
-            uint drawCommands[] = { 0, 3, 1, 0, 0 };
+            uint drawCommands[] = { 0, 512, 1, 0, 0 };
             Gfx::Uploader::EnqueueBufferUpload(drawCommands, sizeof(uint) * 5, mIndirectBuffer, mCommandList);
 
-            auto pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds");
+            auto* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/draw_points.kds");
             mCommandList->Barrier(beginRenderBarrier);
             mCommandList->MarkForDrawIndirect(pipeline, mIndirectBuffer, 0, 1);
             mCommandList->BeginRendering(renderBegin);
@@ -69,7 +70,7 @@ namespace KGPUT
     };
 }
 
-DEFINE_RHI_TEST(StreamedTriangleIndirect) {
-    KGPUT::StreamedTriangleIndirect test;
+DEFINE_RHI_TEST(DrawPointsIndirect) {
+    KGPUT::DrawPointsIndirect test;
     return test.Run();
 }

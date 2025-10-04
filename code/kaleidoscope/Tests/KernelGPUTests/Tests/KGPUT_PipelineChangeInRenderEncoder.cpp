@@ -1,6 +1,6 @@
 //
 // > Notice: Floating Trees Inc. @ 2025
-// > Create Time: 2025-08-06 22:12:25
+// > Create Time: 2025-07-29 19:21:40
 //
 
 #include "KGPUT_Base.h"
@@ -8,22 +8,23 @@
 
 #include <Graphics/Gfx_ShaderManager.h>
 #include <Graphics/Gfx_ViewRecycler.h>
-#include <Graphics/Gfx_Uploader.h>
-#include <Graphics/Gfx_CommandListRecycler.h>
 
 namespace KGPUT
 {
-    class StreamedTriangleIndirect : public BaseTest
+    class PipelineChangeInRenderEncoder : public BaseTest
     {
     public:
-        StreamedTriangleIndirect()
+        PipelineChangeInRenderEncoder()
         {
-            KGPU::GraphicsPipelineDesc desc = {};
-            desc.RenderTargetFormats.push_back(KGPU::TextureFormat::kR8G8B8A8_UNORM);
+            KGPU::GraphicsPipelineDesc triDesc = {};
+            triDesc.RenderTargetFormats.push_back(KGPU::TextureFormat::kR8G8B8A8_UNORM);
 
-            Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/streamed_triangle.kds", desc);
+            KGPU::GraphicsPipelineDesc pointDesc = {};
+            pointDesc.RenderTargetFormats.push_back(KGPU::TextureFormat::kR8G8B8A8_UNORM);
+            pointDesc.Topology = KGPU::PrimitiveTopology::kPoints;
 
-            mIndirectBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(64, 64, KGPU::BufferUsage::kIndirectCommands));
+            Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/streamed_triangle.kds", triDesc);
+            Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/draw_points.kds", pointDesc);
         }
 
         void Execute() override
@@ -45,31 +46,27 @@ namespace KGPUT
             KGPU::RenderAttachment attachment(Gfx::ViewRecycler::GetRTV(Data.RenderTexture));
             KGPU::RenderBegin renderBegin(TEST_WIDTH, TEST_HEIGHT, { attachment }, {});
 
-            // DrawID, VertexCount, InstanceCount, VertexStart, InstanceStart
-            uint drawCommands[] = { 0, 3, 1, 0, 0 };
-            Gfx::Uploader::EnqueueBufferUpload(drawCommands, sizeof(uint) * 5, mIndirectBuffer, mCommandList);
-
-            auto pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds");
             mCommandList->Barrier(beginRenderBarrier);
-            mCommandList->MarkForDrawIndirect(pipeline, mIndirectBuffer, 0, 1);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
-            mCommandList->SetGraphicsPipeline(pipeline);
-            mCommandList->DrawIndirect(mIndirectBuffer, 0, 1);
+            
+            // Draw triangle
+            mCommandList->SetGraphicsPipeline(Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds"));
+            mCommandList->Draw(3, 1, 0, 0);
+
+            // Draw points
+            mCommandList->SetGraphicsPipeline(Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/draw_points.kds"));
+            mCommandList->Draw(512, 1, 0, 0);
+
             mCommandList->EndRendering();
             mCommandList->Barrier(endRenderBarrier);
         }
 
-        void Cleanup() override {
-            KC_DELETE(mIndirectBuffer);
-        }
-
-    private:
-        KGPU::IBuffer* mIndirectBuffer;
+        void Cleanup() override {}
     };
 }
 
-DEFINE_RHI_TEST(StreamedTriangleIndirect) {
-    KGPUT::StreamedTriangleIndirect test;
+DEFINE_RHI_TEST(PipelineChangeInRenderEncoder) {
+    KGPUT::PipelineChangeInRenderEncoder test;
     return test.Run();
 }

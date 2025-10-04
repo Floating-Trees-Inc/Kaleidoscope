@@ -35,7 +35,7 @@ namespace KGPU
                 KD_ERROR([[err localizedDescription] UTF8String]);
                 KD_ASSERT_EQ(false, "Failed to create Draw ICB conversion pipeline!");
             }
-            mICBConversionPipelines.EIToICBDraw.ArgumentEncoder = [mICBConversionPipelines.EIToICBDraw.Function newArgumentEncoderWithBufferIndex:2];
+            mICBConversionPipelines.EIToICBDraw.ArgumentEncoder = [mICBConversionPipelines.EIToICBDraw.Function newArgumentEncoderWithBufferIndex:3];
         }
 
         CODE_BLOCK("DrawIndexed ICB") {
@@ -53,7 +53,7 @@ namespace KGPU
                 KD_ERROR([[err localizedDescription] UTF8String]);
                 KD_ASSERT_EQ(false, "Failed to create Draw ICB conversion pipeline!");
             }
-            mICBConversionPipelines.EIToICBDrawIndexed.ArgumentEncoder = [mICBConversionPipelines.EIToICBDrawIndexed.Function newArgumentEncoderWithBufferIndex:3];
+            mICBConversionPipelines.EIToICBDrawIndexed.ArgumentEncoder = [mICBConversionPipelines.EIToICBDrawIndexed.Function newArgumentEncoderWithBufferIndex:4];
         }
 
         CODE_BLOCK("Dispatch ICB") {

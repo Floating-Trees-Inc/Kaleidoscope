@@ -11,10 +11,22 @@
         "outputPath": "tests/DrawLines.png",
         "result": true
     },
+    "DrawLinesIndirect": {
+        "goldenPath": "tests/golden/DrawLinesIndirectGolden.png",
+        "magmaPath": "tests/DrawLinesIndirectMagma.png",
+        "outputPath": "tests/DrawLinesIndirect.png",
+        "result": true
+    },
     "DrawPoints": {
         "goldenPath": "tests/golden/DrawPointsGolden.png",
         "magmaPath": "tests/DrawPointsMagma.png",
         "outputPath": "tests/DrawPoints.png",
+        "result": true
+    },
+    "DrawPointsIndirect": {
+        "goldenPath": "tests/golden/DrawPointsIndirectGolden.png",
+        "magmaPath": "tests/DrawPointsIndirectMagma.png",
+        "outputPath": "tests/DrawPointsIndirect.png",
         "result": true
     },
     "MeshTriangle": {
@@ -28,6 +40,12 @@
         "magmaPath": "tests/MeshTriangleIndirectMagma.png",
         "outputPath": "tests/MeshTriangleIndirect.png",
         "result": false
+    },
+    "PipelineChangeInRenderEncoder": {
+        "goldenPath": "tests/golden/PipelineChangeInRenderEncoderGolden.png",
+        "magmaPath": "tests/PipelineChangeInRenderEncoderMagma.png",
+        "outputPath": "tests/PipelineChangeInRenderEncoder.png",
+        "result": true
     },
     "PushConstants": {
         "goldenPath": "tests/golden/PushConstantsGolden.png",

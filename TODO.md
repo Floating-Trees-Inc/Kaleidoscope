@@ -7,21 +7,18 @@
 - Write to face
 - Write to face + mip
 - TextureCube sample
-- ASTC
-- BC7
 - Alpha RayQuery
 - Alpha RayPipeline
-- Pipeline change in render encoder
-- Read/Write in same compute encoder
-- DrawIndirect lines
-- DrawIndirect points
-- Draw lines
-- Draw points
+- Pipeline change in compute encoder
+
+## When implemented
 - BLAS compaction
 - Copy buffer range
 - Draw Indirect + ID
 - Draw Indexed Indirect + ID
 - Dispatch Mesh Indirect + ID
+- ASTC
+- BC7
 
 ## Metal
 - Figure out MDI drawID

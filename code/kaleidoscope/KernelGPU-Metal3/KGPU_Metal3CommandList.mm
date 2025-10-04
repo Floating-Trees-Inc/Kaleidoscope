@@ -339,8 +339,14 @@ namespace KGPU
         // TODO: Bind SBT
     }
 
-    void Metal3CommandList::MarkForDrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    void Metal3CommandList::MarkForDrawIndirect(IGraphicsPipeline* outPipe,IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
+        // POINT = 0, LINE = 1, TRIANGLE = 2
+        uint primitiveType = outPipe->GetDesc().Topology == PrimitiveTopology::kTriangles ? 2
+                            : outPipe->GetDesc().Topology == PrimitiveTopology::kLines ? 1
+                            : outPipe->GetDesc().Topology == PrimitiveTopology::kPoints ? 0
+                            : 0;
+
         id<MTLComputePipelineState> pipeline = mParentDevice->GetDrawICBConversionPipeline().State;
         id<MTLArgumentEncoder> argumentEncoder = mParentDevice->GetDrawICBConversionPipeline().ArgumentEncoder;
 
@@ -382,14 +388,21 @@ namespace KGPU
             [computeEncoder setBuffer:static_cast<Metal3Buffer*>(countBuffer)->GetMTLBuffer() offset:0 atIndex:1];
         else
             [computeEncoder setBytes:&maxDrawCount length:sizeof(uint) atIndex:1];
-        [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:2];
+        [computeEncoder setBytes:&primitiveType length:sizeof(uint) atIndex:2];
+        [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:3];
         [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
         [computeEncoder updateFence:mEncoderFence];
         [computeEncoder endEncoding];
     }
 
-    void Metal3CommandList::MarkForDrawIndexedIndirect(IBuffer* indexBuffer, IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
+    void Metal3CommandList::MarkForDrawIndexedIndirect(IGraphicsPipeline* outPipe, IBuffer* indexBuffer, IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
+        // POINT = 0, LINE = 1, TRIANGLE = 2
+        uint primitiveType = outPipe->GetDesc().Topology == PrimitiveTopology::kTriangles ? 2
+                            : outPipe->GetDesc().Topology == PrimitiveTopology::kLines ? 1
+                            : outPipe->GetDesc().Topology == PrimitiveTopology::kPoints ? 0
+                            : 0;
+
         id<MTLComputePipelineState> pipeline = mParentDevice->GetDrawIndexedICBConversionPipeline().State;
         id<MTLArgumentEncoder> argumentEncoder = mParentDevice->GetDrawIndexedICBConversionPipeline().ArgumentEncoder;
 
@@ -432,7 +445,8 @@ namespace KGPU
         else
             [computeEncoder setBytes:&maxDrawCount length:sizeof(uint) atIndex:1];
         [computeEncoder setBuffer:static_cast<Metal3Buffer*>(indexBuffer)->GetMTLBuffer() offset:0 atIndex:2];
-        [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:3];
+        [computeEncoder setBytes:&primitiveType length:sizeof(uint) atIndex:3];
+        [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:4];
         [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
         [computeEncoder updateFence:mEncoderFence];
         [computeEncoder endEncoding];

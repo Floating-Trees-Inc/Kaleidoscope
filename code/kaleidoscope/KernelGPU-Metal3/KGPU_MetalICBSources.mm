@@ -24,6 +24,7 @@ struct arguments {
 kernel void encode_draws
     (device const KD_DrawCmd* cmdIn [[buffer(0)]],
      device const uint* drawCount [[buffer(1)]],
+     device const uint* primitiveType [[buffer(2)]],
      device arguments &args,
      uint gid [[thread_position_in_grid]])
 {
@@ -31,10 +32,18 @@ kernel void encode_draws
 
     const KD_DrawCmd d = cmdIn[gid];
 
+    uint primType = primitiveType[0];
+    primitive_type pt;
+    switch (primType) {
+        case 0: pt = primitive_type::point; break;
+        case 1: pt = primitive_type::line; break;
+        case 2: pt = primitive_type::triangle; break;
+    }
+
     render_command cmd(args.cmd_buffer, gid);
     cmd.reset();
     // TODO: Set DrawID????
-    cmd.draw_primitives(primitive_type::triangle, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
+    cmd.draw_primitives(pt, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
 }
 )MSL";
 
@@ -60,6 +69,7 @@ kernel void encode_draws
     (device const KD_DrawIndexedCmd* cmdIn [[buffer(0)]],
      device const uint* drawCount [[buffer(1)]],
      device const uint* indexBuffer [[buffer(2)]], // Bro XD
+     device const uint* primitiveType [[buffer(3)]],
      device arguments &args,
      uint gid [[thread_position_in_grid]])
 {
@@ -67,10 +77,18 @@ kernel void encode_draws
 
     const KD_DrawIndexedCmd d = cmdIn[gid];
 
+    uint primType = primitiveType[0];
+    primitive_type pt;
+    switch (primType) {
+        case 0: pt = primitive_type::point; break;
+        case 1: pt = primitive_type::line; break;
+        case 2: pt = primitive_type::triangle; break;
+    }
+
     render_command cmd(args.cmd_buffer, gid);
     cmd.reset();
     // TODO: Set DrawID????
-    cmd.draw_indexed_primitives(primitive_type::triangle, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
+    cmd.draw_indexed_primitives(pt, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }
 )MSL";
 

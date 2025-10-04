@@ -53,11 +53,12 @@ namespace KGPUT
             uint indices[] = { 0, 1, 2 };
             Gfx::Uploader::EnqueueBufferUpload(indices, sizeof(uint) * 3, mIndexBuffer, mCommandList);
 
+            auto pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds");
             mCommandList->Barrier(beginRenderBarrier);
-            mCommandList->MarkForDrawIndexedIndirect(mIndexBuffer, mIndirectBuffer, 0, 1);
+            mCommandList->MarkForDrawIndexedIndirect(pipeline, mIndexBuffer, mIndirectBuffer, 0, 1);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
-            mCommandList->SetGraphicsPipeline(Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/streamed_triangle.kds"));
+            mCommandList->SetGraphicsPipeline(pipeline);
             mCommandList->SetIndexBuffer(mIndexBuffer);
             mCommandList->DrawIndexedIndirect(mIndirectBuffer, 0, 1);
             mCommandList->EndRendering();
