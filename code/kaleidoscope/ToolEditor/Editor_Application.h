@@ -20,7 +20,6 @@ namespace Editor
         ~Application();
 
         void Run();
-        void TreeUI();
     private:
         uint mWidth = 1280;
         uint mHeight = 720;

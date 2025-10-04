@@ -8,22 +8,15 @@
 #include <ToolImGui/ToolImGui_Manager.h>
 #include <KernelInput/KI_InputSystem.h>
 #include <KDShader/KDS_Manager.h>
-#include <Graphics/Gfx_TempResourceStorage.h>
+
 #include <Graphics/Gfx_CommandListRecycler.h>
-#include <Graphics/Gfx_MeshPrimitive.h>
-#include <Graphics/Gfx_Material.h>
-#include <Graphics/Gfx_Manager.h>
-#include <Graphics/Gfx_ResourceManager.h>
+#include <Graphics/Gfx_TempResourceStorage.h>
 #include <Graphics/Gfx_ShaderManager.h>
-#include <Graphics/Gfx_Uploader.h>
-#include <Graphics/Gfx_ViewRecycler.h>
-#include <Graphics/Gfx_Skybox.h>
-#include <Graphics/Gfx_Mipmapper.h>
-#include <Graphics/Gfx_Uploader.h>
-#include <Graphics/Gfx_Screenshotter.h>
+#include <Graphics/Gfx_Manager.h>
+
+#include <World/World_Manager.h>
 
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <imgui.h>
 #include <fontawesome.h>
 
@@ -55,7 +48,10 @@ namespace Editor
             // Initialize engine systems
             KI::InputSystem::Initialize();
             KDS::Manager::Initialize();
+    
             Gfx::Manager::Initialize(mDevice, mCommandQueue);
+            World::Manager::Initialize();
+
             ToolImGui::Manager::Initialize(mWindow, mDevice);
             ToolImGui::Manager::BuildRenderer();
         }

@@ -1,6 +1,10 @@
 ## Road to editor
-- Material registry
+- BLAS cache
+- Material cache
 - Mesh cache
+- Simple scene tree in UI
+- Mesh Node
+- Simple mesh renderer
 - Serializable class
 
 ## RHI tests
@@ -33,6 +37,7 @@
 ## KernelGPU
 - GPU timestamps
 - BLAS compaction
+- BLAS refit for skinned meshes
 - RenderDoc/PIX/NSight integration
 - CopyBufferRange
 - Get GPU info (name, architecture, support levels)
