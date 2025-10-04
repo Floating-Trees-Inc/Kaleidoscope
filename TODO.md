@@ -1,15 +1,27 @@
 ## RHI tests
-- Texture2D load test
-- Sampler tests
-- Comparison sampler test
-- Write to mip test
-- Write to face test
-- Write to face + mip test
-- TextureCube sample test
-- ASTC test
-- BC7 test
+- Texture2D load
+- Texture2D alpha cutout
+- Sampler
+- Comparison sampler
+- Write to mip
+- Write to face
+- Write to face + mip
+- TextureCube sample
+- ASTC
+- BC7
 - Alpha RayQuery
 - Alpha RayPipeline
+- Pipeline change in render encoder
+- Read/Write in same compute encoder
+- DrawIndirect lines
+- DrawIndirect points
+- Draw lines
+- Draw points
+- BLAS compaction
+- Copy buffer range
+- Draw Indirect + ID
+- Draw Indexed Indirect + ID
+- Dispatch Mesh Indirect + ID
 
 ## Metal
 - Figure out MDI drawID
