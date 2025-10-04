@@ -6,13 +6,13 @@ Kaleidoscope is the internal game engine used to make my own games. Built from t
 
 xmake is required.\
 To build: `xmake`\
-To run: `xmake run {target}`, target can be your app (for instance, demo_app)
+To run: `xmake run {target}`, target being the name of your app.
 
 ## Notes
 
-This engine is **Windows/MacOS only** for now. More platforms may be added in the future however, consoles in priority.
+This engine is **Windows/macOS only** for now. More platforms may be added in the future however, consoles in priority.
 
-## Projects using Kaleidoscope
+## Projects made with Kaleidoscope
 
 - [Seraph](https://github.com/AmelieHeinrich/Seraph): Showcase renderer for my portfolio
 - RF: Indie game I'm making with the engine.
@@ -25,7 +25,7 @@ This engine is **Windows/MacOS only** for now. More platforms may be added in th
 - Asset management
 - Custom ImGui/Im3D renderer
 - Access to the system sound buffer
-- Test suite for various engine modules, auto test runner written in Haskell: ![](.github/test.png)
+- Test suite for various engine modules: ![](.github/tests.png)
 
 ## Samples
 
