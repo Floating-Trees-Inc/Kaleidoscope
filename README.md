@@ -12,29 +12,20 @@ To run: `xmake run {target}`, target being the name of your app.
 
 This engine is **Windows/macOS only** for now. More platforms may be added in the future however, consoles in priority.
 
-## Projects made with Kaleidoscope
-
-- [Seraph](https://github.com/AmelieHeinrich/Seraph): Showcase renderer for my portfolio
-- RF: Indie game I'm making with the engine.
-
 ## Features
 
-- RHI with D3D12/Vulkan/Metal support. Has bindless, raytracing, mesh shaders, indirect commands
+## Rendering
+- RHI with D3D12/Vulkan/Metal support with bindless, raytracing, mesh shaders, indirect commands
 - Unified shader system, write once run everywhere
-- Input system
-- Asset management
+- Tiled light culling
+- Compute downsample/upsample bloom
+- HDR rendering tonemapped with AgX
+- Microfacet BRDF - Metallic workflow
+- Image based lighting
+- Shadow techniques: CSM, raytraced hard/soft shadows
 - Custom ImGui/Im3D renderer
+
+## Other
+- Input system
 - Access to the system sound buffer
 - Test suite for various engine modules: ![](.github/tests.png)
-
-## Samples
-
-| Samples | Screenshot |
-| -------- | ------- |
-| [Hello, Triangle](code/samples/triangle/) | ![](.github/s_tri.png) |
-| [Hello, Raytraced Triangle](code/samples/raytracing_simple/) | ![](.github/s_ray.png) |
-| [Hello, Rayqueried Triangle](code/samples/raytracing_simple/) | ![](.github/s_tri.png) |
-| [ImGui, Simple](code/samples/imgui_simple/) | ![](.github/s_gui.png) |
-| [Im3D Example](code/samples/im3d_simple/) | ![](.github/s_im3d.png) |
-| [Dev Console](code/samples/dev_console/) | ![](.github/s_devc.png) |
-| [Simple mixer](code/samples/mixer/) | (No screenshot) |
