@@ -12,34 +12,42 @@ namespace Gfx
     
     TextureCache::~TextureCache()
     {
-        Clear();
+        std::lock_guard<std::mutex> lock(mMutex);
+
+        for (auto& [_, texture] : mTextures)
+        {
+            KC_DELETE(texture->Texture);
+            texture->Texture = nullptr;
+            KC_DELETE(texture);
+        }
+        mTextures.clear();
     }
 
-    Texture& TextureCache::Take(const KC::String& path)
+    Texture* TextureCache::Take(const KC::String& path)
     {
         std::lock_guard<std::mutex> lock(mMutex);
 
         auto it = mTextures.find(path);
         if (it != mTextures.end())
         {
-            it->second.AddRef();
+            it->second->AddRef();
             return it->second;
         }
 
         auto kdaTexture = KDA::TextureLoader::LoadFromFile(path);
 
-        mTextures[path] = {};
-        mTextures[path].Path = path;
-        mTextures[path].Texture = Gfx::Manager::GetDevice()->CreateTexture(kdaTexture.ToTextureDesc());
-        mTextures[path].Texture->SetName(path);
+        mTextures[path] = KC_NEW(Texture);
+        mTextures[path]->Path = path;
+        mTextures[path]->Texture = Gfx::Manager::GetDevice()->CreateTexture(kdaTexture.ToTextureDesc());
+        mTextures[path]->Texture->SetName(path);
 
         return mTextures[path];
     }
 
-    void TextureCache::GiveBack(Texture& texture)
+    void TextureCache::GiveBack(Texture* texture)
     {
         std::lock_guard<std::mutex> lock(mMutex);
-        texture.Release();
+        texture->Release();
     }
 
     void TextureCache::Clear()
@@ -48,13 +56,12 @@ namespace Gfx
 
         for (auto& [_, texture] : mTextures)
         {
-            if (texture.GetRefCount() <= 1)
+            if (texture->GetRefCount() <= 1)
             {
-                KC_DELETE(texture.Texture);
-                texture.Texture = nullptr;
+                KC_DELETE(texture->Texture);
+                texture->Texture = nullptr;
+                KC_DELETE(texture);
             }
         }
-
-        mTextures.clear();
     }
 }

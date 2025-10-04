@@ -56,10 +56,6 @@ namespace Editor
             KI::InputSystem::Initialize();
             KDS::Manager::Initialize();
             Gfx::Manager::Initialize(mDevice, mCommandQueue);
-            Gfx::ResourceManager::Initialize();
-            Gfx::ShaderManager::Initialize();
-
-            // Initialize ImGui
             ToolImGui::Manager::Initialize(mWindow, mDevice);
             ToolImGui::Manager::BuildRenderer();
         }
@@ -69,18 +65,14 @@ namespace Editor
             Gfx::TempResourceStorage::Clean();
         }
 
-        KD_INFO("ImGui app ready!");
+        KD_INFO("Editor ready!");
     }
 
     Application::~Application()
     {
         // Shutdown relevant systems
         ToolImGui::Manager::Shutdown();
-        Gfx::TempResourceStorage::Clean();
-        Gfx::ViewRecycler::Clean();
-        Gfx::ShaderManager::Shutdown();
-        Gfx::ResourceManager::Shutdown();
-        Gfx::CommandListRecycler::Clean();
+        Gfx::Manager::Shutdown();
         KDS::Manager::Shutdown();
         KI::InputSystem::Shutdown();
 

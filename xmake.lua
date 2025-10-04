@@ -39,7 +39,6 @@ end
 -- Includes
 includes("thirdparty")
 includes("code/kaleidoscope")
-includes("code/samples")
 
 -- Post build step
 before_run(function (target)

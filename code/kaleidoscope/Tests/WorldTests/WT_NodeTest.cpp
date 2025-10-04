@@ -1,5 +1,11 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-10-04 15:26:17
+//
+
 #include <catch2/catch_all.hpp>
 #include <World/World_Node.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace World;
 
@@ -58,4 +64,58 @@ TEST_CASE("Node Path", "[Node]")
     REQUIRE(root.GetPath() == "/Root");
     REQUIRE(child1.GetPath() == "/Root/Child1");
     REQUIRE(child2.GetPath() == "/Root/Child1/Child2");
+}
+
+TEST_CASE("Node Local Transform", "[Node]")
+{
+    Node node;
+    glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+    node.SetLocalTransform(localTransform);
+
+    REQUIRE(node.GetLocalTransform() == localTransform);
+}
+
+TEST_CASE("Node World Transform Without Parent", "[Node]")
+{
+    Node node;
+    glm::mat4 localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+    node.SetLocalTransform(localTransform);
+
+    REQUIRE(node.GetWorldTransform() == localTransform);
+}
+
+TEST_CASE("Node World Transform With Parent", "[Node]")
+{
+    Node parent;
+    glm::mat4 parentTransform = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+    parent.SetLocalTransform(parentTransform);
+
+    Node child;
+    glm::mat4 childTransform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+    child.SetLocalTransform(childTransform);
+
+    parent.AddChild(&child);
+
+    glm::mat4 expectedWorldTransform = parentTransform * childTransform;
+    REQUIRE(child.GetWorldTransform() == expectedWorldTransform);
+}
+
+TEST_CASE("Node Transform Propagation", "[Node]")
+{
+    Node parent;
+    glm::mat4 parentTransform = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+    parent.SetLocalTransform(parentTransform);
+
+    Node child;
+    glm::mat4 childTransform = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+    child.SetLocalTransform(childTransform);
+
+    parent.AddChild(&child);
+
+    // Update parent's transform and check propagation
+    glm::mat4 newParentTransform = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 10.0f, 10.0f));
+    parent.SetLocalTransform(newParentTransform);
+
+    glm::mat4 expectedWorldTransform = newParentTransform * childTransform;
+    REQUIRE(child.GetWorldTransform() == expectedWorldTransform);
 }

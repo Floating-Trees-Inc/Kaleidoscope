@@ -28,13 +28,13 @@ namespace Gfx
         TextureCache();
         ~TextureCache() override;
 
-        Texture& Take(const KC::String& path);
-        void GiveBack(Texture& texture);
+        Texture* Take(const KC::String& path);
+        void GiveBack(Texture* texture);
 
         void Clear() override;
     private:
         std::mutex mMutex;
 
-        KC::HashMap<KC::String, Texture> mTextures;
+        KC::HashMap<KC::String, Texture*> mTextures;
     };
 }

@@ -12,10 +12,8 @@ namespace Gfx
     class Manager
     {
     public:
-        static void Initialize(KGPU::IDevice* device, KGPU::ICommandQueue* cmdQueue) {
-            sData.Device = device;
-            sData.CommandQueue = cmdQueue;
-        }
+        static void Initialize(KGPU::IDevice* device, KGPU::ICommandQueue* cmdQueue);
+        static void Shutdown();
 
         static KGPU::IDevice* GetDevice() { return sData.Device; }
         static KGPU::ICommandQueue* GetCommandQueue() { return sData.CommandQueue; }
