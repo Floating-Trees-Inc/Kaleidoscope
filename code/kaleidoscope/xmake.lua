@@ -17,7 +17,7 @@ includes("KernelOS")
 includes("ToolDevConsole")
 includes("ToolIm3D")
 includes("ToolImGui")
-
+includes("World")
 includes("Tests")
 
 -- GPU backends
@@ -58,5 +58,6 @@ target("Kaleidoscope")
              "KernelSound",
              "ToolIm3D",
              "ToolDevConsole",
+             "World",
              { public = true })
     add_includedirs(".", { public = true })
