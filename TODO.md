@@ -1,5 +1,4 @@
 ## Road to editor
-- Render graph
 - Render graph editor
 - Merge Seraph back in
 - Node inspector
