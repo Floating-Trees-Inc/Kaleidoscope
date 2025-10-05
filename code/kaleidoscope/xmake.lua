@@ -15,7 +15,6 @@ includes("KernelSound")
 includes("Physics")
 includes("KernelOS")
 includes("ToolDevConsole")
-includes("ToolIm3D")
 includes("ToolImGui")
 includes("World")
 includes("Tests")
@@ -57,7 +56,6 @@ target("Kaleidoscope")
              "Physics",
              "Effects",
              "KernelSound",
-             "ToolIm3D",
              "ToolDevConsole",
              "World",
              { public = true })

@@ -53,24 +53,28 @@ namespace Gfx
             auto albedo = KDA::TextureLoader::LoadFromFile(material.AlbedoPath, true);
             mAlbedo.Texture = device->CreateTexture(albedo.ToTextureDesc());
             mAlbedo.View = device->CreateTextureView(KGPU::TextureViewDesc(mAlbedo.Texture, KGPU::TextureViewType::kShaderRead, albedo.Format));
+            mAlbedo.Path = material.AlbedoPath;
             uploadTexture(albedo, mAlbedo.Texture);
         }
         if (!material.NormalPath.empty()) {
             auto mr = KDA::TextureLoader::LoadFromFile(material.NormalPath, false);
             mNormal.Texture = device->CreateTexture(mr.ToTextureDesc());
             mNormal.View = device->CreateTextureView(KGPU::TextureViewDesc(mNormal.Texture, KGPU::TextureViewType::kShaderRead));
+            mNormal.Path = material.NormalPath;
             uploadTexture(mr, mNormal.Texture);
         }
         if (!material.MetallicRoughnessPath.empty()) {
             auto mr = KDA::TextureLoader::LoadFromFile(material.MetallicRoughnessPath, false);
             mMetallicRoughness.Texture = device->CreateTexture(mr.ToTextureDesc());
             mMetallicRoughness.View = device->CreateTextureView(KGPU::TextureViewDesc(mMetallicRoughness.Texture, KGPU::TextureViewType::kShaderRead));
+            mMetallicRoughness.Path = material.MetallicRoughnessPath;
             uploadTexture(mr, mMetallicRoughness.Texture);
         }
         if (!material.EmissivePath.empty()) {
             auto mr = KDA::TextureLoader::LoadFromFile(material.EmissivePath, true);
             mEmissive.Texture = device->CreateTexture(mr.ToTextureDesc());
             mEmissive.View = device->CreateTextureView(KGPU::TextureViewDesc(mEmissive.Texture, KGPU::TextureViewType::kShaderRead));
+            mEmissive.Path = material.EmissivePath;
             uploadTexture(mr, mEmissive.Texture);
         }
     }

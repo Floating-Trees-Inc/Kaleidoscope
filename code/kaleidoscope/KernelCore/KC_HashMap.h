@@ -9,9 +9,10 @@
 
 #include <KernelOS/KOS_DirectAllocation.h>
 #include <unordered_map>
+#include <functional>
 
 namespace KC
 {
-    template<typename K, typename V>
+    template<typename K, typename V, typename Hash = std::hash<K>>
     using HashMap = std::unordered_map<K, V>;
 }
