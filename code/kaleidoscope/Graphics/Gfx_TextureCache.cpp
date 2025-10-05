@@ -5,6 +5,8 @@
 
 #include "Gfx_TextureCache.h"
 #include "Gfx_Manager.h"
+#include "Gfx_Uploader.h"
+#include "Gfx_Mipmapper.h"
 
 namespace Gfx
 {
@@ -41,6 +43,12 @@ namespace Gfx
         mTextures[path]->Texture = Gfx::Manager::GetDevice()->CreateTexture(kdaTexture.ToTextureDesc());
         mTextures[path]->Texture->SetName(path);
 
+        bool isBlock = KGPU::ITexture::IsBlockFormat(mTextures[path]->Texture->GetDesc().Format);
+        Uploader::EnqueueTextureUploadRaw(kdaTexture.Bytes.data(), kdaTexture.Bytes.size(), mTextures[path]->Texture, isBlock);
+        if (!isBlock) {
+            Mipmapper::ComputeMipmaps(mTextures[path]->Texture);
+        }
+
         return mTextures[path];
     }
 
@@ -54,14 +62,17 @@ namespace Gfx
     {
         std::lock_guard<std::mutex> lock(mMutex);
 
-        for (auto& [_, texture] : mTextures)
+        KC::Array<KC::String> toErase;
+        for (auto& [key, texture] : mTextures)
         {
             if (texture->GetRefCount() <= 1)
             {
                 KC_DELETE(texture->Texture);
                 texture->Texture = nullptr;
                 KC_DELETE(texture);
+                toErase.push_back(key);
             }
         }
+        for (auto str : toErase) mTextures.erase(str);
     }
 }

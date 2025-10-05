@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Gfx_TextureCache.h"
+#include "Gfx_ModelCache.h"
 
 namespace Gfx
 {
@@ -17,9 +18,11 @@ namespace Gfx
         static void ClearCaches();
 
         static TextureCache* GetTextureCache() { return sCaches.mTextureCache; }
+        static ModelCache* GetModelCache() { return sCaches.mModelCache; }
     private:
         static struct Caches {
             TextureCache* mTextureCache;
+            ModelCache* mModelCache;
         } sCaches;
     };
 }

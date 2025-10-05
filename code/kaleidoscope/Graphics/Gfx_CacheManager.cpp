@@ -12,15 +12,18 @@ namespace Gfx
     void CacheManager::Initialize()
     {
         sCaches.mTextureCache = KC_NEW(TextureCache);
+        sCaches.mModelCache = KC_NEW(ModelCache);
     }
 
     void CacheManager::Shutdown()
     {
+        KC_DELETE(sCaches.mModelCache);
         KC_DELETE(sCaches.mTextureCache);
     }
 
     void CacheManager::ClearCaches()
     {
         sCaches.mTextureCache->Clear();
+        sCaches.mModelCache->Clear();
     }
 }
