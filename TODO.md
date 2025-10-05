@@ -1,6 +1,4 @@
 ## Road to editor
-- Material cache
-- Mesh cache
 - Simple scene tree in UI
 - Mesh Node
 - Simple mesh renderer

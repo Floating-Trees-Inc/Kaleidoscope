@@ -15,7 +15,7 @@ namespace World
         static void Initialize();
         static void Shutdown();
 
-        NodeGroups& GetGroups() { return sData.mNodeGroups; }
+        static NodeGroups& GetGroups() { return sData.mNodeGroups; }
     private:
         static struct Data {
             NodeGroups mNodeGroups;

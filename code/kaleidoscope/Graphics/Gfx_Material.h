@@ -24,6 +24,11 @@ namespace Gfx
 
         void FromMaterial(const KDA::MeshMaterial& material);
         bool IsOpaque() const { return mIsOpaque; }
+
+        Gfx::Texture* GetAlbedo() { return mAlbedo; }
+        Gfx::Texture* GetNormal() { return mNormal; }
+        Gfx::Texture* GetMetallicRoughness() { return mMetallicRoughness; }
+        Gfx::Texture* GetEmissive() { return mEmissive; }
     private:
         Gfx::Texture* mAlbedo;
         Gfx::Texture* mNormal;

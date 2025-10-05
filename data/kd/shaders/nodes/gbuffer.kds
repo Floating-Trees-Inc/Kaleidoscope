@@ -1,0 +1,54 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-20 13:41:57
+//
+
+#include "kd/shaders/common/bindless.kds"
+
+#pragma vertex VSMain
+#pragma pixel PSMain
+
+struct Vertex
+{
+    float3 Position;
+    float3 Normal;
+    float4 Tangent;
+    float2 UV;
+};
+
+struct VertexOutput
+{
+    float4 Position : SV_Position;
+    float2 UV : TEXCOORD;
+};
+
+struct PushConstants
+{
+    uint VertexBufferID;
+    uint AlbedoID;
+    uint SamplerID;
+    uint Pad;
+
+    column_major float4x4 ViewProj;
+};
+PUSH_CONSTANTS(PushConstants, Push);
+
+VertexOutput VSMain(uint vid : SV_VertexID)
+{
+    StructuredBuffer<Vertex> vertices = ResourceDescriptorHeap[Push.VertexBufferID];
+    Vertex input = vertices[vid];
+
+    VertexOutput output;
+    output.Position = mul(Push.ViewProj, float4(input.Position, 1.0f));
+    output.UV = input.UV;
+    return output;
+}
+
+float4 PSMain(VertexOutput input)
+{
+    Texture2D<float4> texture = ResourceDescriptorHeap[Push.AlbedoID];
+    SamplerState sampler = SamplerDescriptorHeap[Push.SamplerID];
+    
+    return texture.Sample(sampler, input.UV);
+}
+

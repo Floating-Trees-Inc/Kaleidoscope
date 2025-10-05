@@ -38,6 +38,7 @@ namespace World
         virtual void OnProcess(float dt) {}
         virtual void OnPhysicsProcess(float dt) {}
         virtual void OnExitTree() {}
+        virtual void OnDrawUI() {}
 
         // Enable/disable processing
         void SetProcess(bool enable) { mProcess = enable; };

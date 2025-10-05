@@ -28,10 +28,10 @@ namespace World
         NodeGroups() = default;
         ~NodeGroups() = default;
 
-        void AddToGroup(const KC::String& name, Node* node);
-        void RemoveFromGroup(const KC::String& name, Node* node);
-        const KC::Array<Node*>& GetGroup(const KC::String& name) const;
+        void AddToGroup(NodeGroupType type, Node* node);
+        void RemoveFromGroup(NodeGroupType type, Node* node);
+        const KC::Array<Node*>& GetGroup(NodeGroupType type) const;
     private:
-        KC::HashMap<KC::String, KC::Array<Node*>> mGroups;
+        KC::HashMap<NodeGroupType, KC::Array<Node*>> mGroups;
     };
 }

@@ -7,26 +7,26 @@
 
 namespace World
 {
-    void NodeGroups::AddToGroup(const KC::String& name, Node* node)
+    void NodeGroups::AddToGroup(NodeGroupType type, Node* node)
     {
-        mGroups[name].push_back(node);
+        mGroups[type].push_back(node);
     }
 
-    void NodeGroups::RemoveFromGroup(const KC::String& name, Node* node)
+    void NodeGroups::RemoveFromGroup(NodeGroupType type, Node* node)
     {
-        if (mGroups.count(name) > 0)
+        if (mGroups.count(type) > 0)
         {
-            auto& group = mGroups[name];
+            auto& group = mGroups[type];
             group.erase(std::remove(group.begin(), group.end(), node), group.end());
         }
     }
 
-    const KC::Array<Node*>& NodeGroups::GetGroup(const KC::String& name) const
+    const KC::Array<Node*>& NodeGroups::GetGroup(NodeGroupType type) const
     {
         static KC::Array<Node*> emptyArray;
-        if (mGroups.count(name) > 0)
+        if (mGroups.count(type) > 0)
         {
-            return mGroups.at(name);
+            return mGroups.at(type);
         }
         return emptyArray;
     }
