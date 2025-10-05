@@ -44,7 +44,7 @@ VertexOutput VSMain(uint vid : SV_VertexID)
     return output;
 }
 
-float4 PSMain(VertexOutput input)
+float4 PSMain(VertexOutput input) : SV_Target0
 {
     Texture2D<float4> texture = ResourceDescriptorHeap[Push.AlbedoID];
     SamplerState sampler = SamplerDescriptorHeap[Push.SamplerID];

@@ -11,6 +11,8 @@
 
 #include <World/World_SceneTree.h>
 
+#include "Editor_PanelManager.h"
+
 namespace Editor
 {
     class Application
@@ -20,9 +22,17 @@ namespace Editor
         ~Application();
 
         void Run();
+        void DrawPanels();
+
+        static Application& Get() { return *sInstance; }
     private:
-        uint mWidth = 1280;
-        uint mHeight = 720;
+        static Application* sInstance;
+
+        PanelManager* mPanelManager;
+        World::SceneTree* mSceneTree;
+
+        uint mWindowWidth = 1280;
+        uint mWindowHeight = 720;
 
         KOS::IWindow* mWindow;
         KC::String mStringBackend;

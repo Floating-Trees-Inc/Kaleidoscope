@@ -20,6 +20,6 @@ namespace R3D
         GBuffer();
         ~GBuffer();
 
-        void Execute(const RenderInfo& info);
+        void Execute(const RenderInfo& info, const KC::Array<Renderable>& opaqueBatch);
     };
 }

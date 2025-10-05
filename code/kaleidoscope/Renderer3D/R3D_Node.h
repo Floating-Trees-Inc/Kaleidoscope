@@ -20,9 +20,6 @@ namespace R3D
 
     struct RenderInfo
     {
-        // Batches (RESERVED)
-        KC::Array<Renderable> OpaqueBatches;
-
         // Render info
         uint OutputWidth;
         uint OutputHeight;

@@ -10,6 +10,8 @@
 
 namespace R3D
 {
+    Manager::Data Manager::sData;
+
     void Manager::Initialize()
     {
         CODE_BLOCK("Samplers") {
@@ -18,11 +20,13 @@ namespace R3D
             Gfx::ResourceManager::CreateSampler(DefaultResources::LINEAR_WRAP_SAMPLER_WITH_MIPS,
                                                 KGPU::SamplerDesc(KGPU::SamplerAddress::kWrap, KGPU::SamplerFilter::kNearest, true));
         }
+
+        sData.mGBuffer = KC_NEW(GBuffer);
     }
 
     void Manager::Shutdown()
     {
-
+        KC_DELETE(sData.mGBuffer);
     }
 
     void Manager::Execute(const RenderInfo& info, const World::NodeGroups& groups)
@@ -48,6 +52,6 @@ namespace R3D
 
     void Manager::ExecuteRenderGraph(const RenderInfo& info)
     {
-        
+        sData.mGBuffer->Execute(info, sData.OpaqueBatch);
     }
 }

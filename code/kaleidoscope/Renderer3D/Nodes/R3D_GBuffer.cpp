@@ -27,7 +27,7 @@ namespace R3D
         // Pipelines
         KGPU::GraphicsPipelineDesc desc;
         desc.RenderTargetFormats = { albedoDesc.Format };
-        Gfx::ShaderManager::SubscribeGraphics("data/kd/nodes/gbuffer.kds", desc);
+        Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/nodes/gbuffer.kds", desc);
     }
 
     GBuffer::~GBuffer()
@@ -35,7 +35,7 @@ namespace R3D
 
     }
 
-    void GBuffer::Execute(const RenderInfo& info)
+    void GBuffer::Execute(const RenderInfo& info, const KC::Array<Renderable>& opaqueBatch)
     {
         KGPU::ScopedMarker _(info.CmdList, "GBuffer");  
 
@@ -45,13 +45,13 @@ namespace R3D
             KGPU::RenderAttachment(Gfx::ViewRecycler::GetRTV(albedoTexture.Texture), true)
         };
         KGPU::RenderBegin renderBegin(info.OutputWidth, info.OutputHeight, attachments, {});
-        KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/nodes/gbuffer.kds");
+        KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/nodes/gbuffer.kds");
         KGPU::ISampler* sampler = Gfx::ResourceManager::Get(DefaultResources::LINEAR_WRAP_SAMPLER_WITH_MIPS).Sampler;
 
         info.CmdList->BeginRendering(renderBegin);
         info.CmdList->SetRenderSize(info.OutputWidth, info.OutputHeight);
         info.CmdList->SetGraphicsPipeline(pipeline);
-        for (auto& mesh : info.OpaqueBatches) {
+        for (auto& mesh : opaqueBatch) {
             for (auto& submesh : mesh.Model->Submeshes) {
                 KGPU::ITexture* albedoHandle = submesh.Material->GetAlbedo() 
                                              ? submesh.Material->GetAlbedo()->Texture

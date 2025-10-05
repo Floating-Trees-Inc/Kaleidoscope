@@ -7,6 +7,7 @@
 
 #include <World/World_Manager.h>
 #include <Graphics/Gfx_CacheManager.h>
+#include <imgui.h>
 
 namespace World
 {
@@ -32,7 +33,8 @@ namespace World
 
     void MeshNode::OnDrawUI()
     {
-        // TODO
+        if (mModel)
+            ImGui::Text("Path: %s", mModel->Path.c_str());
     }
 
     void MeshNode::Load(const KC::String& path)

@@ -1,7 +1,6 @@
 ## Road to editor
+- Panel interface
 - Simple scene tree in UI
-- Mesh Node
-- Simple mesh renderer
 
 ## RHI tests
 - Texture2D load

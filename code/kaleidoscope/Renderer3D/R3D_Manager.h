@@ -9,6 +9,7 @@
 #include <Graphics/Gfx_Model.h>
 
 #include "R3D_Node.h"
+#include "Nodes/R3D_GBuffer.h"
 
 namespace R3D
 {
@@ -33,6 +34,8 @@ namespace R3D
 
         static struct Data {
             KC::Array<Renderable> OpaqueBatch;
+
+            GBuffer* mGBuffer;
         } sData;
     };
 }
