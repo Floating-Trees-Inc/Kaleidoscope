@@ -19,7 +19,7 @@ namespace Editor
         Gfx::Resource& resource = Gfx::ResourceManager::Import(R3D::CompositorResources::OUTPUT, list, Gfx::ImportType::kShaderRead);
         KGPU::BindlessHandle bindlessHandle = Gfx::ViewRecycler::GetSRV(resource.Texture)->GetBindlessHandle();
     
-        ImGui::Begin(ICON_FA_GAMEPAD " Viewport", &mOpen);
+        ImGui::Begin(ICON_FA_GAMEPAD " Viewport");
         mIsFocused = ImGui::IsWindowFocused();
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	    mViewportSize = { viewportPanelSize.x, viewportPanelSize.y };

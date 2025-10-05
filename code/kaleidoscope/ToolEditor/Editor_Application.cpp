@@ -23,6 +23,7 @@
 
 #include "Panels/Editor_SceneHierarchyPanel.h"
 #include "Panels/Editor_ViewportPanel.h"
+#include "Panels/Editor_RenderGraphEditor.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
@@ -84,6 +85,7 @@ namespace Editor
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
             mPanelManager->RegisterPanel<ViewportPanel>()->Open();
+            mPanelManager->RegisterPanel<RenderGraphEditor>();
         }
 
         CODE_BLOCK("Finish start and go!") {
@@ -243,9 +245,15 @@ namespace Editor
         style.WindowMinSize.x = minWinSizeX;
 
         if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu(ICON_FA_MAGIC " Kaleidoscope")) {
-                if (ImGui::MenuItem(ICON_FA_WINDOW_CLOSE " Exit")) {
+            if (ImGui::BeginMenu("Kaleidoscope")) {
+                if (ImGui::MenuItem("Exit")) {
                     // TODO
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Window")) {
+                if (ImGui::MenuItem("Render Graph Editor")) {
+                    mPanelManager->GetPanel<RenderGraphEditor>()->Open();
                 }
                 ImGui::EndMenu();
             }

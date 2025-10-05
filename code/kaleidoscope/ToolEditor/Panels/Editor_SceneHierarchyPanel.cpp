@@ -11,9 +11,7 @@ namespace Editor
 {
     void SceneHierarchyPanel::OnUI(World::SceneTree* tree, KGPU::ICommandList* list)
     {
-        if (!mOpen) return;
-
-        ImGui::Begin("Scene Hierarchy Panel", &mOpen);
+        ImGui::Begin("Scene Hierarchy Panel");
         DrawSingleNode(tree->GetRoot());
         ImGui::End();
     }
