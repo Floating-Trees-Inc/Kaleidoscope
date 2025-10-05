@@ -15,6 +15,11 @@ namespace R3D
 {
     GBuffer::GBuffer()
     {
+        mName = "GBuffer";
+
+        // Pins
+        RegisterOutputPin("Albedo", GBufferResources::ALBEDO);
+
         // Attachments
         KGPU::TextureDesc albedoDesc;
         albedoDesc.Width = R3D::SCREEN_WIDTH;
@@ -35,7 +40,7 @@ namespace R3D
 
     }
 
-    void GBuffer::Execute(const RenderInfo& info, const KC::Array<Renderable>& opaqueBatch)
+    void GBuffer::Execute(const RenderInfo& info)
     {
         KGPU::ScopedMarker _(info.CmdList, "GBuffer");  
 
@@ -51,7 +56,7 @@ namespace R3D
         info.CmdList->BeginRendering(renderBegin);
         info.CmdList->SetRenderSize(info.OutputWidth, info.OutputHeight);
         info.CmdList->SetGraphicsPipeline(pipeline);
-        for (auto& mesh : opaqueBatch) {
+        for (auto& mesh : Manager::GetOpaqueBatch()) {
             for (auto& submesh : mesh.Model->Submeshes) {
                 KGPU::ITexture* albedoHandle = submesh.Material->GetAlbedo() 
                                              ? submesh.Material->GetAlbedo()->Texture

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Renderer3D/R3D_Node.h>
+#include <Renderer3D/R3D_RenderPass.h>
 
 namespace R3D
 {
@@ -14,12 +14,12 @@ namespace R3D
         constexpr const char* ALBEDO = "GBuffer/Albedo";
     };
 
-    class GBuffer
+    class GBuffer : public RenderPass
     {
     public:
         GBuffer();
         ~GBuffer();
 
-        void Execute(const RenderInfo& info, const KC::Array<Renderable>& opaqueBatch);
+        void Execute(const RenderInfo& info);
     };
 }

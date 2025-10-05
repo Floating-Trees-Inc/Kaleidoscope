@@ -1,6 +1,9 @@
 ## Road to editor
-- Panel interface
-- Simple scene tree in UI
+- Render graph
+- Render graph editor
+- Merge Seraph back in
+- Node inspector
+- File dialog
 
 ## RHI tests
 - Texture2D load

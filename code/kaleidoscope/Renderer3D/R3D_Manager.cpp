@@ -38,21 +38,11 @@ namespace R3D
             Gfx::Uploader::EnqueueTextureUploadRaw(&white, sizeof(white), Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE).Texture);
             Gfx::Uploader::EnqueueTextureUploadRaw(&black, sizeof(black), Gfx::ResourceManager::Get(DefaultResources::BLACK_TEXTURE).Texture);
         }
-
-        sData.mGBuffer = KC_NEW(GBuffer);
-        sData.mCompositor = KC_NEW(Compositor);
     }
-
+    
     void Manager::Shutdown()
     {
-        KC_DELETE(sData.mCompositor);
-        KC_DELETE(sData.mGBuffer);
-    }
-
-    void Manager::Execute(const RenderInfo& info, const World::NodeGroups& groups)
-    {
-        BuildBatches(groups);
-        ExecuteRenderGraph(info);
+        
     }
 
     void Manager::BuildBatches(const World::NodeGroups& groups)
@@ -68,11 +58,5 @@ namespace R3D
             renderable.WorldMatrix = meshNode->GetWorldTransform();
             sData.OpaqueBatch.push_back(renderable);
         }
-    }
-
-    void Manager::ExecuteRenderGraph(const RenderInfo& info)
-    {
-        sData.mGBuffer->Execute(info, sData.OpaqueBatch);
-        sData.mCompositor->Execute(info, sData.OpaqueBatch);
     }
 }

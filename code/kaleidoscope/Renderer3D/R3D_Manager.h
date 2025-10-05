@@ -8,8 +8,7 @@
 #include <World/World_NodeGroups.h>
 #include <Graphics/Gfx_Model.h>
 
-#include "R3D_Node.h"
-
+#include "R3D_RenderInfo.h"
 #include "Nodes/R3D_GBuffer.h"
 #include "Nodes/R3D_Compositor.h"
 
@@ -29,16 +28,12 @@ namespace R3D
         static void Initialize();
         static void Shutdown();
 
-        static void Execute(const RenderInfo& info, const World::NodeGroups& groups);
-    private:
         static void BuildBatches(const World::NodeGroups& groups);
-        static void ExecuteRenderGraph(const RenderInfo& info);
 
+        static const KC::Array<Renderable>& GetOpaqueBatch() { return sData.OpaqueBatch; }
+    private:
         static struct Data {
             KC::Array<Renderable> OpaqueBatch;
-
-            GBuffer* mGBuffer;
-            Compositor* mCompositor;
         } sData;
     };
 }

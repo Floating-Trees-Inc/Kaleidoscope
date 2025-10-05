@@ -4,7 +4,6 @@
 //
 
 #include "R3D_Compositor.h"
-#include "R3D_GBuffer.h"
 
 #include <Renderer3D/R3D_Manager.h>
 
@@ -16,6 +15,11 @@ namespace R3D
 {
     Compositor::Compositor()
     {
+        mName = "Compositor";
+
+        // Pins
+        RegisterInputPin("Image to Render", mInputTexture);
+
         // Attachments
         KGPU::TextureDesc albedoDesc;
         albedoDesc.Width = R3D::SCREEN_WIDTH;
@@ -36,11 +40,14 @@ namespace R3D
 
     }
 
-    void Compositor::Execute(const RenderInfo& info, const KC::Array<Renderable>& opaqueBatch)
+    void Compositor::Execute(const RenderInfo& info)
     {
+        if (mInputTexture.empty())
+            return;
+
         KGPU::ScopedMarker _(info.CmdList, "Compositor");  
 
-        Gfx::Resource& inputTexture = Gfx::ResourceManager::Import(GBufferResources::ALBEDO, info.CmdList, Gfx::ImportType::kShaderRead);
+        Gfx::Resource& inputTexture = Gfx::ResourceManager::Import(mInputTexture, info.CmdList, Gfx::ImportType::kShaderRead);
         Gfx::Resource& outputTexture = Gfx::ResourceManager::Import(CompositorResources::OUTPUT, info.CmdList, Gfx::ImportType::kColorWrite);
 
         KC::Array<KGPU::RenderAttachment> attachments = {

@@ -15,6 +15,8 @@
 #include <Graphics/Gfx_Manager.h>
 
 #include <Renderer3D/R3D_Manager.h>
+#include <Renderer3D/Nodes/R3D_Compositor.h>
+#include <Renderer3D/Nodes/R3D_GBuffer.h>
 
 #include <World/World_Manager.h>
 #include <World/Nodes/World_MeshNode.h>
@@ -72,6 +74,13 @@ namespace Editor
             child->Load("data/kd/models/shadow_test/untitled.gltf");
             mSceneTree->GetRoot()->AddChild(child);
 
+            // Default render graph
+            mRenderGraph = KC_NEW(R3D::RenderGraph);
+            auto gbuffer = mRenderGraph->AddPass<R3D::GBuffer>();
+            auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
+
+            mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().Outputs[0], compositor->Pins().Inputs[0]);
+
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
             mPanelManager->RegisterPanel<ViewportPanel>()->Open();
@@ -88,6 +97,7 @@ namespace Editor
     Application::~Application()
     {
         // Clean
+        KC_DELETE(mRenderGraph);
         KC_DELETE(mPanelManager);
         KC_DELETE(mSceneTree);
 
@@ -136,6 +146,8 @@ namespace Editor
                     mCamera.UpdateSizeConstraints(viewportSize.x, viewportSize.y);
 
                     // Execute renderer
+                    R3D::Manager::BuildBatches(World::Manager::GetGroups());
+
                     R3D::RenderInfo renderInfo = {
                         .RenderWidth = (uint)viewportSize.x,
                         .RenderHeight = (uint)viewportSize.y,
@@ -147,7 +159,8 @@ namespace Editor
                         .SwapchainTextureView = textureView,
                         .FrameInFlight = index
                     };
-                    R3D::Manager::Execute(renderInfo, World::Manager::GetGroups());
+                    mRenderGraph->Compile();
+                    mRenderGraph->Execute(renderInfo);
     
                     CODE_BLOCK("Draw UI") {
                         KGPU::RenderBegin renderBegin(mWindowWidth, mWindowHeight, { KGPU::RenderAttachment(textureView, true) }, {});

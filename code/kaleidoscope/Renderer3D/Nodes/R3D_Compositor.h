@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <Renderer3D/R3D_Node.h>
+#include <Renderer3D/R3D_RenderPass.h>
 
 namespace R3D
 {
@@ -14,12 +14,14 @@ namespace R3D
         constexpr const char* OUTPUT = "Compositor/Output";
     };
 
-    class Compositor
+    class Compositor : public RenderPass
     {
     public:
         Compositor();
         ~Compositor();
 
-        void Execute(const RenderInfo& info, const KC::Array<Renderable>& opaqueBatch);
+        void Execute(const RenderInfo& info) override;
+    private:
+        KC::String mInputTexture = "";
     };
 }

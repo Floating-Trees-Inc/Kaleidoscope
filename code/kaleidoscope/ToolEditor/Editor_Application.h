@@ -10,6 +10,7 @@
 #include <KernelCore/KC_Timer.h>
 
 #include <World/World_SceneTree.h>
+#include <Renderer3D/R3D_RenderGraph.h>
 
 #include "Editor_PanelManager.h"
 #include "Editor_Camera.h"
@@ -32,10 +33,11 @@ namespace Editor
 
         PanelManager* mPanelManager;
         World::SceneTree* mSceneTree;
+        R3D::RenderGraph* mRenderGraph;
         Camera mCamera;
 
-        uint mWindowWidth = 1280;
-        uint mWindowHeight = 720;
+        uint mWindowWidth = 1440;
+        uint mWindowHeight = 800;
 
         KOS::IWindow* mWindow;
         KC::String mStringBackend;
