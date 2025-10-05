@@ -6,6 +6,7 @@
 #pragma once
 
 #include <World/World_SceneTree.h>
+#include <KernelGPU/KGPU_Device.h>
 
 namespace Editor
 {
@@ -15,7 +16,7 @@ namespace Editor
         Panel() = default;
         virtual ~Panel() = default;
         
-        virtual void OnUI(World::SceneTree* sceneTree) = 0;
+        virtual void OnUI(World::SceneTree* sceneTree, KGPU::ICommandList* list) = 0;
     
         void Open() { mOpen = true; }
     protected:

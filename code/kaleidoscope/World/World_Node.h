@@ -22,7 +22,7 @@ namespace World
         virtual ~Node();
 
         // Hierarchy
-        void AddChild(Node* child);
+        Node* AddChild(Node* child);
         void RemoveChild(Node* child);
         Node* GetParent() const { return mParent; }
         const KC::Array<Node*>& GetChildren() const { return mChildren; }

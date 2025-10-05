@@ -9,6 +9,6 @@ target("World")
 
     add_headerfiles("*.h")
     add_includedirs(".")
-    add_files("*.cpp")
+    add_files("**.cpp")
 
     add_deps("KernelOS", "KernelCore", "KernelGPU", "KDShader", "Graphics", "KernelInput", "ToolImGui")

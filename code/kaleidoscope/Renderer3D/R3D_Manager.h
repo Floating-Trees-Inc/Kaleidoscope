@@ -9,7 +9,9 @@
 #include <Graphics/Gfx_Model.h>
 
 #include "R3D_Node.h"
+
 #include "Nodes/R3D_GBuffer.h"
+#include "Nodes/R3D_Compositor.h"
 
 namespace R3D
 {
@@ -18,7 +20,7 @@ namespace R3D
         constexpr const char* NEAREST_WRAP_SAMPLER_NO_MIPS = "Default/Sampler/N-W-NM";
         constexpr const char* LINEAR_WRAP_SAMPLER_WITH_MIPS = "Default/Sampler/L-W-WM";
         constexpr const char* WHITE_TEXTURE = "Default/Textures/White";
-        constexpr const char* BLACK_TEXTURE = "Default/Textures/White";
+        constexpr const char* BLACK_TEXTURE = "Default/Textures/Black";
     };
 
     class Manager
@@ -36,6 +38,7 @@ namespace R3D
             KC::Array<Renderable> OpaqueBatch;
 
             GBuffer* mGBuffer;
+            Compositor* mCompositor;
         } sData;
     };
 }

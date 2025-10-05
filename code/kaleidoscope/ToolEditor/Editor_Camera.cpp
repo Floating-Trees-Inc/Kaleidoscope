@@ -10,7 +10,7 @@
 
 namespace Editor
 {
-    void Camera::Update(float dt, int width, int height)
+    void Camera::Update(float dt)
     {
         if (KI::InputSystem::IsKeyDown(KI::Keycode::kZ)) {
             mPosition += mForward * dt * 3.0f;
@@ -41,6 +41,10 @@ namespace Editor
         mUp = glm::normalize(glm::cross(mRight, mForward));
 
         mView = glm::lookAt(mPosition, mPosition + mForward, glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    void Camera::UpdateSizeConstraints(int width, int height)
+    {
         mProjection = glm::perspective(glm::radians(90.0f), (float)width / (float)height, CAMERA_NEAR, CAMERA_FAR);
     }
 }

@@ -12,6 +12,7 @@
 #include <World/World_SceneTree.h>
 
 #include "Editor_PanelManager.h"
+#include "Editor_Camera.h"
 
 namespace Editor
 {
@@ -22,14 +23,16 @@ namespace Editor
         ~Application();
 
         void Run();
-        void DrawPanels();
+        void DrawPanels(KGPU::ICommandList* cmdList);
 
         static Application& Get() { return *sInstance; }
     private:
         static Application* sInstance;
+        float mLast = 0.0f;
 
         PanelManager* mPanelManager;
         World::SceneTree* mSceneTree;
+        Camera mCamera;
 
         uint mWindowWidth = 1280;
         uint mWindowHeight = 720;

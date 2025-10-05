@@ -10,6 +10,8 @@ namespace Gfx
 {
     Model::Model(const KC::String& path)
     {
+        KD_INFO("Loading model %s", path.c_str());
+
         auto mesh = KDA::MeshLoader::LoadMeshFromFile(path);
         for (auto& node : mesh.Nodes) {
             for (auto& prim : node.Primitives) {
@@ -17,6 +19,8 @@ namespace Gfx
                 submesh.Primitive = KC_NEW(MeshPrimitive, prim);
                 submesh.Material = KC_NEW(Material);
                 submesh.Material->FromMaterial(mesh.Materials[prim.MaterialIndex]);
+
+                Submeshes.push_back(submesh);
             }
         }
     }
@@ -27,5 +31,6 @@ namespace Gfx
             KC_DELETE(mesh.Primitive);
             KC_DELETE(mesh.Material);
         }
+        Submeshes.clear();
     }
 }

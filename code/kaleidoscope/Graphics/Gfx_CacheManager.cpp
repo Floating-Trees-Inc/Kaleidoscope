@@ -17,6 +17,9 @@ namespace Gfx
 
     void CacheManager::Shutdown()
     {
+        sCaches.mTextureCache->Clear();
+        sCaches.mModelCache->Clear();
+
         KC_DELETE(sCaches.mModelCache);
         KC_DELETE(sCaches.mTextureCache);
     }

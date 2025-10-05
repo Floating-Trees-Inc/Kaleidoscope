@@ -11,6 +11,7 @@ namespace World
     SceneTree::SceneTree()
     {
         mRoot = KC_NEW(Node, "Root");
+        mRoot->SetIsInsideTree(true);
     }
 
     SceneTree::~SceneTree()

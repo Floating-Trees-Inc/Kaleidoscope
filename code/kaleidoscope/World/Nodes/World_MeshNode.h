@@ -16,13 +16,16 @@ namespace World
         MeshNode(const KC::String& name = "MeshNode");
         ~MeshNode() override;
 
-        void OnEnterTree() override;
+        void OnEnterTree() override {}
+        void OnReady() override;
+        void OnProcess(float dt) override {}
+        void OnPhysicsProcess(float dt) override {}
         void OnExitTree() override;
         void OnDrawUI() override;
 
         void Load(const KC::String& path);
         Gfx::Model* GetModel() { return mModel; }
     private:
-        Gfx::Model* mModel;
+        Gfx::Model* mModel = nullptr;
     };
 }

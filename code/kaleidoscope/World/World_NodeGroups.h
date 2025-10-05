@@ -13,20 +13,21 @@ namespace World
 {
     enum class NodeGroupType
     {
-        StaticGeometry = (1 << 0),
-        SkinnedGeometry = (1 << 1),
-        TransparentGeometry = (1 << 2),
-        Colliders = (1 << 3),
-        Lights = (1 << 4),
-        Cameras = (1 << 5),
-        Scripts = (1 << 6)
+        kStaticGeometry,
+        kSkinnedGeometry,
+        kTransparentGeometry,
+        kColliders,
+        kLights,
+        kCameras,
+        kScripts,
+        kMax
     };
 
     class NodeGroups
     {
     public:
-        NodeGroups() = default;
-        ~NodeGroups() = default;
+        NodeGroups();
+        ~NodeGroups();
 
         void AddToGroup(NodeGroupType type, Node* node);
         void RemoveFromGroup(NodeGroupType type, Node* node);

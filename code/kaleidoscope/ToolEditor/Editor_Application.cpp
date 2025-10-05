@@ -17,8 +17,10 @@
 #include <Renderer3D/R3D_Manager.h>
 
 #include <World/World_Manager.h>
+#include <World/Nodes/World_MeshNode.h>
 
 #include "Panels/Editor_SceneHierarchyPanel.h"
+#include "Panels/Editor_ViewportPanel.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
@@ -66,9 +68,13 @@ namespace Editor
 
         CODE_BLOCK("Create resources") {
             mSceneTree = KC_NEW(World::SceneTree);
+            World::MeshNode* child = KC_NEW(World::MeshNode);
+            child->Load("data/kd/models/shadow_test/untitled.gltf");
+            mSceneTree->GetRoot()->AddChild(child);
 
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
+            mPanelManager->RegisterPanel<ViewportPanel>()->Open();
         }
 
         CODE_BLOCK("Finish start and go!") {
@@ -108,6 +114,10 @@ namespace Editor
     {
         while (mWindow->IsOpen()) {
             FRAME_LOOP {
+                double now = KC::GlobalTimer.ToSeconds();
+                double dt = now - mLast;
+                mLast = now;
+
                 CODE_BLOCK("Reset") {
                     KI::InputSystem::Reset();
                 }
@@ -121,11 +131,17 @@ namespace Editor
                     cmdList->Reset();
                     cmdList->Begin();
 
+                    // Get viewport size
+                    glm::vec2 viewportSize = mPanelManager->GetPanel<ViewportPanel>()->GetViewportSize();
+                    mCamera.UpdateSizeConstraints(viewportSize.x, viewportSize.y);
+
                     // Execute renderer
                     R3D::RenderInfo renderInfo = {
-                        .OutputWidth = mWindowWidth,
-                        .OutputHeight = mWindowHeight,
-                        .ViewProj = glm::mat4(1.0f),
+                        .RenderWidth = (uint)viewportSize.x,
+                        .RenderHeight = (uint)viewportSize.y,
+                        .OutputWidth = (uint)viewportSize.x,
+                        .OutputHeight = (uint)viewportSize.y,
+                        .ViewProj = mCamera.Projection() * mCamera.View(),
                         .CmdList = cmdList,
                         .SwapchainTexture = texture,
                         .SwapchainTextureView = textureView,
@@ -146,7 +162,7 @@ namespace Editor
                         ));
                         cmdList->BeginRendering(renderBegin);
                         ToolImGui::Manager::Begin();
-                        DrawPanels();
+                        DrawPanels(cmdList);
                         ToolImGui::Manager::Render(cmdList, index);
                         cmdList->EndRendering();
                         cmdList->Barrier(KGPU::TextureBarrier(
@@ -169,6 +185,9 @@ namespace Editor
                     while (mWindow->PollEvents(&event)) {
                         ToolImGui::Manager::Update(event);
                     }
+
+                    if (mPanelManager->GetPanel<ViewportPanel>()->IsFocused())
+                        mCamera.Update(dt);
     
                     Gfx::ShaderManager::ReloadPipelines();
                 }
@@ -177,38 +196,38 @@ namespace Editor
         mCommandQueue->Wait();
     }
 
-    void Application::DrawPanels()
+    void Application::DrawPanels(KGPU::ICommandList* cmdList)
     {
         //--------- BEGIN DOCKSPACE ----------//
         static bool dockspaceOpen = true;
         static bool opt_fullscreen_persistant = true;
         bool opt_fullscreen = opt_fullscreen_persistant;
-	    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	    if (opt_fullscreen) {
-	    	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	    	ImGui::SetNextWindowPos(viewport->Pos);
-	    	ImGui::SetNextWindowSize(viewport->Size);
-	    	ImGui::SetNextWindowViewport(viewport->ID);
-	    	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	    	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	    	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-	    	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	    }
+        if (opt_fullscreen) {
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->Size);
+            ImGui::SetNextWindowViewport(viewport->ID);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        }
         if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
             window_flags |= ImGuiWindowFlags_NoBackground;
         ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
         if (opt_fullscreen)
-	    	ImGui::PopStyleVar(2);
+            ImGui::PopStyleVar(2);
         ImGuiIO& io = ImGui::GetIO();
-	    ImGuiStyle& style = ImGui::GetStyle();
-	    float minWinSizeX = style.WindowMinSize.x;
-	    style.WindowMinSize.x = 370.0f;
-	    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-	    	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	    	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-	    }
-	    style.WindowMinSize.x = minWinSizeX;
+        ImGuiStyle& style = ImGui::GetStyle();
+        float minWinSizeX = style.WindowMinSize.x;
+        style.WindowMinSize.x = 370.0f;
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        }
+        style.WindowMinSize.x = minWinSizeX;
 
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu(ICON_FA_MAGIC " Kaleidoscope")) {
@@ -221,7 +240,7 @@ namespace Editor
         }
         //--------- BEGIN DOCKSPACE ----------//
         for (auto& panel : mPanelManager->GetPanels()) {
-            panel->OnUI(mSceneTree);
+            panel->OnUI(mSceneTree, cmdList);
         }
         //--------- END DOCKSPACE ----------//
         ImGui::End();

@@ -21,6 +21,8 @@ namespace R3D
     struct RenderInfo
     {
         // Render info
+        uint RenderWidth;
+        uint RenderHeight;
         uint OutputWidth;
         uint OutputHeight;
 

@@ -14,9 +14,7 @@ namespace Gfx
         std::lock_guard<std::mutex> lock(mMutex);
 
         for (auto& [_, model] : mModels)
-        {
             KC_DELETE(model);
-        }
         mModels.clear();
     }
 

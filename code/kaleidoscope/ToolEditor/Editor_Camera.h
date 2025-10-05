@@ -21,7 +21,8 @@ namespace Editor
         Camera() = default;
         ~Camera() = default;
 
-        void Update(float dt, int width, int height);
+        void Update(float dt);
+        void UpdateSizeConstraints(int width, int height);
 
         glm::mat4 View() const { return mView; }
         glm::mat4 Projection() const { return mProjection; }

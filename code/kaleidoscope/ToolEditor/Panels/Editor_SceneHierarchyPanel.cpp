@@ -9,7 +9,7 @@
 
 namespace Editor
 {
-    void SceneHierarchyPanel::OnUI(World::SceneTree* tree)
+    void SceneHierarchyPanel::OnUI(World::SceneTree* tree, KGPU::ICommandList* list)
     {
         if (!mOpen) return;
 

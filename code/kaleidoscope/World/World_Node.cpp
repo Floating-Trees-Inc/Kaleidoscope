@@ -95,10 +95,10 @@ namespace World
         mChildren.clear();
     }
 
-    void Node::AddChild(Node* child)
+    Node* Node::AddChild(Node* child)
     {
-        if (!child || child == this) return;
-        if (IsAncestor(child, this)) return; // Prevent cycles
+        if (!child || child == this) return nullptr;
+        if (IsAncestor(child, this)) return nullptr; // Prevent cycles
 
         if (child->GetParent()) {
             auto& oldSib = child->GetParent()->mChildren;
@@ -113,6 +113,8 @@ namespace World
 
         if (IsInsideTree() && !child->IsInsideTree())
             PropagateEnterReady(child);
+        
+        return child;
     }
 
     void Node::RemoveChild(Node* child)

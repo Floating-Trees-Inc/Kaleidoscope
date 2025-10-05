@@ -6,6 +6,7 @@
 #include "R3D_Manager.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
+#include <Graphics/Gfx_Uploader.h>
 #include <World/Nodes/World_MeshNode.h>
 
 namespace R3D
@@ -21,11 +22,30 @@ namespace R3D
                                                 KGPU::SamplerDesc(KGPU::SamplerAddress::kWrap, KGPU::SamplerFilter::kNearest, true));
         }
 
+        CODE_BLOCK("Textures") {
+            KGPU::TextureDesc desc;
+            desc.Width = 1;
+            desc.Height = 1;
+            desc.MipLevels = 1;
+            desc.Format = KGPU::TextureFormat::kR8G8B8A8_UNORM;
+            desc.Usage = KGPU::TextureUsage::kShaderResource;
+
+            uint white = 0xFFFFFFFF;
+            uint black = 0xFF000000;
+
+            Gfx::ResourceManager::CreateTexture(DefaultResources::WHITE_TEXTURE, desc);
+            Gfx::ResourceManager::CreateTexture(DefaultResources::BLACK_TEXTURE, desc);
+            Gfx::Uploader::EnqueueTextureUploadRaw(&white, sizeof(white), Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE).Texture);
+            Gfx::Uploader::EnqueueTextureUploadRaw(&black, sizeof(black), Gfx::ResourceManager::Get(DefaultResources::BLACK_TEXTURE).Texture);
+        }
+
         sData.mGBuffer = KC_NEW(GBuffer);
+        sData.mCompositor = KC_NEW(Compositor);
     }
 
     void Manager::Shutdown()
     {
+        KC_DELETE(sData.mCompositor);
         KC_DELETE(sData.mGBuffer);
     }
 
@@ -39,7 +59,7 @@ namespace R3D
     {
         sData.OpaqueBatch.clear();
 
-        auto group = groups.GetGroup(World::NodeGroupType::StaticGeometry);
+        auto group = groups.GetGroup(World::NodeGroupType::kStaticGeometry);
         for (auto& node : group) {
             World::MeshNode* meshNode = reinterpret_cast<World::MeshNode*>(node);
             
@@ -53,5 +73,6 @@ namespace R3D
     void Manager::ExecuteRenderGraph(const RenderInfo& info)
     {
         sData.mGBuffer->Execute(info, sData.OpaqueBatch);
+        sData.mCompositor->Execute(info, sData.OpaqueBatch);
     }
 }

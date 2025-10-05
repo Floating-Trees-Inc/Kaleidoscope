@@ -6,48 +6,67 @@
 #include "kd/shaders/common/bindless.kds"
 
 #pragma vertex VSMain
-#pragma pixel PSMain
+#pragma pixel  PSMain
 
 struct PushConstants
 {
-    uint In;
-    uint Sampler;
-    uint2 Pad;
+    uint In;        // SRV index
+    uint Sampler;   // Sampler index
+    uint Width;     // Rendered width (valid content)
+    uint Height;    // Rendered height (valid content)
 };
 PUSH_CONSTANTS(PushConstants, Push);
 
 struct VertexOutput
 {
-    float4 Pos : SV_Position;
+    float4 Pos      : SV_Position;
     float2 Texcoord : TEXCOORD;
 };
 
 VertexOutput VSMain(uint vid : SV_VertexID)
 {
-    VertexOutput output;
+    VertexOutput o;
 
-    // Fullscreen triangle vertices
-    float2 positions[3] = {
+    const float2 positions[3] = {
         float2(-1.0f, -1.0f),
-        float2(3.0f, -1.0f),
-        float2(-1.0f, 3.0f)
+        float2( 3.0f, -1.0f),
+        float2(-1.0f,  3.0f)
     };
 
-    float2 uvs[3] = {
-        float2(0.0f, 1.0f),
-        float2(2.0f, 1.0f),
+    const float2 uvs[3] = {
+        float2(0.0f,  1.0f),
+        float2(2.0f,  1.0f),
         float2(0.0f, -1.0f)
     };
 
-    output.Pos = float4(positions[vid], 0.0f, 1.0f);
-    output.Texcoord = uvs[vid];
-    return output;
+    o.Pos      = float4(positions[vid], 0.0f, 1.0f);
+    o.Texcoord = uvs[vid];
+    return o;
 }
 
-float4 PSMain(VertexOutput output) : SV_Target
+float4 PSMain(VertexOutput i) : SV_Target
 {
-    Texture2D<float4> input = ResourceDescriptorHeap[Push.In];
-    SamplerState state = SamplerDescriptorHeap[Push.Sampler];
+    Texture2D<float4> inputTex = ResourceDescriptorHeap[Push.In];
+    SamplerState samp          = SamplerDescriptorHeap[Push.Sampler];
 
-    return input.Sample(state, output.Texcoord);
+    // Fall back to alloc size if push constants weren’t set
+    uint srcW = (Push.Width  > 0) ? Push.Width  : ALLOC_WIDTH;
+    uint srcH = (Push.Height > 0) ? Push.Height : ALLOC_HEIGHT;
+
+    // Scale factor that maps [0,1] -> [0, src/alloc] in UV space
+    float2 allocSize = float2(max(1u, ALLOC_WIDTH), max(1u, ALLOC_HEIGHT));
+    float2 srcSize   = float2((float)srcW, (float)srcH);
+    float2 scale     = srcSize / allocSize;              // e.g. 1280/1536, 720/1024
+
+    // Half-texel in *allocated* texture space for correct edge clamping
+    float2 halfTexel = 0.5 / allocSize;
+
+    // Remap fullscreen UVs to the valid sub-rect and clamp within it
+    float2 uv = clamp(saturate(i.Texcoord) * scale, halfTexel, scale - halfTexel);
+
+    // If your rendered region isn’t at (0,0), add an offset here:
+    // float2 offset = float2(viewportX, viewportY) / allocSize;
+    // uv = clamp(offset + saturate(i.Texcoord) * scale, offset + halfTexel, offset + scale - halfTexel);
+
+    return inputTex.Sample(samp, uv);
 }

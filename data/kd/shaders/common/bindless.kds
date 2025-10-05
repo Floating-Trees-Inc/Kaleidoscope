@@ -6,6 +6,8 @@
 #ifndef BINDLESS_KDS
 #define BINDLESS_KDS
 
+static const uint ALLOC_WIDTH = 1920;
+static const uint ALLOC_HEIGHT = 1080;
 static const uint INVALID_DESCRIPTOR = 0x00000000;
 
 // Push constants

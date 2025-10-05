@@ -18,17 +18,20 @@ namespace World
 
     MeshNode::~MeshNode()
     {
+        if (mModel) Gfx::CacheManager::GetModelCache()->GiveBack(mModel);
     }
 
-    void MeshNode::OnEnterTree()
+    void MeshNode::OnReady()
     {
-        Manager::GetGroups().AddToGroup(NodeGroupType::StaticGeometry, this);
+
     }
 
     void MeshNode::OnExitTree()
     {
-        Manager::GetGroups().RemoveFromGroup(NodeGroupType::StaticGeometry, this);
-        Gfx::CacheManager::GetModelCache()->GiveBack(mModel);
+        if (mModel) {
+            Manager::GetGroups().RemoveFromGroup(NodeGroupType::kStaticGeometry, this);
+            Gfx::CacheManager::GetModelCache()->GiveBack(mModel);
+        }
     }
 
     void MeshNode::OnDrawUI()
@@ -39,6 +42,12 @@ namespace World
 
     void MeshNode::Load(const KC::String& path)
     {
+        if (mModel) {
+            Manager::GetGroups().RemoveFromGroup(NodeGroupType::kStaticGeometry, this);
+            Gfx::CacheManager::GetModelCache()->GiveBack(mModel);
+        }
+
         mModel = Gfx::CacheManager::GetModelCache()->Take(path);
+        Manager::GetGroups().AddToGroup(NodeGroupType::kStaticGeometry, this);
     }
 }

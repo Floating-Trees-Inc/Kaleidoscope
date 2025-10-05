@@ -19,7 +19,6 @@ namespace Gfx
         for (auto& [_, texture] : mTextures)
         {
             KC_DELETE(texture->Texture);
-            texture->Texture = nullptr;
             KC_DELETE(texture);
         }
         mTextures.clear();
@@ -37,6 +36,7 @@ namespace Gfx
         }
 
         auto kdaTexture = KDA::TextureLoader::LoadFromFile(path);
+        KD_INFO("Loading texture %s", path.c_str());
 
         mTextures[path] = KC_NEW(Texture);
         mTextures[path]->Path = path;

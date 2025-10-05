@@ -12,7 +12,7 @@ namespace Editor
     class SceneHierarchyPanel : public Panel
     {
     public:
-        void OnUI(World::SceneTree* tree) override;    
+        void OnUI(World::SceneTree* tree, KGPU::ICommandList* list) override;    
 
         void DrawSingleNode(World::Node* node);
     private:
