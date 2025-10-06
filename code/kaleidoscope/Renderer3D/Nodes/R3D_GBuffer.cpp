@@ -59,7 +59,7 @@ namespace R3D
         for (auto& mesh : Manager::GetOpaqueBatch()) {
             for (auto& submesh : mesh.Model->Submeshes) {
                 KGPU::ITexture* albedoHandle = submesh.Material->GetAlbedo() 
-                                             ? submesh.Material->GetAlbedo()->Texture
+                                             ? submesh.Material->GetAlbedo()->Handle
                                              : Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE).Texture;
                 
                 struct PushConstants {

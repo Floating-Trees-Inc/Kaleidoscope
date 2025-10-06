@@ -18,8 +18,10 @@ namespace Gfx
 {
     struct Texture : KC::RefCounted
     {
+        Texture() = default;
+
         KC::String Path;
-        KGPU::ITexture* Texture = nullptr;
+        KGPU::ITexture* Handle = nullptr;
     };
 
     class TextureCache : public KC::Cache

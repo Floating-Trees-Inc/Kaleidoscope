@@ -18,7 +18,7 @@ namespace Gfx
 
         for (auto& [_, texture] : mTextures)
         {
-            KC_DELETE(texture->Texture);
+            KC_DELETE(texture->Handle);
             KC_DELETE(texture);
         }
         mTextures.clear();
@@ -40,13 +40,13 @@ namespace Gfx
 
         mTextures[path] = KC_NEW(Texture);
         mTextures[path]->Path = path;
-        mTextures[path]->Texture = Gfx::Manager::GetDevice()->CreateTexture(kdaTexture.ToTextureDesc());
-        mTextures[path]->Texture->SetName(path);
+        mTextures[path]->Handle = Gfx::Manager::GetDevice()->CreateTexture(kdaTexture.ToTextureDesc());
+        mTextures[path]->Handle->SetName(path);
 
-        bool isBlock = KGPU::ITexture::IsBlockFormat(mTextures[path]->Texture->GetDesc().Format);
-        Uploader::EnqueueTextureUploadRaw(kdaTexture.Bytes.data(), kdaTexture.Bytes.size(), mTextures[path]->Texture, isBlock);
+        bool isBlock = KGPU::ITexture::IsBlockFormat(mTextures[path]->Handle->GetDesc().Format);
+        Uploader::EnqueueTextureUploadRaw(kdaTexture.Bytes.data(), kdaTexture.Bytes.size(), mTextures[path]->Handle, isBlock);
         if (!isBlock) {
-            Mipmapper::ComputeMipmaps(mTextures[path]->Texture);
+            Mipmapper::ComputeMipmaps(mTextures[path]->Handle);
         }
 
         return mTextures[path];
@@ -67,8 +67,8 @@ namespace Gfx
         {
             if (texture->GetRefCount() <= 1)
             {
-                KC_DELETE(texture->Texture);
-                texture->Texture = nullptr;
+                KC_DELETE(texture->Handle);
+                texture->Handle = nullptr;
                 KC_DELETE(texture);
                 toErase.push_back(key);
             }
