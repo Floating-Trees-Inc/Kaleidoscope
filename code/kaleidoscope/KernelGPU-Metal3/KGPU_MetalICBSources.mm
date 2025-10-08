@@ -17,6 +17,12 @@ struct KD_DrawCmd
     uint instanceStart;
 };
 
+struct TopLevelAB_Layout
+{
+    uint4  push40[10];  // 10 * 16 = 160 bytes (example packing for 160B)
+    uint   drawID;      // 4 bytes
+};
+
 struct arguments {
     command_buffer cmd_buffer;
 };
@@ -26,11 +32,24 @@ kernel void encode_draws
      device const uint* drawCount [[buffer(1)]],
      device const uint* primitiveType [[buffer(2)]],
      device arguments &args,
+     device TopLevelAB_Layout* argBuffer [[buffer(4)]],
      uint gid [[thread_position_in_grid]])
 {
     if (gid >= *drawCount) return;
 
+    // Perform arg buffer copy
     const KD_DrawCmd d = cmdIn[gid];
+    const uint stride = 164; // 160 + 4 bytes
+
+    device TopLevelAB_Layout* src = argBuffer;
+    device TopLevelAB_Layout* dst = reinterpret_cast<device TopLevelAB_Layout*>(argBuffer + gid * stride);
+    dst->drawID = d.drawID;
+    if (gid > 0)
+    {
+        device uint8_t* dPtr = reinterpret_cast<device uint8_t*>(dst);
+        device uint8_t* sPtr = reinterpret_cast<device uint8_t*>(src);
+        for (uint i = 0; i < 160; ++i) dPtr[i] = sPtr[i];
+    }
 
     uint primType = primitiveType[0];
     primitive_type pt;
@@ -40,9 +59,11 @@ kernel void encode_draws
         case 2: pt = primitive_type::triangle; break;
     }
 
+    // Binding 0 has push constants, binding 1 has draw ID. The push constant is 160 bytes wide so offset the buffer
+
     render_command cmd(args.cmd_buffer, gid);
     cmd.reset();
-    // TODO: Set DrawID????
+    cmd.set_vertex_buffer(dst, 0, 3);
     cmd.draw_primitives(pt, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
 }
 )MSL";
@@ -65,17 +86,37 @@ struct arguments {
     command_buffer cmd_buffer;
 };
 
+struct TopLevelAB_Layout
+{
+    uint4  push40[10];  // 10 * 16 = 160 bytes (example packing for 160B)
+    uint   drawID;      // 4 bytes
+    // implicit padding may exist; we only copy the bytes we need
+};
+
 kernel void encode_draws
     (device const KD_DrawIndexedCmd* cmdIn [[buffer(0)]],
      device const uint* drawCount [[buffer(1)]],
      device const uint* indexBuffer [[buffer(2)]], // Bro XD
      device const uint* primitiveType [[buffer(3)]],
      device arguments &args,
+     device TopLevelAB_Layout* argBuffer [[buffer(5)]],
      uint gid [[thread_position_in_grid]])
 {
     if (gid >= *drawCount) return;
 
+    // Perform arg buffer copy
     const KD_DrawIndexedCmd d = cmdIn[gid];
+    const uint stride = 164; // 160 + 4 bytes
+
+    device TopLevelAB_Layout* src = argBuffer;
+    device TopLevelAB_Layout* dst = reinterpret_cast<device TopLevelAB_Layout*>(argBuffer + gid * stride);
+    dst->drawID = d.drawID;
+    if (gid > 0)
+    {
+        device uint8_t* dPtr = reinterpret_cast<device uint8_t*>(dst);
+        device uint8_t* sPtr = reinterpret_cast<device uint8_t*>(src);
+        for (uint i = 0; i < 160; ++i) dPtr[i] = sPtr[i];
+    }
 
     uint primType = primitiveType[0];
     primitive_type pt;
@@ -87,7 +128,7 @@ kernel void encode_draws
 
     render_command cmd(args.cmd_buffer, gid);
     cmd.reset();
-    // TODO: Set DrawID????
+    cmd.set_vertex_buffer(dst, 0, 3);
     cmd.draw_indexed_primitives(pt, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }
 )MSL";

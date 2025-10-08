@@ -10,6 +10,12 @@
 
 namespace KGPU
 {
+    constexpr uint MAX_INDIRECT_COMMANDS = 4096;
+    constexpr uint TOP_LEVEL_ARGUMENT_BUFFER_SIZE = (160)             + (4)         ;
+                                                    // Push Constants // Draw Index
+    constexpr uint COMMAND_LIST_ARGUMENT_BUFFER_SIZE = TOP_LEVEL_ARGUMENT_BUFFER_SIZE * MAX_INDIRECT_COMMANDS;
+                                                    // Per Draw Call
+
     class Metal3Device;
     class Metal3CommandQueue;
 
@@ -108,5 +114,7 @@ namespace KGPU
         KC::Array<MemoryBarrier> mPendingMemBarriers;
 
         KC::HashMap<IBuffer*, ICBDataCache> mIndirectBufferCache;
+
+        id<MTLBuffer> mTopLevelArgumentBuffer = nil;
     };
 }

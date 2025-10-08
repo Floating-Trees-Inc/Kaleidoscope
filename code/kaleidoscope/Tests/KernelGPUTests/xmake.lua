@@ -7,7 +7,7 @@ target("KernelGPUTests")
     set_kind("binary")
     set_group("Kaleidoscope")
 
-    add_files("**.cpp")
+    add_files("*.cpp", "Tests/*.cpp")
     add_headerfiles("*.h")
     add_includedirs(".")
     add_deps("KernelCore", "KernelGPU", "KDAsset", "KDShader", "Graphics", "flip", "json")
