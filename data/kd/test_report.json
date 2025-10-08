@@ -3,19 +3,19 @@
         "goldenPath": "tests/golden/ClearColorGolden.png",
         "magmaPath": "tests/ClearColorMagma.png",
         "outputPath": "tests/ClearColor.png",
-        "result": true
+        "result": false
     },
     "DrawID": {
         "goldenPath": "tests/golden/DrawIDGolden.png",
         "magmaPath": "tests/DrawIDMagma.png",
         "outputPath": "tests/DrawID.png",
-        "result": true
+        "result": false
     },
     "DrawIndexedDrawID": {
         "goldenPath": "tests/golden/DrawIndexedDrawIDGolden.png",
         "magmaPath": "tests/DrawIndexedDrawIDMagma.png",
         "outputPath": "tests/DrawIndexedDrawID.png",
-        "result": true
+        "result": false
     },
     "DrawLines": {
         "goldenPath": "tests/golden/DrawLinesGolden.png",
@@ -51,7 +51,7 @@
         "goldenPath": "tests/golden/MeshTriangleIndirectGolden.png",
         "magmaPath": "tests/MeshTriangleIndirectMagma.png",
         "outputPath": "tests/MeshTriangleIndirect.png",
-        "result": true
+        "result": false
     },
     "PipelineChangeInRenderEncoder": {
         "goldenPath": "tests/golden/PipelineChangeInRenderEncoderGolden.png",
@@ -69,7 +69,7 @@
         "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
         "magmaPath": "tests/RayPipelineTriangleMagma.png",
         "outputPath": "tests/RayPipelineTriangle.png",
-        "result": true
+        "result": false
     },
     "RayQueryTriangle": {
         "goldenPath": "tests/golden/RayQueryTriangleGolden.png",
