@@ -75,8 +75,6 @@ namespace KGPU
         // Create info queue.
         result = mDevice->QueryInterface(IID_PPV_ARGS(&mInfoQueue));
         if (SUCCEEDED(result)) {
-            mInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-
             D3D12_MESSAGE_SEVERITY supressSeverities[] = {
                 D3D12_MESSAGE_SEVERITY_INFO
             };
@@ -85,8 +83,6 @@ namespace KGPU
                 D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
                 D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,
                 D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,
-                D3D12_MESSAGE_ID_INCOMPATIBLE_BARRIER_ACCESS,
-                D3D12_MESSAGE_ID_INVALID_BARRIER_ACCESS,
             };
 
             D3D12_INFO_QUEUE_FILTER filter = {0};
