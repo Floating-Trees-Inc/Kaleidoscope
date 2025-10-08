@@ -31,8 +31,10 @@ kernel void encode_draws
     (device const KD_DrawCmd* cmdIn [[buffer(0)]],
      device const uint* drawCount [[buffer(1)]],
      device const uint* primitiveType [[buffer(2)]],
-     device arguments &args,
+     device arguments *args,
      device TopLevelAB_Layout* argBuffer [[buffer(4)]],
+     device uint* resourceHeap [[buffer(5)]],
+     device uint* samplerHeap [[buffer(6)]],
      uint gid [[thread_position_in_grid]])
 {
     if (gid >= *drawCount) return;
@@ -61,7 +63,11 @@ kernel void encode_draws
 
     // Binding 0 has push constants, binding 1 has draw ID. The push constant is 160 bytes wide so offset the buffer
 
-    render_command cmd(args.cmd_buffer, gid);
+    render_command cmd(args->cmd_buffer, gid);
+    cmd.set_vertex_buffer(resourceHeap, 0);
+    cmd.set_fragment_buffer(resourceHeap, 0);
+    cmd.set_vertex_buffer(samplerHeap, 1);
+    cmd.set_fragment_buffer(samplerHeap, 1);
     cmd.set_vertex_buffer(dst, 2);
     cmd.draw_primitives(pt, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
 }
@@ -97,8 +103,10 @@ kernel void encode_draws
      device const uint* drawCount [[buffer(1)]],
      device const uint* indexBuffer [[buffer(2)]], // Bro XD
      device const uint* primitiveType [[buffer(3)]],
-     device arguments &args,
+     device arguments *args,
      device TopLevelAB_Layout* argBuffer [[buffer(5)]],
+     device uint* resourceHeap [[buffer(6)]],
+     device uint* samplerHeap [[buffer(7)]],
      uint gid [[thread_position_in_grid]])
 {
     if (gid >= *drawCount) return;
@@ -125,7 +133,11 @@ kernel void encode_draws
         case 2: pt = primitive_type::triangle; break;
     }
 
-    render_command cmd(args.cmd_buffer, gid);
+    render_command cmd(args->cmd_buffer, gid);
+    cmd.set_vertex_buffer(resourceHeap, 0);
+    cmd.set_fragment_buffer(resourceHeap, 0);
+    cmd.set_vertex_buffer(samplerHeap, 1);
+    cmd.set_fragment_buffer(samplerHeap, 1);
     cmd.set_vertex_buffer(dst, 2);
     cmd.draw_indexed_primitives(pt, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }

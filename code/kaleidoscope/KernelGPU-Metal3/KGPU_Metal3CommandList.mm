@@ -18,7 +18,7 @@
 
 #include <metal_irconverter_runtime.h>
 
-#define DO_STUPID_XCODE_CAPTURE 1
+#define DO_STUPID_XCODE_CAPTURE 0
 
 namespace KGPU
 {
@@ -369,9 +369,8 @@ namespace KGPU
             MTLIndirectCommandBufferDescriptor* icbDesc = [MTLIndirectCommandBufferDescriptor new];
             icbDesc.commandTypes = MTLIndirectCommandTypeDraw;
             icbDesc.inheritPipelineState = YES;
-            icbDesc.inheritBuffers = YES;
-            icbDesc.maxVertexBufferBindCount = 31;
-            icbDesc.maxFragmentBufferBindCount = 31;
+            icbDesc.maxVertexBufferBindCount = 3;
+            icbDesc.maxFragmentBufferBindCount = 3;
 
             id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:maxDrawCount options:MTLResourceStorageModeShared];
             id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
@@ -408,6 +407,8 @@ namespace KGPU
         [computeEncoder setBytes:&primitiveType length:sizeof(uint) atIndex:2];
         [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:3];
         [computeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:4];
+        [computeEncoder setBuffer:mParentDevice->GetBindlessManager()->GetHandle() offset:0 atIndex:5];
+        [computeEncoder setBuffer:mParentDevice->GetBindlessManager()->GetSamplerHandle() offset:0 atIndex:6];
         [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
         [computeEncoder updateFence:mEncoderFence];
         [computeEncoder endEncoding];
@@ -429,9 +430,8 @@ namespace KGPU
             MTLIndirectCommandBufferDescriptor* icbDesc = [MTLIndirectCommandBufferDescriptor new];
             icbDesc.commandTypes = MTLIndirectCommandTypeDrawIndexed;
             icbDesc.inheritPipelineState = YES;
-            icbDesc.inheritBuffers = YES;
-            icbDesc.maxVertexBufferBindCount = 31;
-            icbDesc.maxFragmentBufferBindCount = 31;
+            icbDesc.maxVertexBufferBindCount = 3;
+            icbDesc.maxFragmentBufferBindCount = 3;
         
             id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:maxDrawCount options:MTLResourceStorageModeShared];
             id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
@@ -469,6 +469,8 @@ namespace KGPU
         [computeEncoder setBytes:&primitiveType length:sizeof(uint) atIndex:3];
         [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:4];
         [computeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:5];
+        [computeEncoder setBuffer:mParentDevice->GetBindlessManager()->GetHandle() offset:0 atIndex:6];
+        [computeEncoder setBuffer:mParentDevice->GetBindlessManager()->GetSamplerHandle() offset:0 atIndex:7];
         [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
         [computeEncoder updateFence:mEncoderFence];
         [computeEncoder endEncoding];
