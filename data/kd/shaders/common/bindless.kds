@@ -11,13 +11,11 @@ static const uint ALLOC_HEIGHT = 1080;
 static const uint INVALID_DESCRIPTOR = 0x00000000;
 
 // Push constants
-#ifdef D3D12
+#if D3D12 || METAL
     #define PUSH_CONSTANTS(Type, Name) ConstantBuffer<Type> Name : register(b0)
 #elif VULKAN
     #define PUSH_CONSTANTS(Type, Name) [[vk::push_constant]] ConstantBuffer<Type> Name : register(b0)
     [[vk::binding(2, 0)]] RaytracingAccelerationStructure gRaytracingASArray[];
-#elif METAL
-    #define PUSH_CONSTANTS(Type, Name) ConstantBuffer<Type> Name : register(b999)
 #endif
 
 // Bindless AS
@@ -34,7 +32,7 @@ RaytracingAccelerationStructure LoadRaytracingWorld(uint index)
 #endif
 
 // Draw ID for indirect
-#ifdef D3D12
+#if D3D12 || METAL
     struct DrawIDStruct { uint id; };
     cbuffer gDrawID : register(b1) { DrawIDStruct DrawID; }
     uint GetDrawID() { return DrawID.id; }
@@ -43,14 +41,6 @@ RaytracingAccelerationStructure LoadRaytracingWorld(uint index)
     uint GetDrawID()
     {
         return gDrawID;
-    }
-#elif METAL
-    struct WhyTheFuckDoINeedThis { uint id; };
-
-    ConstantBuffer<WhyTheFuckDoINeedThis> gDrawID : register(b998);
-    uint GetDrawID()
-    {
-        return 0;
     }
 #endif
 
