@@ -62,8 +62,7 @@ kernel void encode_draws
     // Binding 0 has push constants, binding 1 has draw ID. The push constant is 160 bytes wide so offset the buffer
 
     render_command cmd(args.cmd_buffer, gid);
-    cmd.reset();
-    cmd.set_vertex_buffer(dst, 0, 3);
+    cmd.set_vertex_buffer(dst, 2);
     cmd.draw_primitives(pt, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
 }
 )MSL";
@@ -127,8 +126,7 @@ kernel void encode_draws
     }
 
     render_command cmd(args.cmd_buffer, gid);
-    cmd.reset();
-    cmd.set_vertex_buffer(dst, 0, 3);
+    cmd.set_vertex_buffer(dst, 2);
     cmd.draw_indexed_primitives(pt, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }
 )MSL";
@@ -157,7 +155,6 @@ kernel void encode_dispatches
     const KD_DispatchCmd d = cmdIn[0];
 
     compute_command cmd(args.cmd_buffer, gid);
-    cmd.reset();
     cmd.concurrent_dispatch_threadgroups(uint3(d.x, d.y, d.z), uint3(threadsPerGroup[0]));
 }
 )MSL";

@@ -8,13 +8,11 @@
 #include <KernelGPU/KGPU_CommandList.h>
 #include <Metal/Metal.h>
 
+#include "KGPU_Metal3TopLevelAB.h"
+
 namespace KGPU
 {
-    constexpr uint MAX_INDIRECT_COMMANDS = 4096;
-    constexpr uint TOP_LEVEL_ARGUMENT_BUFFER_SIZE = (160)             + (4)         ;
-                                                    // Push Constants // Draw Index
-    constexpr uint COMMAND_LIST_ARGUMENT_BUFFER_SIZE = TOP_LEVEL_ARGUMENT_BUFFER_SIZE * MAX_INDIRECT_COMMANDS;
-                                                    // Per Draw Call
+    constexpr uint MAX_INDIRECT_COMMANDS = 64000;
 
     class Metal3Device;
     class Metal3CommandQueue;
@@ -115,6 +113,6 @@ namespace KGPU
 
         KC::HashMap<IBuffer*, ICBDataCache> mIndirectBufferCache;
 
-        id<MTLBuffer> mTopLevelArgumentBuffer = nil;
+        Metal3TopLevelAB* mTopLevelAB = nullptr;
     };
 }

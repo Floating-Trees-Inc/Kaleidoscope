@@ -13,6 +13,8 @@
 #include "KGPU_Metal3ComputePipeline.h"
 #include "KGPU_Metal3BLAS.h"
 #include "KGPU_Metal3TLAS.h"
+#include "KGPU_Metal3TopLevelAB.h"
+#include "KernelCore/KC_Context.h"
 
 #include <metal_irconverter_runtime.h>
 
@@ -35,16 +37,14 @@ namespace KGPU
 
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
         mEncoderFence = [device->GetMTLDevice() newFence];
-        mTopLevelArgumentBuffer = [device->GetMTLDevice() newBufferWithLength:COMMAND_LIST_ARGUMENT_BUFFER_SIZE options:MTLResourceStorageModeShared];
-        [mTopLevelArgumentBuffer setLabel:@"Top Level Argument Buffer"];
-        [mParentDevice->GetResidencySet()->GetResidencySet() addAllocation:mTopLevelArgumentBuffer];
-        [mParentDevice->GetResidencySet()->GetResidencySet() commit];
+        mTopLevelAB = KC_NEW(Metal3TopLevelAB, device, MAX_INDIRECT_COMMANDS);
 
         KD_WHATEVER("Created Metal3 command list");
     }
 
     Metal3CommandList::~Metal3CommandList()
     {
+        KC_DELETE(mTopLevelAB);
         mPendingTexBarriers.clear();
         mPendingBufBarriers.clear();
         mPendingMemBarriers.clear();
@@ -63,6 +63,7 @@ namespace KGPU
         mIndirectBufferCache.clear();
         
         mBuffer = [mParentQueue->GetMTLCommandQueue() commandBuffer];
+        mTopLevelAB->Reset();
     }
 
     void Metal3CommandList::Begin()
@@ -205,9 +206,6 @@ namespace KGPU
         id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
         [mRenderEncoder setVertexBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
         [mRenderEncoder setFragmentBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
-
-        [mRenderEncoder setVertexBuffer:mTopLevelArgumentBuffer offset:0 atIndex:kIRArgumentBufferBindPoint];
-        [mRenderEncoder setFragmentBuffer:mTopLevelArgumentBuffer offset:0 atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetViewport(float width, float height, float x, float y)
@@ -251,8 +249,11 @@ namespace KGPU
 
     void Metal3CommandList::SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size)
     {
-        void* contents = mTopLevelArgumentBuffer.contents;
-        memcpy(contents, data, size);
+        auto alloc = mTopLevelAB->Alloc(1);
+        memcpy(alloc.first, data, size);
+
+        [mRenderEncoder setVertexBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetComputePipeline(IComputePipeline* pipeline)
@@ -265,14 +266,14 @@ namespace KGPU
 
         id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
         [mComputeEncoder setBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
-
-        [mComputeEncoder setBuffer:mTopLevelArgumentBuffer offset:0 atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)
     {
-        void* contents = mTopLevelArgumentBuffer.contents;
-        memcpy(contents, data, size);
+        auto alloc = mTopLevelAB->Alloc(1);
+        memcpy(alloc.first, data, size);
+
+        [mComputeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetMeshPipeline(IMeshPipeline* pipeline)
@@ -304,8 +305,11 @@ namespace KGPU
 
     void Metal3CommandList::SetMeshConstants(IMeshPipeline* pipeline, const void* data, uint64 size)
     {
-        void* contents = mTopLevelArgumentBuffer.contents;
-        memcpy(contents, data, size);
+        auto alloc = mTopLevelAB->Alloc(1);
+        memcpy(alloc.first, data, size);
+
+        [mRenderEncoder setVertexBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
@@ -368,7 +372,7 @@ namespace KGPU
             icbDesc.inheritBuffers = YES;
             icbDesc.maxVertexBufferBindCount = 31;
             icbDesc.maxFragmentBufferBindCount = 31;
-        
+
             id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:maxDrawCount options:MTLResourceStorageModeShared];
             id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
             argBuffer.label = @"ICB Argument Buffer";
@@ -388,6 +392,9 @@ namespace KGPU
         [resetBlitEncoder updateFence:mEncoderFence];
         [resetBlitEncoder endEncoding];
 
+        // Get top level buffer
+        auto alloc = mTopLevelAB->Alloc(maxDrawCount);
+
         // Fill
         id<MTLComputeCommandEncoder> computeEncoder = [mBuffer computeCommandEncoder];
         computeEncoder.label = @"ICB Conversion Encoder";
@@ -400,7 +407,7 @@ namespace KGPU
             [computeEncoder setBytes:&maxDrawCount length:sizeof(uint) atIndex:1];
         [computeEncoder setBytes:&primitiveType length:sizeof(uint) atIndex:2];
         [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:3];
-        [computeEncoder setBuffer:mTopLevelArgumentBuffer offset:0 atIndex:4];
+        [computeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:4];
         [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
         [computeEncoder updateFence:mEncoderFence];
         [computeEncoder endEncoding];
@@ -445,6 +452,9 @@ namespace KGPU
         [resetBlitEncoder updateFence:mEncoderFence];
         [resetBlitEncoder endEncoding];
 
+        // Get top level buffer
+        auto alloc = mTopLevelAB->Alloc(maxDrawCount);
+
         // Fill
         id<MTLComputeCommandEncoder> computeEncoder = [mBuffer computeCommandEncoder];
         computeEncoder.label = @"ICB Conversion Encoder";
@@ -458,7 +468,7 @@ namespace KGPU
         [computeEncoder setBuffer:static_cast<Metal3Buffer*>(indexBuffer)->GetMTLBuffer() offset:0 atIndex:2];
         [computeEncoder setBytes:&primitiveType length:sizeof(uint) atIndex:3];
         [computeEncoder setBuffer:icbData.mArgBuffer offset:0 atIndex:4];
-        [computeEncoder setBuffer:mTopLevelArgumentBuffer offset:0 atIndex:5];
+        [computeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:5];
         [computeEncoder dispatchThreadgroups:MTLSizeMake((maxDrawCount + 63) / 64, 1, 1) threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
         [computeEncoder updateFence:mEncoderFence];
         [computeEncoder endEncoding];
