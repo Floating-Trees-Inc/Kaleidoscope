@@ -490,14 +490,14 @@ namespace KGPU
 
     void VulkanCommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
-        if (!countBuffer) vkCmdDrawIndirect(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, maxDrawCount, 68);
-        else vkCmdDrawIndirectCount(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, 68);
+        if (!countBuffer) vkCmdDrawIndirect(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, maxDrawCount, sizeof(VkDrawIndirectCommand) + 4);
+        else vkCmdDrawIndirectCount(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, sizeof(VkDrawIndirectCommand) + 4);
     }
 
     void VulkanCommandList::DrawIndexedIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
-        if (!countBuffer) vkCmdDrawIndexedIndirect(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, maxDrawCount, 68);
-        else vkCmdDrawIndexedIndirectCount(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, 68);
+        if (!countBuffer) vkCmdDrawIndexedIndirect(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, maxDrawCount, sizeof(VkDrawIndexedIndirectCommand) + 4);
+        else vkCmdDrawIndexedIndirectCount(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, sizeof(VkDrawIndexedIndirectCommand) + 4);
     }
 
     void VulkanCommandList::DispatchIndirect(IBuffer* buffer, uint offset)
@@ -507,8 +507,8 @@ namespace KGPU
 
     void VulkanCommandList::DispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
-        if (!countBuffer) vkCmdDrawMeshTasksIndirectEXT(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, maxDrawCount, 68);
-        else vkCmdDrawMeshTasksIndirectCountEXT(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, 68);
+        if (!countBuffer) vkCmdDrawMeshTasksIndirectEXT(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, maxDrawCount, sizeof(VkDrawMeshTasksIndirectCommandEXT) + 4);
+        else vkCmdDrawMeshTasksIndirectCountEXT(mCmdBuffer, static_cast<VulkanBuffer*>(buffer)->GetBuffer(), offset + 4, static_cast<VulkanBuffer*>(countBuffer)->GetBuffer(), 0, 0, sizeof(VkDrawMeshTasksIndirectCommandEXT) + 4);
     }
 
     void VulkanCommandList::CopyBufferToBufferFull(IBuffer* dest, IBuffer* src)

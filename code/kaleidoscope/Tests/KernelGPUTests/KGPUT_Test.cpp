@@ -20,7 +20,7 @@ namespace KGPUT
     {
         TestData data;
 
-        data.Device = KGPU::IDevice::Create(false);
+        data.Device = KGPU::IDevice::Create(false, KGPU::Backend::kVulkan);
         data.CommandQueue = data.Device->CreateCommandQueue(KGPU::CommandQueueType::kGraphics);
 
         KGPU::TextureDesc renderDesc = {};
@@ -33,7 +33,7 @@ namespace KGPUT
         data.ScreenshotBuffer = data.Device->CreateBuffer(KGPU::BufferDesc(TEST_WIDTH * TEST_HEIGHT * 4, sizeof(uint), KGPU::BufferUsage::kReadback));
 
         KDS::Manager::Initialize();
-        Gfx::Manager::Initialize(data.Device, data.CommandQueue);
+        Gfx::Manager::ConnectDevices(data.Device, data.CommandQueue);
         Gfx::ShaderManager::Initialize();
         Gfx::Mipmapper::Initialize();
         

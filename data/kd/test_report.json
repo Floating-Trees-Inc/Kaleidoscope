@@ -9,13 +9,13 @@
         "goldenPath": "tests/golden/DrawIDGolden.png",
         "magmaPath": "tests/DrawIDMagma.png",
         "outputPath": "tests/DrawID.png",
-        "result": false
+        "result": true
     },
     "DrawIndexedDrawID": {
         "goldenPath": "tests/golden/DrawIndexedDrawIDGolden.png",
         "magmaPath": "tests/DrawIndexedDrawIDMagma.png",
         "outputPath": "tests/DrawIndexedDrawID.png",
-        "result": false
+        "result": true
     },
     "DrawLines": {
         "goldenPath": "tests/golden/DrawLinesGolden.png",
@@ -51,7 +51,7 @@
         "goldenPath": "tests/golden/MeshTriangleIndirectGolden.png",
         "magmaPath": "tests/MeshTriangleIndirectMagma.png",
         "outputPath": "tests/MeshTriangleIndirect.png",
-        "result": false
+        "result": true
     },
     "PipelineChangeInRenderEncoder": {
         "goldenPath": "tests/golden/PipelineChangeInRenderEncoderGolden.png",
@@ -69,7 +69,7 @@
         "goldenPath": "tests/golden/RayPipelineTriangleGolden.png",
         "magmaPath": "tests/RayPipelineTriangleMagma.png",
         "outputPath": "tests/RayPipelineTriangle.png",
-        "result": false
+        "result": true
     },
     "RayQueryTriangle": {
         "goldenPath": "tests/golden/RayQueryTriangleGolden.png",

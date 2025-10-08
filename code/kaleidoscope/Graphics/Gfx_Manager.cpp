@@ -17,6 +17,12 @@ Gfx::Manager::Data Gfx::Manager::sData;
 
 namespace Gfx
 {
+    void Manager::ConnectDevices(KGPU::IDevice* device, KGPU::ICommandQueue* cmdQueue)
+    {
+        sData.Device = device;
+        sData.CommandQueue = cmdQueue;
+    }
+
     void Manager::Initialize(KGPU::IDevice* device, KGPU::ICommandQueue* cmdQueue)
     {
         sData.Device = device;
@@ -32,12 +38,12 @@ namespace Gfx
     void Manager::Shutdown()
     {
         ResourceManager::Shutdown();
-        CommandListRecycler::Clean();
         TempResourceStorage::Clean();
         Screenshotter::Shutdown();
         CacheManager::Shutdown();
         ShaderManager::Shutdown();
         ViewRecycler::Clean();
+        CommandListRecycler::Clean();
 
         sData.Device = nullptr;
         sData.CommandQueue = nullptr;

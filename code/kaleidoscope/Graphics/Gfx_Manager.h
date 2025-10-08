@@ -12,6 +12,7 @@ namespace Gfx
     class Manager
     {
     public:
+        static void ConnectDevices(KGPU::IDevice* device, KGPU::ICommandQueue* cmdQueue); // Only used for tests
         static void Initialize(KGPU::IDevice* device, KGPU::ICommandQueue* cmdQueue);
         static void Shutdown();
 

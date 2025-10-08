@@ -117,7 +117,7 @@ namespace KGPU
         CODE_BLOCK("Create Global Root Sig") {
             CD3DX12_ROOT_PARAMETER1 rootParameters[2];
             rootParameters[0].InitAsConstants(144 / sizeof(uint), 0, 0, D3D12_SHADER_VISIBILITY_ALL);
-            rootParameters[1].InitAsConstants(sizeof(uint), 1, 0, D3D12_SHADER_VISIBILITY_ALL);
+            rootParameters[1].InitAsConstants(1, 1, 0, D3D12_SHADER_VISIBILITY_ALL);
 
             D3D12_ROOT_SIGNATURE_FLAGS rootSigFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
                                                     | D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED
@@ -162,7 +162,7 @@ namespace KGPU
                 D3D12_INDIRECT_ARGUMENT_DESC descs[] = { idDesc, drawDesc };
 
                 D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
-                signatureDesc.ByteStride = 32;
+                signatureDesc.ByteStride = sizeof(D3D12_DRAW_ARGUMENTS) + sizeof(uint);
                 signatureDesc.NumArgumentDescs = 2;
                 signatureDesc.pArgumentDescs = descs;
 
@@ -182,7 +182,7 @@ namespace KGPU
                 D3D12_INDIRECT_ARGUMENT_DESC descs[] = { idDesc, drawDesc };
 
                 D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
-                signatureDesc.ByteStride = 32;
+                signatureDesc.ByteStride = sizeof(D3D12_DRAW_INDEXED_ARGUMENTS) + sizeof(uint);
                 signatureDesc.NumArgumentDescs = 2;
                 signatureDesc.pArgumentDescs = descs;
 
@@ -194,7 +194,7 @@ namespace KGPU
                 drawDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
         
                 D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
-                signatureDesc.ByteStride = 32;
+                signatureDesc.ByteStride = sizeof(D3D12_DISPATCH_ARGUMENTS);
                 signatureDesc.NumArgumentDescs = 1;
                 signatureDesc.pArgumentDescs = &drawDesc;
 
@@ -215,7 +215,7 @@ namespace KGPU
                     D3D12_INDIRECT_ARGUMENT_DESC descs[] = { idDesc, drawDesc };
 
                     D3D12_COMMAND_SIGNATURE_DESC signatureDesc = {};
-                    signatureDesc.ByteStride = 32;
+                    signatureDesc.ByteStride = sizeof(D3D12_DISPATCH_MESH_ARGUMENTS) + sizeof(uint);
                     signatureDesc.NumArgumentDescs = 2;
                     signatureDesc.pArgumentDescs = descs;
 

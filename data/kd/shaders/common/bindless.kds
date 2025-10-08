@@ -35,13 +35,9 @@ RaytracingAccelerationStructure LoadRaytracingWorld(uint index)
 
 // Draw ID for indirect
 #ifdef D3D12
-    struct WhyTheFuckDoINeedThis { uint id; };
-
-    ConstantBuffer<WhyTheFuckDoINeedThis> gDrawID : register(b1);
-    uint GetDrawID()
-    {
-        return gDrawID.id;
-    }
+    struct DrawIDStruct { uint id; };
+    cbuffer gDrawID : register(b1) { DrawIDStruct DrawID; }
+    uint GetDrawID() { return DrawID.id; }
 #elif VULKAN
     [[vk::ext_builtin_input(4426)]] static const uint gDrawID;
     uint GetDrawID()

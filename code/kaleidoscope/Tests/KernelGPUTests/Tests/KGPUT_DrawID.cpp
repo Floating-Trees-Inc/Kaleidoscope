@@ -20,10 +20,11 @@ namespace KGPUT
         {
             KGPU::GraphicsPipelineDesc desc = {};
             desc.RenderTargetFormats.push_back(KGPU::TextureFormat::kR8G8B8A8_UNORM);
+            desc.CullMode = KGPU::CullMode::kNone;
 
             Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/draw_indexed_draw_id.kds", desc);
 
-            mIndirectBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(64, 64, KGPU::BufferUsage::kIndirectCommands));
+            mIndirectBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(sizeof(uint) * 10, sizeof(uint) * 5, KGPU::BufferUsage::kIndirectCommands));
         }
 
         void Execute() override
@@ -52,11 +53,11 @@ namespace KGPUT
 
             auto pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/draw_indexed_draw_id.kds");
             mCommandList->Barrier(beginRenderBarrier);
-            mCommandList->MarkForDrawIndirect(pipeline, mIndirectBuffer, 0, 1);
+            mCommandList->MarkForDrawIndirect(pipeline, mIndirectBuffer, 0, 2);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
             mCommandList->SetGraphicsPipeline(pipeline);
-            mCommandList->DrawIndirect(mIndirectBuffer, 0, 1);
+            mCommandList->DrawIndirect(mIndirectBuffer, 0, 2);
             mCommandList->EndRendering();
             mCommandList->Barrier(endRenderBarrier);
         }

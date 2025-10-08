@@ -23,7 +23,7 @@ namespace KGPUT
 
             Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/tests/draw_indexed_draw_id.kds", desc);
 
-            mIndirectBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(64, 64, KGPU::BufferUsage::kIndirectCommands));
+            mIndirectBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(sizeof(uint) * 12, sizeof(uint) * 6, KGPU::BufferUsage::kIndirectCommands));
             mIndexBuffer = Data.Device->CreateBuffer(KGPU::BufferDesc(sizeof(uint) * 6, sizeof(uint), KGPU::BufferUsage::kIndex));
         }
 
@@ -56,12 +56,12 @@ namespace KGPUT
 
             auto pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/tests/draw_indexed_draw_id.kds");
             mCommandList->Barrier(beginRenderBarrier);
-            mCommandList->MarkForDrawIndexedIndirect(pipeline, mIndexBuffer, mIndirectBuffer, 0, 1);
+            mCommandList->MarkForDrawIndexedIndirect(pipeline, mIndexBuffer, mIndirectBuffer, 0, 2);
             mCommandList->BeginRendering(renderBegin);
             mCommandList->SetRenderSize(TEST_WIDTH, TEST_HEIGHT);
             mCommandList->SetGraphicsPipeline(pipeline);
             mCommandList->SetIndexBuffer(mIndexBuffer);
-            mCommandList->DrawIndexedIndirect(mIndirectBuffer, 0, 1);
+            mCommandList->DrawIndexedIndirect(mIndirectBuffer, 0, 2);
             mCommandList->EndRendering();
             mCommandList->Barrier(endRenderBarrier);
         }
