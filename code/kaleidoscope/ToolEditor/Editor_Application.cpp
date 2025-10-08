@@ -145,7 +145,7 @@ namespace Editor
 
                     // Get viewport size
                     glm::vec2 viewportSize = mPanelManager->GetPanel<ViewportPanel>()->GetViewportSize();
-                    mCamera.UpdateSizeConstraints(viewportSize.x, viewportSize.y);
+                    mCamera.UpdateSizeConstraints(std::max(16.f, viewportSize.x), std::max(9.0f, viewportSize.y));
 
                     // Execute renderer
                     R3D::Manager::BuildBatches(World::Manager::GetGroups());

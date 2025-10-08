@@ -25,16 +25,12 @@
 
 ## Metal
 - Figure out MDI drawID
-- Figure out SBT and raytracing pipeline (if i ever use it that is...)
-
-## ToolIm3D
-- Mesh shader variant if supported
 
 ## KernelGPU
 - GPU timestamps
 - BLAS compaction
-- BLAS refit for skinned meshes
-- RenderDoc/PIX/NSight integration
+- BLAS refit for skinned meshes (figure out VB copy and whatnot)
+- RenderDoc/PIX integration
 - CopyBufferRange
 - Get GPU info (name, architecture, support levels)
 
@@ -67,7 +63,6 @@
 - Cinematics
 - NetCore
 - Renderer2D
-- Renderer3D
 - UICompositor
 - EditorCore
 - KernelGPU-Metal4
