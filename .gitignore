@@ -2,6 +2,8 @@
 .vscode
 .vs
 generated
+.cache
+compile_commands.json
 
 # Binaries
 .xmake
