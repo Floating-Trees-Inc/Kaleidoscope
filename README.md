@@ -17,14 +17,6 @@ This engine is **Windows/macOS only** for now. More platforms may be added in th
 ## Rendering
 - RHI with D3D12/Vulkan/Metal support with bindless, hardware raytracing, mesh shaders, multi draw indirect
 - Unified shader system, write once run everywhere
-- Tiled light culling for point and spot lights
-- Compute downsample/upsample bloom
-- HDR rendering tonemapped with AgX
-- Microfacet BRDF - Metallic workflow
-- Image based lighting
-- Cascaded Shadow Maps
-- Custom ImGui renderer
-- Raytraced hard/soft shadows
 
 ## Other
 - Input system
