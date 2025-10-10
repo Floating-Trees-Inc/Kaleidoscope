@@ -54,7 +54,7 @@ namespace KGPU
 
         void SetGraphicsPipeline(IGraphicsPipeline* pipeline) override;
         void SetGraphicsConstants(IGraphicsPipeline* pipeline, const void* data, uint64 size) override;
-        
+
         void SetComputePipeline(IComputePipeline* pipeline) override;
         void SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size) override;
 

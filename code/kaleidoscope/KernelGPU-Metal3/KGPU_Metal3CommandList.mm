@@ -29,10 +29,10 @@ namespace KGPU
         MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
         MTLCaptureDescriptor* descriptor = [MTLCaptureDescriptor new];
         descriptor.captureObject = device->GetMTLDevice();
-        
+
         NSError* error = nil;
         [captureManager startCaptureWithDescriptor:descriptor error:&error];
-        KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");  
+        KD_ASSERT_EQ(error == nil, "I'm gonna kill myself");
 #endif
 
         mBuffer = [queue->GetMTLCommandQueue() commandBuffer];
@@ -61,7 +61,7 @@ namespace KGPU
         mPendingBufBarriers.clear();
         mPendingMemBarriers.clear();
         mIndirectBufferCache.clear();
-        
+
         mBuffer = [mParentQueue->GetMTLCommandQueue() commandBuffer];
         mTopLevelAB->Reset();
     }
@@ -79,7 +79,7 @@ namespace KGPU
         {
             auto view = static_cast<Metal3TextureView*>(begin.RenderTargets[i].View);
             auto texture = view->GetDesc().Texture;
-            
+
             passDesc.colorAttachments[i].texture = view->GetView();
             if (begin.RenderTargets[i].Clear) passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
             else passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
@@ -184,7 +184,7 @@ namespace KGPU
     void Metal3CommandList::SetGraphicsPipeline(IGraphicsPipeline* pipeline)
     {
         mBoundGraphicsPipeline = pipeline;
-        
+
         Metal3GraphicsPipeline* metalPipeline = static_cast<Metal3GraphicsPipeline*>(pipeline);
         [mRenderEncoder setRenderPipelineState:metalPipeline->GetState()];
         [mRenderEncoder setCullMode:Metal3GraphicsPipeline::GetCullMode(metalPipeline->GetDesc().CullMode)];
@@ -206,6 +206,9 @@ namespace KGPU
         id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
         [mRenderEncoder setVertexBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
         [mRenderEncoder setFragmentBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+
+        [mRenderEncoder setVertexBuffer:mTopLevelAB->GetBuffer() offset:0 atIndex:kIRArgumentBufferBindPoint];
+        [mRenderEncoder setFragmentBuffer:mTopLevelAB->GetBuffer() offset:0 atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetViewport(float width, float height, float x, float y)
@@ -252,8 +255,10 @@ namespace KGPU
         auto alloc = mTopLevelAB->Alloc(1);
         memcpy(alloc.first, data, size);
 
-        [mRenderEncoder setVertexBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
-        [mRenderEncoder setFragmentBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        if (alloc.second != 0) {
+            [mRenderEncoder setVertexBufferOffset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+            [mRenderEncoder setFragmentBufferOffset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        }
     }
 
     void Metal3CommandList::SetComputePipeline(IComputePipeline* pipeline)
@@ -273,7 +278,8 @@ namespace KGPU
         auto alloc = mTopLevelAB->Alloc(1);
         memcpy(alloc.first, data, size);
 
-        [mComputeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        if (alloc.second != 0)
+            [mComputeEncoder setBufferOffset:alloc.second atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetMeshPipeline(IMeshPipeline* pipeline)
@@ -432,7 +438,7 @@ namespace KGPU
             icbDesc.inheritPipelineState = YES;
             icbDesc.maxVertexBufferBindCount = 3;
             icbDesc.maxFragmentBufferBindCount = 3;
-        
+
             id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:maxDrawCount options:MTLResourceStorageModeShared];
             id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
             argBuffer.label = @"ICB Argument Buffer";
@@ -489,7 +495,7 @@ namespace KGPU
             icbDesc.inheritBuffers = YES;
             icbDesc.maxVertexBufferBindCount = 31;
             icbDesc.maxFragmentBufferBindCount = 31;
-        
+
             id<MTLIndirectCommandBuffer> icb = [mParentDevice->GetMTLDevice() newIndirectCommandBufferWithDescriptor:icbDesc maxCommandCount:1 options:MTLResourceStorageModeShared];
             id<MTLBuffer> argBuffer = [mParentDevice->GetMTLDevice() newBufferWithLength:argumentEncoder.encodedLength options:MTLResourceStorageModeShared];
             argBuffer.label = @"ICB Argument Buffer";
@@ -526,7 +532,7 @@ namespace KGPU
 
     void Metal3CommandList::MarkForDispatchMeshIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
     {
-        
+
     }
 
     void Metal3CommandList::DrawIndirect(IBuffer* buffer, uint offset, uint maxDrawCount, IBuffer* countBuffer)
@@ -634,7 +640,7 @@ namespace KGPU
         const NSUInteger bpp = 4; // RGBA8
         const NSUInteger width  = texture->GetDesc().Width;
         const NSUInteger height = texture->GetDesc().Height;
-        
+
         const NSUInteger minBytesPerRow = width * bpp;
         const NSUInteger bytesPerRowAlignment = 256;
         const NSUInteger bytesPerRow = ((minBytesPerRow + (bytesPerRowAlignment - 1)) / bytesPerRowAlignment) * bytesPerRowAlignment;
