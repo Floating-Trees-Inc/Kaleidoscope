@@ -23,9 +23,6 @@
 - ASTC
 - BC7
 
-## Metal
-- Figure out MDI drawID
-
 ## KernelGPU
 - GPU timestamps
 - BLAS compaction

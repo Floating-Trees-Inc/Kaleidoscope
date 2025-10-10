@@ -1,0 +1,42 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-20 13:41:57
+//
+
+
+#ifndef MATERIAL_KDS
+#define MATERIAL_KDS
+
+float3 GetMaterialNormal(uint normalID, uint samplerID, float3 normal, float4 tangent, float2 UV)
+{
+    if (normalID == INVALID_DESCRIPTOR)
+        return normal;
+
+    Texture2D<float4> texture = ResourceDescriptorHeap[normalID];
+    SamplerState sampler = SamplerDescriptorHeap[samplerID];
+
+    float3 normalSample = texture.Sample(sampler, UV).xyz * 2.0f - 1.0f;
+
+    // Create TBN matrix
+    float3 N = normalize(normal);
+    float3 T = normalize(tangent.xyz);
+    float3 B = cross(N, T) * tangent.w;
+    float3x3 TBN = float3x3(T, B, N);
+
+    float3 worldNormal = normalize(mul(normalSample, TBN));
+    return worldNormal;
+}
+
+float2 GetMaterialMetallicRoughness(uint pbrID, uint samplerID, float2 UV)
+{
+    if (pbrID == INVALID_DESCRIPTOR)
+        return float2(0.0f, 1.0f);
+
+    Texture2D<float4> pbrTexture = ResourceDescriptorHeap[pbrID];
+    SamplerState sampler = SamplerDescriptorHeap[samplerID];
+
+    float4 colorData = pbrTexture.Sample(sampler, UV);
+    return float2(colorData.b, colorData.g);
+}
+
+#endif

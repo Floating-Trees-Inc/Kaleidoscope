@@ -4,6 +4,8 @@
 //
 
 #include "kd/shaders/common/bindless.kds"
+#include "kd/shaders/common/material.kds"
+#include "kd/shaders/common/camera.kds"
 
 #pragma vertex VSMain
 #pragma pixel PSMain
@@ -19,36 +21,80 @@ struct Vertex
 struct VertexOutput
 {
     float4 Position : SV_Position;
+    float4 CurrPosition : POSITION1;
+    float4 PrevPosition : POSITION2;
+    float4 WorldPosition : POSITION3;
+    float3 Normal : NORMAL;
     float2 UV : TEXCOORD;
+    float4 Tangent : TANGENT;
+};
+
+struct FragmentOutput
+{
+    float4 Normal : SV_Target0;
+    float4 Albedo : SV_Target1;
+    float2 PBR : SV_Target2;
+    float2 MotionVector : SV_Target3;
+    float4 Emissive : SV_Target4;
 };
 
 struct PushConstants
 {
     uint VertexBufferID;
     uint AlbedoID;
-    uint SamplerID;
-    uint Pad;
+    uint NormalID;
+    uint MetallicID;
 
-    column_major float4x4 ViewProj;
+    uint EmissiveID;
+    uint SamplerID;
+    uint CameraID;
+    uint Width;
+
+    uint Height;
+    uint3 Padding;
 };
 PUSH_CONSTANTS(PushConstants, Push);
 
 VertexOutput VSMain(uint vid : SV_VertexID)
 {
+    ConstantBuffer<Camera> camera = ResourceDescriptorHeap[Push.CameraID];
     StructuredBuffer<Vertex> vertices = ResourceDescriptorHeap[Push.VertexBufferID];
     Vertex input = vertices[vid];
 
     VertexOutput output;
-    output.Position = mul(Push.ViewProj, float4(input.Position, 1.0f));
+    output.Position = mul(camera.ViewProj, float4(input.Position, 1.0f));
+    output.CurrPosition = mul(camera.ViewProj, float4(input.Position, 1.0f));
+    output.PrevPosition = mul(camera.PrevViewProj, float4(input.Position, 1.0f));
+    output.WorldPosition = float4(input.Position, 1.0f);
+    output.Normal = input.Normal;
     output.UV = input.UV;
+    output.Tangent = input.Tangent;
     return output;
 }
 
-float4 PSMain(VertexOutput input) : SV_Target0
+FragmentOutput PSMain(VertexOutput input)
 {
     Texture2D<float4> texture = ResourceDescriptorHeap[Push.AlbedoID];
+    Texture2D<float4> emissive = ResourceDescriptorHeap[Push.EmissiveID];
     SamplerState sampler = SamplerDescriptorHeap[Push.SamplerID];
-    
-    return texture.Sample(sampler, input.UV);
-}
 
+    float2 ndcCurr = input.CurrPosition.xy / input.CurrPosition.w;
+    float2 ndcPrev = input.PrevPosition.xy / input.PrevPosition.w;
+
+    // Convert to [0,1] uv-space
+    float2 uvCurr = ndcCurr * 0.5 + 0.5;
+    float2 uvPrev = ndcPrev * 0.5 + 0.5;
+
+    // Motion = where it *was* (prev) - where it *is* (curr)
+    float2 motion = uvPrev - uvCurr;
+    motion *= float2(-1.0f, 1.0f);
+
+    FragmentOutput output = (FragmentOutput)0;
+    output.Albedo = pow(texture.Sample(sampler, input.UV), 2.2);
+    if (output.Albedo.a < 0.25) discard; // TODO: Divergence so that you only do alpha checks for alpha cutout materials
+    output.Normal = float4(GetMaterialNormal(Push.NormalID, Push.SamplerID, input.Normal, input.Tangent, input.UV), 0.0f);
+    output.PBR = GetMaterialMetallicRoughness(Push.MetallicID, Push.SamplerID, input.UV);
+    output.MotionVector = motion;
+    output.Emissive = pow(emissive.Sample(sampler, input.UV), 2.2);
+    return output;
+}
