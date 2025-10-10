@@ -271,6 +271,8 @@ namespace KGPU
 
         id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
         [mComputeEncoder setBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
+        
+        [mComputeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:0 atIndex:kIRArgumentBufferBindPoint];
     }
 
     void Metal3CommandList::SetComputeConstants(IComputePipeline* pipeline, const void* data, uint64 size)
@@ -314,8 +316,10 @@ namespace KGPU
         auto alloc = mTopLevelAB->Alloc(1);
         memcpy(alloc.first, data, size);
 
-        [mRenderEncoder setVertexBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
-        [mRenderEncoder setFragmentBuffer:mTopLevelAB->GetBuffer() offset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        if (alloc.second != 0) {
+            [mRenderEncoder setVertexBufferOffset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+            [mRenderEncoder setFragmentBufferOffset:alloc.second atIndex:kIRArgumentBufferBindPoint];
+        }
     }
 
     void Metal3CommandList::SetRaytracingPipeline(IRaytracingPipeline* pipeline)
@@ -606,7 +610,7 @@ namespace KGPU
 
             NSUInteger bytesPerPixel = Metal3Texture::BytesPerPixel(textureDesc.Format);
             NSUInteger minBytesPerRow = width * bytesPerPixel;
-            NSUInteger bytesPerRow = ((minBytesPerRow + 255) / 256) * 256; // Align to 256 bytes
+            NSUInteger bytesPerRow = minBytesPerRow;
             NSUInteger bytesPerImage = bytesPerRow * height;
 
             MTLSize size = {width, height, 1};

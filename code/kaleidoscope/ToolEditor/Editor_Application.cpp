@@ -37,7 +37,7 @@ namespace Editor
     {
         sInstance = this;
         mWindow = KOS::IWindow::Create(mWindowWidth, mWindowHeight, "Editor | Kaleidoscope 0.0.1");
-    
+
         CODE_BLOCK("Create RHI objects") {
             mDevice = KGPU::IDevice::Create(false);
             mCommandQueue = mDevice->CreateCommandQueue(KGPU::CommandQueueType::kGraphics);
@@ -46,7 +46,7 @@ namespace Editor
                 mLists[i] = mCommandQueue->CreateCommandList(false);
             }
             mFrameSync = mDevice->CreateSync(mSurface, mCommandQueue);
-        
+
             switch (mDevice->GetBackend()) {
                 case KGPU::Backend::kD3D12: mStringBackend = "D3D12"; break;
                 case KGPU::Backend::kVulkan: mStringBackend = "Vulkan"; break;
@@ -60,7 +60,7 @@ namespace Editor
             // Initialize engine systems
             KI::InputSystem::Initialize();
             KDS::Manager::Initialize();
-    
+
             Gfx::Manager::Initialize(mDevice, mCommandQueue);
             World::Manager::Initialize();
             R3D::Manager::Initialize();
@@ -72,7 +72,7 @@ namespace Editor
         CODE_BLOCK("Create resources") {
             mSceneTree = KC_NEW(World::SceneTree);
             World::MeshNode* child = KC_NEW(World::MeshNode);
-            child->Load("data/kd/models/shadow_test/untitled.gltf");
+            child->Load("data/kd/models/Sponza/Sponza.gltf");
             mSceneTree->GetRoot()->AddChild(child);
 
             // Default render graph
@@ -133,13 +133,13 @@ namespace Editor
                 CODE_BLOCK("Reset") {
                     KI::InputSystem::Reset();
                 }
-    
+
                 CODE_BLOCK("Render") {
                     uint index = mFrameSync->BeginSynchronize();
                     auto cmdList = mLists[index];
                     auto texture = mSurface->GetTexture(index);
                     auto textureView = mSurface->GetTextureView(index);
-    
+
                     cmdList->Reset();
                     cmdList->Begin();
 
@@ -163,10 +163,10 @@ namespace Editor
                     };
                     mRenderGraph->Compile();
                     mRenderGraph->Execute(renderInfo);
-    
+
                     CODE_BLOCK("Draw UI") {
                         KGPU::RenderBegin renderBegin(mWindowWidth, mWindowHeight, { KGPU::RenderAttachment(textureView, true) }, {});
-    
+
                         cmdList->Barrier(KGPU::TextureBarrier(
                             texture,
                             KGPU::ResourceAccess::kNone,
@@ -189,12 +189,12 @@ namespace Editor
                             KGPU::ResourceLayout::kPresent
                         ));
                     }
-    
+
                     cmdList->End();
                     mFrameSync->EndSynchronize(cmdList);
                     mFrameSync->PresentSurface();
                 }
-    
+
                 CODE_BLOCK("Update") {
                     void* event;
                     while (mWindow->PollEvents(&event)) {
@@ -203,7 +203,7 @@ namespace Editor
 
                     if (mPanelManager->GetPanel<ViewportPanel>()->IsFocused())
                         mCamera.Update(dt);
-    
+
                     Gfx::ShaderManager::ReloadPipelines();
                 }
             }

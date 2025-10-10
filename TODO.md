@@ -4,6 +4,20 @@
 - Node inspector
 - File dialog
 
+## SERAPH PORT
+- Light culling
+- Direct diffuse
+- Direct specular
+- Indirect diffuse
+- Indirect specular
+- CSM
+- Raytraced hard shadows
+- Raytraced soft shadows
+- Skybox rendering
+- Tonemapping
+- Ambient occlusion
+- Bloom
+
 ## RHI tests
 - Texture2D load
 - Texture2D alpha cutout

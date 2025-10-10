@@ -33,8 +33,8 @@ namespace R3D
     {
         constexpr const char* DEPTH  = "GBuffer/Depth";
         constexpr const char* NORMAL = "GBuffer/Normal";
-        constexpr const char* PREV_DEPTH  = "GBuffer/Depth";
-        constexpr const char* PREV_NORMAL = "GBuffer/Normal";
+        constexpr const char* PREV_DEPTH  = "GBuffer/PrevDepth";
+        constexpr const char* PREV_NORMAL = "GBuffer/PrevNormal";
         constexpr const char* ALBEDO = "GBuffer/Albedo";
         constexpr const char* METALLIC_ROUGHNESS = "GBuffer/MetallicRoughness";
         constexpr const char* EMISSIVE = "GBuffer/Emissive";

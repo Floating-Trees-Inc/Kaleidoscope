@@ -90,7 +90,7 @@ FragmentOutput PSMain(VertexOutput input)
     motion *= float2(-1.0f, 1.0f);
 
     FragmentOutput output = (FragmentOutput)0;
-    output.Albedo = pow(texture.Sample(sampler, input.UV), 2.2);
+    output.Albedo = pow(texture.Sample(sampler, input.UV), 1.0);
     if (output.Albedo.a < 0.25) discard; // TODO: Divergence so that you only do alpha checks for alpha cutout materials
     output.Normal = float4(GetMaterialNormal(Push.NormalID, Push.SamplerID, input.Normal, input.Tangent, input.UV), 0.0f);
     output.PBR = GetMaterialMetallicRoughness(Push.MetallicID, Push.SamplerID, input.UV);

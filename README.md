@@ -1,6 +1,9 @@
 # Kaleidoscope
 
 Kaleidoscope is the internal game engine used to make my own games. Built from the ground up by @AmelieHeinrich.
+It is currently in maintenance, I am currently merging the R&D renderer branch back into main.
+Current merge progress:\
+![](.github/image.png)
 
 ## Building and running
 
