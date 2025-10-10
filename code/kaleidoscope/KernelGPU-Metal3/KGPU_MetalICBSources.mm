@@ -69,6 +69,7 @@ kernel void encode_draws
     cmd.set_vertex_buffer(samplerHeap, 1);
     cmd.set_fragment_buffer(samplerHeap, 1);
     cmd.set_vertex_buffer(dst, 2);
+    cmd.set_fragment_buffer(dst, 2);
     cmd.draw_primitives(pt, d.vertexStart, d.vertexCount, d.instanceCount, d.instanceStart);
 }
 )MSL";
@@ -139,6 +140,7 @@ kernel void encode_draws
     cmd.set_vertex_buffer(samplerHeap, 1);
     cmd.set_fragment_buffer(samplerHeap, 1);
     cmd.set_vertex_buffer(dst, 2);
+    cmd.set_fragment_buffer(dst, 2);
     cmd.draw_indexed_primitives(pt, d.indexCount, indexBuffer, d.instanceCount, d.firstIndex, d.firstInstance);
 }
 )MSL";
