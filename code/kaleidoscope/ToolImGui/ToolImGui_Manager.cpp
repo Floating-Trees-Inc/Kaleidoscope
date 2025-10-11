@@ -39,9 +39,15 @@ namespace ToolImGui
             ICON_MIN_FA, ICON_MAX_FA,
             0
         };
+        static const ImWchar rangesJapanese[] = {
+            0x3000, 0x30FF, // Japanese
+            0xFF00, 0xFFEF, // Japanese (full-width)
+            0
+        };
 
         io.Fonts->AddFontFromFileTTF("data/kd/fonts/font.ttf", 18, nullptr, rangesFixed);
         io.Fonts->AddFontFromFileTTF("data/kd/fonts/fontawesome-webfont.ttf", 18, &mergeConfig, rangesIcons);
+        io.Fonts->AddFontFromFileTTF("data/kd/fonts/font_jp.ttf", 20, &mergeConfig, rangesJapanese);
 
         Input::Initialize(window);
 
@@ -109,7 +115,7 @@ namespace ToolImGui
     void Manager::BuildRenderer()
     {
         sData.GuiRenderer = KC_NEW(Renderer, sData.Device);
-    
+
         KD_INFO("Initialized ToolImGui!");
     }
 

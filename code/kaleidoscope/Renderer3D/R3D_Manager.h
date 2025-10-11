@@ -8,6 +8,7 @@
 #include <World/World_NodeGroups.h>
 #include <Graphics/Gfx_Model.h>
 
+#include "Graphics/Gfx_RaytracingWorld.h"
 #include "R3D_RenderInfo.h"
 #include "Nodes/R3D_GBuffer.h"
 #include "Nodes/R3D_Compositor.h"
@@ -31,8 +32,11 @@ namespace R3D
         static void BuildBatches(const World::NodeGroups& groups);
 
         static const KC::Array<Renderable>& GetOpaqueBatch() { return sData.OpaqueBatch; }
+        static Gfx::RaytracingWorld* GetRaytracingWorld() { return sData.RaytracingWorld; }
     private:
         static struct Data {
+            Gfx::RaytracingWorld* RaytracingWorld;
+
             KC::Array<Renderable> OpaqueBatch;
         } sData;
     };

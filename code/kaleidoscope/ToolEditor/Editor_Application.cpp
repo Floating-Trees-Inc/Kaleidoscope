@@ -80,7 +80,7 @@ namespace Editor
             auto gbuffer = mRenderGraph->AddPass<R3D::GBuffer>();
             auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
 
-            mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().Outputs[0], compositor->Pins().Inputs[0]);
+            mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().FindOutputByUIName("Albedo"), compositor->Pins().Inputs[0]);
 
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
@@ -246,12 +246,11 @@ namespace Editor
 
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("Kaleidoscope")) {
-                if (ImGui::MenuItem("Exit")) {
-                    // TODO
-                }
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("Window")) {
+                ImGuiIO& io = ImGui::GetIO();
+                ImGui::SliderFloat("Font Scale", &io.FontGlobalScale, 1.0f, 3.0f);
                 if (ImGui::MenuItem("Render Graph Editor")) {
                     mPanelManager->GetPanel<RenderGraphEditor>()->Open();
                 }

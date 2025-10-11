@@ -4,6 +4,7 @@
 //
 
 #include "R3D_GBuffer.h"
+#include "Graphics/Gfx_Manager.h"
 #include "KGPU_Bindless.h"
 #include "KGPU_Buffer.h"
 #include "KGPU_CommandList.h"
@@ -23,7 +24,14 @@ namespace R3D
         mName = "GBuffer";
 
         // Pins
+        RegisterOutputPin("Depth", GBufferResources::DEPTH);
+        RegisterOutputPin("Normal", GBufferResources::NORMAL);
         RegisterOutputPin("Albedo", GBufferResources::ALBEDO);
+        RegisterOutputPin("Metallic Roughness", GBufferResources::METALLIC_ROUGHNESS);
+        RegisterOutputPin("Emissive", GBufferResources::EMISSIVE);
+        RegisterOutputPin("Motion Vectors", GBufferResources::MOTION_VECTORS);
+        RegisterOutputPin("Previous Depth", GBufferResources::PREV_DEPTH);
+        RegisterOutputPin("Previous Normal", GBufferResources::PREV_NORMAL);
 
         // Attachments
         KGPU::TextureDesc depthDesc, normalDesc, albedoDesc, pbrDesc;
@@ -171,6 +179,11 @@ namespace R3D
             }
         }
         info.CmdList->EndRendering();
+
+        // Build raytracing world
+        if (Gfx::Manager::GetDevice()->SupportsRaytracing()) {
+            R3D::Manager::GetRaytracingWorld()->Build(info.CmdList);
+        }
     }
 
     void GBuffer::CopyToHistory(const RenderInfo& info)

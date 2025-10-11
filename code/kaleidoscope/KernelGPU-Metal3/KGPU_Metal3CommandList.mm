@@ -271,7 +271,7 @@ namespace KGPU
 
         id<MTLBuffer> samplerHeap = mParentDevice->GetBindlessManager()->GetSamplerHandle();
         [mComputeEncoder setBuffer:samplerHeap offset:0 atIndex:kIRSamplerHeapBindPoint];
-        
+
         [mComputeEncoder setBuffer:mTopLevelAB->GetBuffer() offset:0 atIndex:kIRArgumentBufferBindPoint];
     }
 
@@ -586,6 +586,7 @@ namespace KGPU
         Metal3Buffer* srcBuffer = static_cast<Metal3Buffer*>(src);
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        if (mCurrentLabel) blit.label = mCurrentLabel;
         [blit waitForFence:mEncoderFence];
         [blit copyFromBuffer:srcBuffer->GetMTLBuffer() sourceOffset:0 toBuffer:dstBuffer->GetMTLBuffer() destinationOffset:0 size:srcBuffer->GetDesc().Size];
         [blit updateFence:mEncoderFence];
@@ -602,6 +603,7 @@ namespace KGPU
         uint mipLevels = bufferHasMips ? textureDesc.MipLevels : 1;
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        if (mCurrentLabel) blit.label = mCurrentLabel;
         [blit waitForFence:mEncoderFence];
 
         for (uint mip = 0; mip < mipLevels; ++mip) {
@@ -639,6 +641,7 @@ namespace KGPU
         Metal3Texture* texture = static_cast<Metal3Texture*>(src);
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        if (mCurrentLabel) blit.label = mCurrentLabel;
         [blit waitForFence:mEncoderFence];
 
         const NSUInteger bpp = 4; // RGBA8
@@ -675,6 +678,7 @@ namespace KGPU
         Metal3Texture* source = static_cast<Metal3Texture*>(src);
 
         id<MTLBlitCommandEncoder> blit = [mBuffer blitCommandEncoder];
+        if (mCurrentLabel) blit.label = mCurrentLabel;
         [blit waitForFence:mEncoderFence];
         [blit copyFromTexture:source->GetMTLTexture() sourceSlice:0 sourceLevel:0 toTexture:dest->GetMTLTexture() destinationSlice:0 destinationLevel:0 sliceCount:1 levelCount:1];
         [blit updateFence:mEncoderFence];

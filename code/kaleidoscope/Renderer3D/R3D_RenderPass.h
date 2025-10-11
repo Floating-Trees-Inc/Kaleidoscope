@@ -35,6 +35,28 @@ namespace R3D
     {
         KC::Array<InputPin> Inputs;
         KC::Array<OutputPin> Outputs;
+
+        OutputPin& FindOutput(const char* name)
+        {
+            for (auto& pin : Outputs)
+            {
+                if (pin.PinName == name)
+                    return pin;
+            }
+            KD_WARN("Output pin not found");
+            return Outputs[0];
+        }
+
+        OutputPin& FindOutputByUIName(const char* name)
+        {
+            for (auto& pin : Outputs)
+            {
+                if (pin.UI.Name == name)
+                    return pin;
+            }
+            KD_WARN("Output pin not found");
+            return Outputs[0];
+        }
     };
 
     class RenderPass : public KC::RefCounted

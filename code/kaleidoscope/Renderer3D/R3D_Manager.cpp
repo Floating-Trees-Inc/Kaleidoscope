@@ -4,6 +4,8 @@
 //
 
 #include "R3D_Manager.h"
+#include "Graphics/Gfx_RaytracingWorld.h"
+#include "KernelCore/KC_Context.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_Uploader.h>
@@ -38,25 +40,37 @@ namespace R3D
             Gfx::Uploader::EnqueueTextureUploadRaw(&white, sizeof(white), Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE).Texture);
             Gfx::Uploader::EnqueueTextureUploadRaw(&black, sizeof(black), Gfx::ResourceManager::Get(DefaultResources::BLACK_TEXTURE).Texture);
         }
+
+        // Create raytracing world
+        if (Gfx::Manager::GetDevice()->SupportsRaytracing())
+            sData.RaytracingWorld = KC_NEW(Gfx::RaytracingWorld);
     }
-    
+
     void Manager::Shutdown()
     {
-        
+        if (sData.RaytracingWorld) KC_DELETE(sData.RaytracingWorld);
     }
 
     void Manager::BuildBatches(const World::NodeGroups& groups)
     {
+        sData.RaytracingWorld->Reset();
         sData.OpaqueBatch.clear();
 
         auto group = groups.GetGroup(World::NodeGroupType::kStaticGeometry);
         for (auto& node : group) {
             World::MeshNode* meshNode = reinterpret_cast<World::MeshNode*>(node);
-            
+
             Renderable renderable;
             renderable.Model = meshNode->GetModel();
             renderable.WorldMatrix = meshNode->GetWorldTransform();
+
             sData.OpaqueBatch.push_back(renderable);
+
+            if (meshNode->IsRaytracingEnabled() && Gfx::Manager::GetDevice()->SupportsRaytracing()) {
+                for (auto& submesh : renderable.Model->Submeshes) {
+                    sData.RaytracingWorld->AddInstance(submesh.Primitive, renderable.WorldMatrix);
+                }
+            }
         }
     }
 }

@@ -8,6 +8,8 @@
 #include "R3D_RenderPass.h"
 #include "Nodes/R3D_Compositor.h"
 
+#include <Graphics/Gfx_RaytracingWorld.h>
+
 namespace R3D
 {
     class RenderGraph

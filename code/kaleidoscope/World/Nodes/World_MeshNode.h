@@ -25,7 +25,16 @@ namespace World
 
         void Load(const KC::String& path);
         Gfx::Model* GetModel() { return mModel; }
+
+        void SetShouldCastShadows(bool value) { mShouldCastShadows = value; }
+        void SetRaytracingEnabled(bool value) { mRaytracingEnabled = value; }
+
+        bool ShouldCastShadows() const { return mShouldCastShadows; }
+        bool IsRaytracingEnabled() const { return mRaytracingEnabled; }
     private:
         Gfx::Model* mModel = nullptr;
+
+        bool mShouldCastShadows = true;
+        bool mRaytracingEnabled = true;
     };
 }

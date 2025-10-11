@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Graphics/Gfx_Model.h>
+#include <Graphics/Gfx_RaytracingWorld.h>
 
 namespace R3D
 {
