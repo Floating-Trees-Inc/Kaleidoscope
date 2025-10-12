@@ -38,35 +38,58 @@ namespace R3D
 
     bool RenderGraph::Compile(KC::String* err)
     {
-        // Kahn’s algorithm
-        KC::Array<int> indeg; indeg.resize(mNodes.size());
-        for (size_t i=0;i<mNodes.size();++i) indeg[i] = mNodes[i].InDegree;
+        // Mark active nodes: any node that participates in at least one edge.
+        const size_t N = mNodes.size();
+        KC::Array<uint8_t> isActive;      isActive.resize(N, 0);
+        KC::Array<int>     indeg;         indeg.resize(N, 0);
 
-        KC::Array<int> q;
-        q.reserve(mNodes.size());
-        for (size_t i=0;i<mNodes.size();++i)
-            if (indeg[i] == 0) q.push_back(static_cast<int>(i));
+        size_t activeCount = 0;
+        for (size_t i = 0; i < N; ++i) {
+            indeg[i] = mNodes[i].InDegree;
+            if (mNodes[i].InDegree > 0 || !mNodes[i].OutEdges.empty()) {
+                isActive[i] = 1;
+                ++activeCount;
+            }
+        }
 
+        // Nothing connected? Treat as a no-op compile that succeeds.
         mExecutionList.clear();
-        mExecutionList.reserve(mNodes.size());
+        if (activeCount == 0) {
+            mComplete = true;
+            return true;
+        }
+
+        // Kahn’s algorithm, but restricted to active nodes only.
+        KC::Array<int> q;
+        q.reserve(activeCount);
+        for (size_t i = 0; i < N; ++i) {
+            if (isActive[i] && indeg[i] == 0) q.push_back(static_cast<int>(i));
+        }
+
+        mExecutionList.reserve(activeCount);
 
         size_t popped = 0;
         while (!q.empty()) {
-            int n = q.back(); q.pop_back(); ++popped;
+            int n = q.back(); q.pop_back();
+
+            // n is guaranteed active here
             mExecutionList.push_back(mNodes[n].Pass);
+            ++popped;
 
             for (int m : mNodes[n].OutEdges) {
+                if (!isActive[m]) continue;         // ignore edges into isolated nodes
                 if (--indeg[m] == 0) q.push_back(m);
             }
         }
 
-        if (popped != mNodes.size()) {
-            if (err) *err = "RenderGraph has a cycle or missing node(s).";
+        // If we didn't pop all active nodes, there's a cycle among connected nodes.
+        if (popped != activeCount) {
+            if (err) *err = "RenderGraph compile error: cycle detected among connected nodes.";
             mComplete = false;
             return false;
         }
 
-        // Optional: validate each pass’s inputs are filled
+        // Validate only the passes that will execute (i.e., connected ones).
         for (auto* p : mExecutionList) {
             KC::String verr;
             if (!p->ValidatePins(&verr)) {

@@ -5,10 +5,12 @@
 
 #include "R3D_Manager.h"
 #include "Graphics/Gfx_RaytracingWorld.h"
+#include "KGPU_Buffer.h"
 #include "KernelCore/KC_Context.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_Uploader.h>
+#include <Graphics/Gfx_ViewRecycler.h>
 #include <World/Nodes/World_MeshNode.h>
 
 namespace R3D
@@ -41,6 +43,19 @@ namespace R3D
             Gfx::Uploader::EnqueueTextureUploadRaw(&black, sizeof(black), Gfx::ResourceManager::Get(DefaultResources::BLACK_TEXTURE).Texture);
         }
 
+        CODE_BLOCK("Buffers") {
+            Gfx::ResourceManager::CreateBuffer(GlobalResources::SCENE_INSTANCE_BUFFER, KGPU::BufferDesc(
+                sizeof(SceneInstance) * RENDER_WORLD_MAX_INSTANCES,
+                sizeof(SceneInstance),
+                KGPU::BufferUsage::kStaging | KGPU::BufferUsage::kShaderRead
+            ));
+            Gfx::ResourceManager::CreateBuffer(GlobalResources::SCENE_MATERIAL_BUFFER, KGPU::BufferDesc(
+                sizeof(SceneMaterial) * RENDER_WORLD_MAX_MATERIALS,
+                sizeof(SceneMaterial),
+                KGPU::BufferUsage::kStaging | KGPU::BufferUsage::kShaderRead
+            ));
+        }
+
         // Create raytracing world
         if (Gfx::Manager::GetDevice()->SupportsRaytracing())
             sData.RaytracingWorld = KC_NEW(Gfx::RaytracingWorld);
@@ -57,8 +72,13 @@ namespace R3D
     {
         sData.RaytracingWorld->Reset();
         sData.OpaqueBatch.clear();
+        sData.SceneInstances.clear();
+        sData.SceneMaterials.clear();
 
-        auto group = groups.GetGroup(World::NodeGroupType::kStaticGeometry);
+        sData.SceneInstances.reserve(RENDER_WORLD_MAX_INSTANCES);
+        sData.SceneMaterials.reserve(RENDER_WORLD_MAX_MATERIALS);
+
+        auto group = groups.GetGroup(World::NodeGroupType::kAllGeometry);
         for (auto& node : group) {
             World::MeshNode* meshNode = reinterpret_cast<World::MeshNode*>(node);
 
@@ -68,11 +88,41 @@ namespace R3D
 
             sData.OpaqueBatch.push_back(renderable);
 
-            if (meshNode->IsRaytracingEnabled() && Gfx::Manager::GetDevice()->SupportsRaytracing()) {
-                for (auto& submesh : renderable.Model->Submeshes) {
+            for (auto& submesh : renderable.Model->Submeshes) {
+                if (meshNode->IsRaytracingEnabled() && Gfx::Manager::GetDevice()->SupportsRaytracing())
                     sData.RaytracingWorld->AddInstance(submesh.Primitive, renderable.WorldMatrix);
-                }
+
+                SceneMaterial material = {};
+                material.AlbedoTexture = submesh.Material->GetAlbedo()
+                    ? Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(submesh.Material->GetAlbedo()->Handle, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle()
+                    : Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE).Texture, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle();
+                material.NormalTexture = submesh.Material->GetNormal()
+                    ? Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(submesh.Material->GetNormal()->Handle, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle()
+                    : KGPU::BINDLESS_INVALID_HANDLE;
+                material.PBRTexture = submesh.Material->GetMetallicRoughness()
+                    ? Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(submesh.Material->GetMetallicRoughness()->Handle, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle()
+                    : KGPU::BINDLESS_INVALID_HANDLE;
+                material.EmissiveTexture = submesh.Material->GetEmissive()
+                    ? Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(submesh.Material->GetEmissive()->Handle, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle()
+                    : Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(Gfx::ResourceManager::Get(DefaultResources::BLACK_TEXTURE).Texture, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle();
+                sData.SceneMaterials.push_back(material);
+
+                SceneInstance instance;
+                instance.VertexBuffer = submesh.Primitive->GetVertexBufferView()->GetBindlessHandle();
+                instance.IndexBuffer = submesh.Primitive->GetIndexBufferView()->GetBindlessHandle();
+                instance.MaterialIndex = sData.SceneMaterials.size();
+                sData.SceneInstances.push_back(instance);
             }
         }
+
+        auto instanceBuffer = Gfx::ResourceManager::Get(GlobalResources::SCENE_INSTANCE_BUFFER).Buffer;
+        void* pMapped = instanceBuffer->Map();
+        memcpy(pMapped, sData.SceneInstances.data(), sizeof(SceneInstance) * sData.SceneInstances.size());
+        instanceBuffer->Unmap();
+
+        auto materialBuffer = Gfx::ResourceManager::Get(GlobalResources::SCENE_MATERIAL_BUFFER).Buffer;
+        pMapped = materialBuffer->Map();
+        memcpy(pMapped, sData.SceneMaterials.data(), sizeof(SceneMaterial) * sData.SceneMaterials.size());
+        materialBuffer->Unmap();
     }
 }

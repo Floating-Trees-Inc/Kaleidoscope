@@ -30,6 +30,7 @@ namespace World
     {
         if (mModel) {
             Manager::GetGroups().RemoveFromGroup(NodeGroupType::kStaticGeometry, this);
+            Manager::GetGroups().RemoveFromGroup(NodeGroupType::kAllGeometry, this);
             Gfx::CacheManager::GetModelCache()->GiveBack(mModel);
         }
     }
@@ -43,11 +44,12 @@ namespace World
     void MeshNode::Load(const KC::String& path)
     {
         if (mModel) {
-            Manager::GetGroups().RemoveFromGroup(NodeGroupType::kStaticGeometry, this);
+            Manager::GetGroups().RemoveFromGroup(NodeGroupType::kAllGeometry, this);
             Gfx::CacheManager::GetModelCache()->GiveBack(mModel);
         }
 
         mModel = Gfx::CacheManager::GetModelCache()->Take(path);
         Manager::GetGroups().AddToGroup(NodeGroupType::kStaticGeometry, this);
+        Manager::GetGroups().AddToGroup(NodeGroupType::kAllGeometry, this);
     }
 }

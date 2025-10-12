@@ -18,6 +18,7 @@
 #include <Renderer3D/Nodes/R3D_Compositor.h>
 #include <Renderer3D/Nodes/R3D_GBuffer.h>
 #include <Renderer3D/Nodes/R3D_TiledLightCull.h>
+#include <Renderer3D/Nodes/Raytracing/R3D_RTHardShadows.h>
 
 #include <World/World_Manager.h>
 #include <World/Nodes/World_MeshNode.h>
@@ -271,6 +272,7 @@ namespace Editor
         auto gbuffer = mRenderGraph->AddPass<R3D::GBuffer>();
         auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
         auto lightCull = mRenderGraph->AddPass<R3D::TiledLightCull>();
+        auto rtShadows = mRenderGraph->AddPass<R3D::RTHardShadows>();
 
         // Tiled light cull
         mRenderGraph->ConnectPins(gbuffer, lightCull, gbuffer->Pins().FindOutputByUIName("Depth"), lightCull->Pins().Inputs[0]);

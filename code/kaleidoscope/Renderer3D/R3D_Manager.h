@@ -16,12 +16,37 @@
 
 namespace R3D
 {
+    constexpr uint RENDER_WORLD_MAX_INSTANCES = 16768;
+    constexpr uint RENDER_WORLD_MAX_MATERIALS = 16768;
+
     namespace DefaultResources
     {
         constexpr const char* NEAREST_WRAP_SAMPLER_NO_MIPS = "Default/Sampler/N-W-NM";
         constexpr const char* LINEAR_WRAP_SAMPLER_WITH_MIPS = "Default/Sampler/L-W-WM";
         constexpr const char* WHITE_TEXTURE = "Default/Textures/White";
         constexpr const char* BLACK_TEXTURE = "Default/Textures/Black";
+    };
+
+    namespace GlobalResources
+    {
+        constexpr const char* SCENE_MATERIAL_BUFFER = "Default/Buffer/SceneMaterialBuffer";
+        constexpr const char* SCENE_INSTANCE_BUFFER = "Default/Buffer/SceneInstanceBuffer";
+    };
+
+    struct SceneInstance
+    {
+        KGPU::BindlessHandle VertexBuffer;
+        KGPU::BindlessHandle IndexBuffer;
+        uint MaterialIndex;
+        uint Pad;
+    };
+
+    struct SceneMaterial
+    {
+        KGPU::BindlessHandle AlbedoTexture;
+        KGPU::BindlessHandle NormalTexture;
+        KGPU::BindlessHandle PBRTexture;
+        KGPU::BindlessHandle EmissiveTexture;
     };
 
     class Manager
@@ -41,6 +66,9 @@ namespace R3D
             LightData* LightingData;
 
             KC::Array<Renderable> OpaqueBatch;
+
+            KC::Array<SceneInstance> SceneInstances;
+            KC::Array<SceneMaterial> SceneMaterials;
         } sData;
     };
 }

@@ -1,0 +1,14 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-28 20:23:46
+//
+
+#ifndef COMPUTE_KDS_H
+#define COMPUTE_KDS_H
+
+float2 TexelToUV(uint2 tid, float2 imageSize)
+{
+    return ((float2)tid + 0.5f) / imageSize;
+}
+
+#endif

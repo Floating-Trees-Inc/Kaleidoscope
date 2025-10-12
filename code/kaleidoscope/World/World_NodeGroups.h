@@ -16,6 +16,7 @@ namespace World
         kStaticGeometry,
         kSkinnedGeometry,
         kTransparentGeometry,
+        kAllGeometry,
         kColliders,
         kLights,
         kCameras,
