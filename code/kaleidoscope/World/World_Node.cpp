@@ -7,6 +7,7 @@
 
 #include <KernelCore/KC_StringStream.h>
 #include <algorithm>
+#include <glm/gtx/quaternion.hpp>
 
 namespace World
 {
@@ -53,10 +54,10 @@ namespace World
     {
         n->OnEnterTree();
         n->SetIsInsideTree(true);
-        
+
         for (auto* child : n->GetChildren())
             if (!child->IsInsideTree()) PropagateEnterReady(child);
-        
+
         if (!n->WasReadyCalled()) {
             n->OnReady();
             n->SetWasReadyCalled(true);
@@ -67,7 +68,7 @@ namespace World
     {
         for (auto* child : n->GetChildren())
             if (child->IsInsideTree()) PropagateExitTree(child);
-        
+
         if (n->IsInsideTree()) {
             n->OnExitTree();
             n->SetIsInsideTree(false);
@@ -78,7 +79,7 @@ namespace World
     Node::Node(const KC::String& name)
         : mName(name), mID(KC::NewUUID()), mParent(nullptr)
     {
-        
+
     }
 
     Node::~Node()
@@ -113,7 +114,7 @@ namespace World
 
         if (IsInsideTree() && !child->IsInsideTree())
             PropagateEnterReady(child);
-        
+
         return child;
     }
 
@@ -166,6 +167,33 @@ namespace World
             mDirty = false;
         }
         return mWorld;
+    }
+
+    glm::vec3 Node::GetPosition()
+    {
+        return glm::vec3(GetWorldTransform()[3]);
+    }
+
+    glm::quat Node::GetDirection()
+    {
+        glm::mat3 rotation = glm::mat3(GetWorldTransform());
+        return glm::quat_cast(rotation);
+    }
+
+    glm::vec3 Node::GetScale()
+    {
+        glm::mat4 world = GetWorldTransform();
+        glm::vec3 scale;
+        scale.x = glm::length(glm::vec3(world[0]));
+        scale.y = glm::length(glm::vec3(world[1]));
+        scale.z = glm::length(glm::vec3(world[2]));
+        return scale;
+    }
+
+    glm::vec3 Node::GetForward()
+    {
+        glm::mat4 world = GetWorldTransform();
+        return -glm::normalize(glm::vec3(world[2]));
     }
 
     void Node::MarkTransformDirty()

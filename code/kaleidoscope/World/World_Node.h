@@ -57,6 +57,11 @@ namespace World
         const glm::mat4& GetLocalTransform() const;
 
         const glm::mat4& GetWorldTransform();
+
+        glm::vec3 GetPosition();
+        glm::quat GetDirection();
+        glm::vec3 GetScale();
+        glm::vec3 GetForward();
     protected:
         void MarkTransformDirty();
 
@@ -75,4 +80,3 @@ namespace World
         bool mPhysicsProcess = false;
     };
 }
-

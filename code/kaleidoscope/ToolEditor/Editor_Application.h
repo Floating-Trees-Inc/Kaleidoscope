@@ -27,6 +27,10 @@ namespace Editor
         void DrawPanels(KGPU::ICommandList* cmdList);
 
         static Application& Get() { return *sInstance; }
+
+    private:
+        void InitializeDefaultRenderGraph();
+
     private:
         static Application* sInstance;
         float mLast = 0.0f;

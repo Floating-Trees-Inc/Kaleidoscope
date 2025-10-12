@@ -10,6 +10,7 @@
 
 #include "Graphics/Gfx_RaytracingWorld.h"
 #include "R3D_RenderInfo.h"
+#include "R3D_LightData.h"
 #include "Nodes/R3D_GBuffer.h"
 #include "Nodes/R3D_Compositor.h"
 
@@ -33,9 +34,11 @@ namespace R3D
 
         static const KC::Array<Renderable>& GetOpaqueBatch() { return sData.OpaqueBatch; }
         static Gfx::RaytracingWorld* GetRaytracingWorld() { return sData.RaytracingWorld; }
+        static LightData* GetLightingData() { return sData.LightingData; }
     private:
         static struct Data {
             Gfx::RaytracingWorld* RaytracingWorld;
+            LightData* LightingData;
 
             KC::Array<Renderable> OpaqueBatch;
         } sData;

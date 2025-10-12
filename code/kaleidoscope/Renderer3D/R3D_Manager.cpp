@@ -44,10 +44,12 @@ namespace R3D
         // Create raytracing world
         if (Gfx::Manager::GetDevice()->SupportsRaytracing())
             sData.RaytracingWorld = KC_NEW(Gfx::RaytracingWorld);
+        sData.LightingData = KC_NEW(LightData);
     }
 
     void Manager::Shutdown()
     {
+        KC_DELETE(sData.LightingData);
         if (sData.RaytracingWorld) KC_DELETE(sData.RaytracingWorld);
     }
 

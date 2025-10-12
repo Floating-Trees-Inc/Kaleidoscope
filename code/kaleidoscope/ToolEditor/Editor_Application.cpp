@@ -17,6 +17,7 @@
 #include <Renderer3D/R3D_Manager.h>
 #include <Renderer3D/Nodes/R3D_Compositor.h>
 #include <Renderer3D/Nodes/R3D_GBuffer.h>
+#include <Renderer3D/Nodes/R3D_TiledLightCull.h>
 
 #include <World/World_Manager.h>
 #include <World/Nodes/World_MeshNode.h>
@@ -77,10 +78,7 @@ namespace Editor
 
             // Default render graph
             mRenderGraph = KC_NEW(R3D::RenderGraph);
-            auto gbuffer = mRenderGraph->AddPass<R3D::GBuffer>();
-            auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
-
-            mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().FindOutputByUIName("Albedo"), compositor->Pins().Inputs[0]);
+            InitializeDefaultRenderGraph();
 
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
@@ -266,4 +264,13 @@ namespace Editor
         ImGui::End();
         //--------- END DOCKSPACE ----------//
     }
-}
+
+    void Application::InitializeDefaultRenderGraph()
+    {
+        auto gbuffer = mRenderGraph->AddPass<R3D::GBuffer>();
+        auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
+        auto lightCull = mRenderGraph->AddPass<R3D::TiledLightCull>();
+
+        mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().FindOutputByUIName("Albedo"), compositor->Pins().Inputs[0]);
+    }
+ }

@@ -1,13 +1,57 @@
 //
 // > Notice: Floating Trees Inc. @ 2025
-// > Create Time: 2025-07-20 15:19:07
+// > Create Time: 2025-07-28 20:24:25
 //
 
-#ifndef MATH_H
-#define MATH_H
+
+#ifndef MATH_KDS_H
+#define MATH_KDS_H
 
 #define PI 3.14159265357
 #define TWO_PI (2 * PI)
 #define EPSILON 0.0001
+
+float4 GetViewFromDepth(float2 uv, float depth, float4x4 invProj)
+{
+    // Convert UV to NDC
+    float2 ndc = uv * 2.0 - 1.0;
+    float4 clipPos = float4(ndc, depth, 1.0);
+    clipPos.y *= -1.0; // Flip Y if needed (API-dependent)
+
+    // Unproject from clip space to world space
+    float4 worldPos = mul(invProj, clipPos);
+    worldPos /= worldPos.w;
+
+    return worldPos;
+}
+
+float4 GetWorldFromDepth(float2 uv, float depth, float4x4 invViewProj)
+{
+    // Convert UV to NDC
+    float2 ndc = uv * 2.0 - 1.0;
+    float4 clipPos = float4(ndc, depth, 1.0);
+    clipPos.y *= -1.0; // Flip Y if needed (API-dependent)
+
+    // Unproject from clip space to world space
+    float4 worldPos = mul(invViewProj, clipPos);
+    worldPos /= worldPos.w;
+
+    return worldPos;
+}
+
+float LinearizeDepth(float depthNDC, float nearZ, float farZ)
+{
+    return nearZ * farZ / (farZ - depthNDC * (farZ - nearZ));
+}
+
+float radicalInverse_VdC(uint bits)
+{
+	bits = (bits << 16u) | (bits >> 16u);
+	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+	bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+	bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+	bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+	return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+}
 
 #endif
