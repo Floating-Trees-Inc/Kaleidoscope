@@ -40,5 +40,7 @@ namespace R3D
     private:
         void GenerateTiles(const RenderInfo& info);
         void CullTiles(const RenderInfo& info);
+
+        KC::String mDepthInput;
     };
 }

@@ -272,5 +272,6 @@ namespace Editor
         auto lightCull = mRenderGraph->AddPass<R3D::TiledLightCull>();
 
         mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().FindOutputByUIName("Albedo"), compositor->Pins().Inputs[0]);
+        mRenderGraph->ConnectPins(gbuffer, lightCull, gbuffer->Pins().FindOutputByUIName("Depth"), lightCull->Pins().Inputs[0]);
     }
  }

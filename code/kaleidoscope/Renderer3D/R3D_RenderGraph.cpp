@@ -61,6 +61,7 @@ namespace R3D
 
         if (popped != mNodes.size()) {
             if (err) *err = "RenderGraph has a cycle or missing node(s).";
+            mComplete = false;
             return false;
         }
 
@@ -69,15 +70,20 @@ namespace R3D
             KC::String verr;
             if (!p->ValidatePins(&verr)) {
                 if (err) *err = verr;
+                mComplete = false;
                 return false;
             }
         }
 
+        mComplete = true;
         return true;
     }
 
     void RenderGraph::Execute(const RenderInfo& info)
     {
+        if (!mComplete)
+            return;
+
         for (auto& pass : mExecutionList) {
             pass->Execute(info);
         }

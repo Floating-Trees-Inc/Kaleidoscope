@@ -9,11 +9,16 @@
 
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_ShaderManager.h>
+#include <Graphics/Gfx_ViewRecycler.h>
 
 namespace R3D
 {
     TiledLightCull::TiledLightCull()
     {
+        RegisterInputPin("Depth", mDepthInput);
+        RegisterOutputPin("Tile Buffer", TiledLightCullResources::TILE_BUFFER);
+        RegisterOutputPin("Tile Indices Buffer", TiledLightCullResources::TILE_INDICES_BUFFER);
+
         uint maxTilesX = GetNumTilesX(R3D::SCREEN_WIDTH);
         uint maxTilesY = GetNumTilesY(R3D::SCREEN_HEIGHT);
 
@@ -57,6 +62,45 @@ namespace R3D
     void TiledLightCull::GenerateTiles(const RenderInfo& info)
     {
         KGPU::ScopedMarker _(info.CmdList, "Generate Tiles");
+
+        Gfx::Resource& tileLightBuffer = Gfx::ResourceManager::Import(TiledLightCullResources::TILE_BUFFER, info.CmdList, Gfx::ImportType::kShaderWrite);
+        Gfx::Resource& depthBuffer = Gfx::ResourceManager::Import(mDepthInput, info.CmdList, Gfx::ImportType::kShaderRead);
+
+        uint numTilesX = GetNumTilesX(info.RenderWidth);
+        uint numTilesY = GetNumTilesY(info.RenderHeight);
+
+        struct PushConstants {
+            KGPU::BindlessHandle TileArray;
+            uint TileWidth;
+            uint TileHeight;
+            KGPU::BindlessHandle DepthMap;
+
+            uint NumTilesX;
+            uint NumTilesY;
+            uint Width;
+            uint Height;
+        } constants = {
+            .TileArray = Gfx::ViewRecycler::GetUAV(tileLightBuffer.Buffer)->GetBindlessHandle(),
+            .TileWidth = TILE_WIDTH,
+            .TileHeight = TILE_HEIGHT,
+            .DepthMap = Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(depthBuffer.Texture, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR32_FLOAT))->GetBindlessHandle(),
+
+            .NumTilesX = numTilesX,
+            .NumTilesY = numTilesY,
+            .Width = info.RenderWidth,
+            .Height = info.RenderHeight
+        };
+
+        KGPU::IComputePipeline* pipeline = Gfx::ShaderManager::GetCompute("data/kd/shaders/nodes/tiled_light_cull/generate_tiles.kds");
+        info.CmdList->BeginCompute();
+        info.CmdList->SetComputePipeline(pipeline);
+        info.CmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
+        info.CmdList->Dispatch(KGPU::uint3(numTilesX, numTilesY, 1), KGPU::uint3(16, 16, 1));
+        info.CmdList->EndCompute();
+
+        // Insert manual UAV barrier
+        KGPU::MemoryBarrier barrier(KGPU::ResourceAccess::kShaderWrite, KGPU::ResourceAccess::kShaderWrite, KGPU::PipelineStage::kComputeShader, KGPU::PipelineStage::kComputeShader);
+        info.CmdList->Barrier(barrier);
     }
 
     void TiledLightCull::CullTiles(const RenderInfo& info)

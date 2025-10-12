@@ -39,6 +39,7 @@ namespace R3D
 
         KC::Array<RGNode> mNodes;
         KC::Array<RenderPass*> mExecutionList;
+        bool mComplete = false;
 
         int FindNodeIndex(RenderPass* pass) const;
     };
