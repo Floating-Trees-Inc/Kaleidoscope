@@ -160,7 +160,8 @@ namespace Editor
                         .FrameInFlight = index
                     };
                     mRenderGraph->Compile();
-                    mRenderGraph->Execute(renderInfo);
+                    if (renderInfo.RenderWidth > 0 && renderInfo.RenderHeight > 0)
+                        mRenderGraph->Execute(renderInfo);
 
                     CODE_BLOCK("Draw UI") {
                         KGPU::RenderBegin renderBegin(mWindowWidth, mWindowHeight, { KGPU::RenderAttachment(textureView, true) }, {});
@@ -271,7 +272,11 @@ namespace Editor
         auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
         auto lightCull = mRenderGraph->AddPass<R3D::TiledLightCull>();
 
-        mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().FindOutputByUIName("Albedo"), compositor->Pins().Inputs[0]);
+        // Tiled light cull
         mRenderGraph->ConnectPins(gbuffer, lightCull, gbuffer->Pins().FindOutputByUIName("Depth"), lightCull->Pins().Inputs[0]);
+        mRenderGraph->ConnectPins(gbuffer, lightCull, gbuffer->Pins().FindOutputByUIName("Camera Data"), lightCull->Pins().Inputs[1]);
+
+        // Compositor
+        mRenderGraph->ConnectPins(gbuffer, compositor, gbuffer->Pins().FindOutputByUIName("Albedo"), compositor->Pins().Inputs[0]);
     }
  }

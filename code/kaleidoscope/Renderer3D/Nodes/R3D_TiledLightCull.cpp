@@ -5,6 +5,7 @@
 
 #include "R3D_TiledLightCull.h"
 #include "KGPU_CommandList.h"
+#include "R3D_Manager.h"
 #include "R3D_RenderInfo.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
@@ -16,6 +17,7 @@ namespace R3D
     TiledLightCull::TiledLightCull()
     {
         RegisterInputPin("Depth", mDepthInput);
+        RegisterInputPin("Camera Data", mCameraDataInput);
         RegisterOutputPin("Tile Buffer", TiledLightCullResources::TILE_BUFFER);
         RegisterOutputPin("Tile Indices Buffer", TiledLightCullResources::TILE_INDICES_BUFFER);
 
@@ -105,6 +107,63 @@ namespace R3D
 
     void TiledLightCull::CullTiles(const RenderInfo& info)
     {
+        R3D::LightData* lightData = R3D::Manager::GetLightingData();
+        lightData->BuildListsAndUpload(info.FrameInFlight);
+        if (lightData->GetPointLightCount() == 0 && lightData->GetSpotLightCount() == 0)
+            return;
+
         KGPU::ScopedMarker _(info.CmdList, "Cull Tiles");
+
+        Gfx::Resource& tileBuffer = Gfx::ResourceManager::Import(TiledLightCullResources::TILE_BUFFER, info.CmdList, Gfx::ImportType::kShaderWrite);
+        Gfx::Resource& tileIndicesBuffer = Gfx::ResourceManager::Import(TiledLightCullResources::TILE_INDICES_BUFFER, info.CmdList, Gfx::ImportType::kShaderWrite);
+        Gfx::Resource& cameraBuffer = Gfx::ResourceManager::Get(mCameraDataInput);
+
+        uint numTilesX = GetNumTilesX(info.RenderWidth);
+        uint numTilesY = GetNumTilesY(info.RenderHeight);
+
+        struct PushConstants {
+            KGPU::BindlessHandle LightIndex;
+            KGPU::BindlessHandle CameraIndex;
+            KGPU::BindlessHandle TileArray;
+            KGPU::BindlessHandle BinsArray;
+
+            uint TileWidth;
+            uint TileHeight;
+            uint NumTilesX;
+            uint NumTilesY;
+
+            uint Width;
+            uint Height;
+            uint PointLightCount;
+            uint SpotLightCount;
+
+            KGPU::BindlessHandle SpotLightArray;
+            KGPU::uint3 Pad;
+        } constants = {
+            lightData->GetPointLightBufferView(info.FrameInFlight)->GetBindlessHandle(),
+            cameraBuffer.RingBufferViews[info.FrameInFlight]->GetBindlessHandle(),
+            Gfx::ViewRecycler::GetUAV(tileBuffer.Buffer)->GetBindlessHandle(),
+            Gfx::ViewRecycler::GetUAV(tileIndicesBuffer.Buffer)->GetBindlessHandle(),
+
+            TILE_WIDTH,
+            TILE_HEIGHT,
+            numTilesX,
+            numTilesY,
+
+            info.RenderWidth,
+            info.RenderHeight,
+            static_cast<uint>(lightData->GetPointLightCount()),
+            static_cast<uint>(lightData->GetSpotLightCount()),
+
+            lightData->GetSpotLightBufferView(info.FrameInFlight)->GetBindlessHandle(),
+            {}
+        };
+
+        KGPU::IComputePipeline* pipeline = Gfx::ShaderManager::GetCompute("data/kd/shaders/nodes/tiled_light_cull/cull_tiles.kds");
+        info.CmdList->BeginCompute();
+        info.CmdList->SetComputePipeline(pipeline);
+        info.CmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
+        info.CmdList->Dispatch(KGPU::uint3(numTilesX, numTilesY, 1), KGPU::uint3(128, 1, 1));
+        info.CmdList->EndCompute();
     }
 }

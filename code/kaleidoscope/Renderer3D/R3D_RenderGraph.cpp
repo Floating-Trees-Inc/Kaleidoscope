@@ -4,6 +4,7 @@
 //
 
 #include "R3D_RenderGraph.h"
+#include "KernelCore/KC_Context.h"
 
 namespace R3D
 {
@@ -71,6 +72,7 @@ namespace R3D
             if (!p->ValidatePins(&verr)) {
                 if (err) *err = verr;
                 mComplete = false;
+                KD_ERROR("RenderGraph compile error: %s", verr.c_str());
                 return false;
             }
         }

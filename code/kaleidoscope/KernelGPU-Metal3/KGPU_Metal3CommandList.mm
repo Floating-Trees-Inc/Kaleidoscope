@@ -739,12 +739,12 @@ namespace KGPU
 
     void Metal3CommandList::PushMarker(const KC::String& name)
     {
-        mCurrentLabel = [[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding];
+        [mBuffer pushDebugGroup:[[NSString alloc] initWithBytes:name.c_str() length:name.size() encoding:NSUTF8StringEncoding]];
     }
 
     void Metal3CommandList::PopMarker()
     {
-        mCurrentLabel = nil;
+        [mBuffer popDebugGroup];
     }
 
     void Metal3CommandList::Barrier(const TextureBarrier& barrier)

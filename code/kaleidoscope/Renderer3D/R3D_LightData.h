@@ -56,6 +56,9 @@ namespace R3D
 
         KGPU::IBuffer* GetSunBuffer(uint frameIndex) { return mSunBuffer[frameIndex]; }
         KGPU::IBufferView* GetSunBufferView(uint frameIndex) { return mSunBufferView[frameIndex]; }
+
+        uint GetPointLightCount() { return mPointLightCount; }
+        uint GetSpotLightCount() { return mSpotLightCount; }
     private:
         KGPU::IBuffer* mPointLightBuffer[KGPU::FRAMES_IN_FLIGHT];
         KGPU::IBufferView* mPointLightBufferView[KGPU::FRAMES_IN_FLIGHT];
@@ -65,5 +68,8 @@ namespace R3D
 
         KGPU::IBuffer* mSunBuffer[KGPU::FRAMES_IN_FLIGHT];
         KGPU::IBufferView* mSunBufferView[KGPU::FRAMES_IN_FLIGHT];
+
+        uint mPointLightCount;
+        uint mSpotLightCount;
     };
 }

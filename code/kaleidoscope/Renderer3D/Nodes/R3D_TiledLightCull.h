@@ -42,5 +42,6 @@ namespace R3D
         void CullTiles(const RenderInfo& info);
 
         KC::String mDepthInput;
+        KC::String mCameraDataInput;
     };
 }

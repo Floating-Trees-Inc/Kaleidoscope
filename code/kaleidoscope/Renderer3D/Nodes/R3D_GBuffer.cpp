@@ -32,6 +32,7 @@ namespace R3D
         RegisterOutputPin("Motion Vectors", GBufferResources::MOTION_VECTORS);
         RegisterOutputPin("Previous Depth", GBufferResources::PREV_DEPTH);
         RegisterOutputPin("Previous Normal", GBufferResources::PREV_NORMAL);
+        RegisterOutputPin("Camera Data", GBufferResources::CAMERA_BUFFER);
 
         // Attachments
         KGPU::TextureDesc depthDesc, normalDesc, albedoDesc, pbrDesc;

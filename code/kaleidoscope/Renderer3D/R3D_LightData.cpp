@@ -51,6 +51,9 @@ namespace R3D
         pointLightList.reserve(MAX_POINT_LIGHTS);
         spotLightList.reserve(MAX_SPOT_LIGHTS);
 
+        mPointLightCount = 0;
+        mSpotLightCount = 0;
+
         auto group = World::Manager::GetGroups().GetGroup(World::NodeGroupType::kLights);
         for (auto& node : group) {
             World::LightNode* lightNode = reinterpret_cast<World::LightNode*>(node);
@@ -63,6 +66,7 @@ namespace R3D
                     pointLight.Position = lightNode->GetPosition();
 
                     pointLightList.push_back(pointLight);
+                    mPointLightCount++;
                     break;
                 case World::LightType::kSpot:
                     SpotLight spotLight;
@@ -72,6 +76,7 @@ namespace R3D
                     spotLight.Forward = lightNode->GetForward();
 
                     spotLightList.push_back(spotLight);
+                    mSpotLightCount++;
                     break;
                 case World::LightType::kDirectional:
                     DirectionalLight dirLight;
