@@ -12,11 +12,11 @@ extern int KALEIDOSCOPE_MAIN(int argc, const char* const* argv);
 #if defined(KD_RETAIL)
     int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
     {
-        return KALEIDOSCOPE_MAIN(0, nullptr);
+        return KALEIDOSCOPE_MAIN(__argc, __argv);
     }
 #else
-    int main(int argc, char** argv[])
+    int main(int argc, char** argv)
     {
-        return KALEIDOSCOPE_MAIN(0, nullptr);
+        return KALEIDOSCOPE_MAIN(argc, argv);
     }
 #endif
