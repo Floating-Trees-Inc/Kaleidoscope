@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "KOS_Main.h"
-
 #define CODE_BLOCK(message)
 
 using int8 = int8_t;

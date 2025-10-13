@@ -7,8 +7,16 @@
 
 #include <Windows.h>
 
+extern int KALEIDOSCOPE_MAIN(int argc, const char* const* argv);
+
 #if defined(KD_RETAIL)
-    #define KD_MAIN int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+    int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+    {
+        return KALEIDOSCOPE_MAIN(0, nullptr);
+    }
 #else
-    #define KD_MAIN int main()
+    int main(int argc, char** argv[])
+    {
+        return KALEIDOSCOPE_MAIN(0, nullptr);
+    }
 #endif

@@ -9,6 +9,7 @@
 
 #include <KernelCore/KC_Context.h>
 #include <KDAsset/KDA_TextureLoader.h>
+#include <KernelOS/KOS_Main.h>
 
 #include "KGPUT_Test.h"
 
@@ -46,7 +47,7 @@ void ConvertOutput(const float* linearRGB, uint8* rgba8, int width, int height)
     }
 }
 
-KD_MAIN
+int KALEIDOSCOPE_MAIN(int argc, const char* const* argv)
 {
     bool success = false;
 

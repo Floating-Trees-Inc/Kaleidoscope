@@ -5,4 +5,9 @@
 
 #pragma once
 
-#define KD_MAIN int main()
+extern int KALEIDOSCOPE_MAIN(int argc, const char* const* argv);
+
+int main(int argc, const char* const* argv)
+{
+    return KALEIDOSCOPE_MAIN(argc, argv);
+}
