@@ -1,22 +1,51 @@
 ## Road to editor
-- Render graph editor
 - Merge Seraph back in
+- Render graph editor
 - Node inspector
 - File dialog
 
 ## SERAPH PORT
-- Light culling
-- Direct diffuse
-- Direct specular
-- Indirect diffuse
-- Indirect specular
-- CSM
-- Raytraced hard shadows
-- Raytraced soft shadows
-- Skybox rendering
-- Tonemapping
-- Ambient occlusion
-- Bloom
+- R3D_Bloom
+- R3D_MotionVectorViz
+- R3D_CascadedShadowMaps
+- R3D_Tonemap
+- R3D_IBLReflections
+- R3D_IBLIrradiance
+- R3D_RTSoftShadows
+- R3D_ConfidenceMaskNormal
+- R3D_ConfidenceMaskReflections
+- R3D_SVGFMask
+- R3D_SVGFLuminance
+
+## Renderer3D
+- R3D_ClusterLightCull
+- R3D_HZB
+- R3D_SSR
+- R3D_GlossySSR
+- R3D_RTReflections
+- R3D_GlossyRTReflections
+- R3D_SSAO
+- R3D_RTAO
+- R3D_SSGI
+- R3D_DDGI
+- R3D_EyeAdaptation
+- R3D_ColorCorrect
+- R3D_MeshShaderGBuffer
+- R3D_GPUDrivenGBuffer
+- R3D_Upscaler(FSR/DLSS/MetalFX)
+- R3D_ReSTIRRadiance
+- R3D_GPUParticles
+- R3D_CPUParticles
+- R3D_ScriptedPass
+- R3D_VisibilityBuffer
+- R3D_Pathtracer
+- R3D_SSShadows
+- R3D_XeGTAO
+- R3D_ShadowAtlas
+- R3D_TAA
+- R3D_FXAA
+- R3D_MotionBlur
+- R3D_BokehDOF
 
 ## RHI tests
 - Texture2D load
@@ -44,23 +73,6 @@
 - RenderDoc/PIX integration
 - CopyBufferRange
 - Get GPU info (name, architecture, support levels)
-
-## Renderer3D
-- Clustered light culling
-- Spatiotemporal variance guided filtering
-- Screen space reflections
-- Screen space + raytraced hybrid reflections
-- Screen space ambient occlusion
-- Raytraced ambient occlusion
-- Screen space global illumination with RT hybrid
-- Dynamic diffuse global illumination
-- Eye adaptation
-- Color correction
-- Material batching and global index buffer for GPU-driven culling
-- GPU driven meshlet culling
-- DLSS/FSR/MetalFX
-- ReSTIR DI
-- GPU particles
 
 ## Long-term
 - Remove Effects module
