@@ -15,6 +15,7 @@ data/kd/tests/*.png
 
 # Config
 imgui.ini
+KaleidoscopeNodeEditor.json
 
 # Whatever
 .DS_Store
