@@ -11,6 +11,15 @@
 
 namespace World
 {
+    static inline glm::vec3 Column3(const glm::mat4& m, int c) { return glm::vec3(m[c]); }
+    static inline void      SetColumn3(glm::mat4& m, int c, const glm::vec3& v) { m[c] = glm::vec4(v, (c == 3) ? 1.0f : 0.0f); }
+
+    static inline glm::vec3 ExtractScale(const glm::mat4& m) {
+        return glm::vec3(glm::length(glm::vec3(m[0])),
+                         glm::length(glm::vec3(m[1])),
+                         glm::length(glm::vec3(m[2])));
+    }
+
     static bool IsAncestor(const Node* maybeAncestor, const Node* n)
     {
         for (auto* it = n->GetParent(); it; it = it->GetParent())
@@ -176,24 +185,108 @@ namespace World
 
     glm::quat Node::GetDirection()
     {
-        glm::mat3 rotation = glm::mat3(GetWorldTransform());
-        return glm::quat_cast(rotation);
+        glm::mat4 w = GetWorldTransform();
+        glm::vec3 s = ExtractScale(w);
+        glm::mat3 R( glm::vec3(w[0]) / (s.x != 0 ? s.x : 1.0f),
+                     glm::vec3(w[1]) / (s.y != 0 ? s.y : 1.0f),
+                     glm::vec3(w[2]) / (s.z != 0 ? s.z : 1.0f) );
+        return glm::quat_cast(R);
     }
 
     glm::vec3 Node::GetScale()
     {
-        glm::mat4 world = GetWorldTransform();
-        glm::vec3 scale;
-        scale.x = glm::length(glm::vec3(world[0]));
-        scale.y = glm::length(glm::vec3(world[1]));
-        scale.z = glm::length(glm::vec3(world[2]));
-        return scale;
+        return ExtractScale(GetWorldTransform());
     }
 
     glm::vec3 Node::GetForward()
     {
+        return glm::normalize(-glm::vec3(GetWorldTransform()[2]));
+    }
+
+    void Node::SetPosition(const glm::vec3& position)
+    {
         glm::mat4 world = GetWorldTransform();
-        return -glm::normalize(glm::vec3(world[2]));
+        SetColumn3(world, 3, position); // col 3 = translation
+        if (mParent) {
+            glm::mat4 parentWorld = mParent->GetWorldTransform();
+            mLocal = glm::inverse(parentWorld) * world;
+        } else {
+            mLocal = world;
+        }
+        MarkTransformDirty();
+    }
+
+    void Node::SetDirection(const glm::quat& direction)
+    {
+        glm::mat4 world = GetWorldTransform();
+
+        glm::vec3 s = ExtractScale(world);
+        glm::mat3 R = glm::mat3_cast(direction); // column-major
+
+        SetColumn3(world, 0, glm::vec3(R[0]) * s.x); // X axis
+        SetColumn3(world, 1, glm::vec3(R[1]) * s.y); // Y axis
+        SetColumn3(world, 2, glm::vec3(R[2]) * s.z); // Z axis
+
+        if (mParent) {
+            glm::mat4 parentWorld = mParent->GetWorldTransform();
+            mLocal = glm::inverse(parentWorld) * world;
+        } else {
+            mLocal = world;
+        }
+        MarkTransformDirty();
+    }
+
+    void Node::SetScale(const glm::vec3& scale)
+    {
+        glm::mat4 world = GetWorldTransform();
+        glm::vec3 cur = ExtractScale(world);
+
+        auto safe_ratio = [](float cur, float target) {
+            return (cur != 0.0f) ? (target / cur) : 1.0f;
+        };
+
+        float rx = safe_ratio(cur.x, scale.x);
+        float ry = safe_ratio(cur.y, scale.y);
+        float rz = safe_ratio(cur.z, scale.z);
+
+        world[0] *= rx; world[0].w = 0.0f;
+        world[1] *= ry; world[1].w = 0.0f;
+        world[2] *= rz; world[2].w = 0.0f;
+
+        if (mParent) {
+            glm::mat4 parentWorld = mParent->GetWorldTransform();
+            mLocal = glm::inverse(parentWorld) * world;
+        } else {
+            mLocal = world;
+        }
+        MarkTransformDirty();
+    }
+
+    void Node::SetForward(const glm::vec3& forward)
+    {
+        glm::vec3 f = glm::normalize(forward);
+        glm::vec3 up = glm::vec3(0, 1, 0);
+        if (glm::abs(glm::dot(f, up)) > 0.999f) up = glm::vec3(1, 0, 0);
+
+        // For -Z forward convention: Z axis = -f
+        glm::vec3 z = -f;
+        glm::vec3 x = glm::normalize(glm::cross(up, z));
+        glm::vec3 y = glm::normalize(glm::cross(z, x));
+
+        glm::mat4 world = GetWorldTransform();
+        glm::vec3 s = ExtractScale(world);
+
+        SetColumn3(world, 0, x * s.x);
+        SetColumn3(world, 1, y * s.y);
+        SetColumn3(world, 2, z * s.z);
+
+        if (mParent) {
+            glm::mat4 parentWorld = mParent->GetWorldTransform();
+            mLocal = glm::inverse(parentWorld) * world;
+        } else {
+            mLocal = world;
+        }
+        MarkTransformDirty();
     }
 
     void Node::MarkTransformDirty()

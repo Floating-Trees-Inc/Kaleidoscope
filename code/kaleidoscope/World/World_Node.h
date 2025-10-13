@@ -62,6 +62,11 @@ namespace World
         glm::quat GetDirection();
         glm::vec3 GetScale();
         glm::vec3 GetForward();
+
+        void SetPosition(const glm::vec3& position);
+        void SetDirection(const glm::quat& direction);
+        void SetScale(const glm::vec3& scale);
+        void SetForward(const glm::vec3& forward);
     protected:
         void MarkTransformDirty();
 
