@@ -4,7 +4,8 @@
 //
 
 #include <KernelCore/KC_Context.h>
-#include <KernelCore/KC_Arguments.h>
+#include <KernelCore/KC_CommandLine.h>
+#include <KernelCore/KC_ArgumentParser.h>
 #include <KernelOS/KOS_Main.h>
 
 #include "Editor_Application.h"
@@ -14,7 +15,10 @@ int KALEIDOSCOPE_MAIN(int argc, const char* const* argv)
     KC::ScopedContext ctx;
     CODE_BLOCK("Run") {
         KC::CommandLine::InitFromUTF8(argc, argv);
-        Editor::Application app;
+        KC::ArgumentParser args;
+        args.Parse(KC::CommandLine::Argv());
+        
+        Editor::Application app(args);
         app.Run();
     }
     return 0;

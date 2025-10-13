@@ -35,13 +35,16 @@ namespace Editor
 {
     Application* Application::sInstance;
 
-    Application::Application()
+    Application::Application(KC::ArgumentParser& args)
+        : mWindowWidth(args.GetInt("width", 1440))
+        , mWindowHeight(args.GetInt("height", 800))
+        , mBackend(KGPU::StringToBackend(args.GetString("backend", "auto")))
     {
         sInstance = this;
         mWindow = KOS::IWindow::Create(mWindowWidth, mWindowHeight, "Editor | Kaleidoscope 0.0.1");
 
         CODE_BLOCK("Create RHI objects") {
-            mDevice = KGPU::IDevice::Create(false);
+            mDevice = KGPU::IDevice::Create(false, mBackend);
             mCommandQueue = mDevice->CreateCommandQueue(KGPU::CommandQueueType::kGraphics);
             mSurface = mDevice->CreateSurface(mWindow, mCommandQueue);
             for (int i = 0; i < KGPU::FRAMES_IN_FLIGHT; i++) {

@@ -8,32 +8,34 @@
 #include <KernelOS/KOS_Window.h>
 #include <Graphics/Gfx_Manager.h>
 #include <KernelCore/KC_Timer.h>
+#include <KernelCore/KC_ArgumentParser.h>
 
 #include <World/World_SceneTree.h>
 #include <Renderer3D/R3D_RenderGraph.h>
 
 #include "Editor_PanelManager.h"
 #include "Editor_Camera.h"
+#include "KGPU_Backend.h"
 
 namespace Editor
 {
     class Application
     {
     public:
-        Application();
+        Application(KC::ArgumentParser& args);
         ~Application();
 
         void Run();
         void DrawPanels(KGPU::ICommandList* cmdList);
 
         static Application& Get() { return *sInstance; }
-
     private:
         void InitializeDefaultRenderGraph();
 
     private:
         static Application* sInstance;
         float mLast = 0.0f;
+        KGPU::Backend mBackend;
 
         PanelManager* mPanelManager;
         World::SceneTree* mSceneTree;
