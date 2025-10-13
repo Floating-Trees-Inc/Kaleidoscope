@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <KernelCore/KC_UUID.h>
+
 #include "R3D_RenderInfo.h"
 
 namespace R3D
@@ -23,12 +25,16 @@ namespace R3D
         KC::String* StoreInto = nullptr;
         bool Optional = false;
         const char* PinName = nullptr;
+
+        KC::UUID UUID = KC::NewUUID();
     };
 
     struct OutputPin
     {
         PinUI UI;
         const char* PinName = nullptr;
+
+        KC::UUID UUID = KC::NewUUID();
     };
 
     struct PinSet
@@ -62,6 +68,11 @@ namespace R3D
     class RenderPass : public KC::RefCounted
     {
     public:
+        RenderPass(const char* name, KC::UUID uuid = KC::NewUUID())
+            : mName(name), mUUID(uuid)
+        {
+        }
+
         virtual ~RenderPass() = default;
 
         void RegisterInputPin(const char* uiName, KC::String& storeInto, bool optional = false);
@@ -74,6 +85,7 @@ namespace R3D
         PinSet& Pins() { return mPins; }
         const KC::String& GetName() const { return mName; }
     protected:
+        KC::UUID mUUID;
         KC::String mName;
         PinSet mPins;
     };

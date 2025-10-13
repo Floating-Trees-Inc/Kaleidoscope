@@ -12,6 +12,7 @@
 namespace R3D
 {
     RasterRadiance::RasterRadiance()
+        : RenderPass("Radiance (Raster)")
     {
         Gfx::ShaderManager::SubscribeCompute("data/kd/shaders/nodes/raster_radiance.kds");
     }
@@ -23,6 +24,6 @@ namespace R3D
 
     void RasterRadiance::Execute(const RenderInfo& info)
     {
-        
+
     }
 }

@@ -12,6 +12,7 @@
 namespace R3D
 {
     Lighting::Lighting()
+        : RenderPass("Lighting")
     {
         Gfx::ShaderManager::SubscribeCompute("data/kd/shaders/nodes/lighting.kds");
     }

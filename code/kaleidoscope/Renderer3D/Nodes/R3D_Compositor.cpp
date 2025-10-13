@@ -14,9 +14,8 @@
 namespace R3D
 {
     Compositor::Compositor()
+        : RenderPass("Compositor")
     {
-        mName = "Compositor";
-
         // Pins
         RegisterInputPin("Image to Render", mInputTexture);
 
@@ -45,7 +44,7 @@ namespace R3D
         if (mInputTexture.empty())
             return;
 
-        KGPU::ScopedMarker _(info.CmdList, "Compositor");  
+        KGPU::ScopedMarker _(info.CmdList, "Compositor");
 
         Gfx::Resource& inputTexture = Gfx::ResourceManager::Import(mInputTexture, info.CmdList, Gfx::ImportType::kShaderRead);
         Gfx::Resource& outputTexture = Gfx::ResourceManager::Import(CompositorResources::OUTPUT, info.CmdList, Gfx::ImportType::kColorWrite);

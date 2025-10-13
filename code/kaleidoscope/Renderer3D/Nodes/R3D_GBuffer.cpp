@@ -20,6 +20,7 @@
 namespace R3D
 {
     GBuffer::GBuffer()
+        : RenderPass("GBuffer")
     {
         mName = "GBuffer";
 

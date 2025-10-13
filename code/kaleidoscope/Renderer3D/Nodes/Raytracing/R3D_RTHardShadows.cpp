@@ -15,6 +15,7 @@
 namespace R3D
 {
     RTHardShadows::RTHardShadows()
+        : RenderPass("Raytraced Shadows")
     {
         RegisterInputPin("Depth", mDepthInput);
         RegisterInputPin("Normal", mNormalInput);

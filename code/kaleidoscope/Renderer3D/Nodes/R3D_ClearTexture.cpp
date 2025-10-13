@@ -4,15 +4,15 @@
 //
 
 #include "R3D_ClearTexture.h"
-#include "KernelCore/KC_UUID.h"
+#include "R3D_RenderPass.h"
 
 namespace R3D
 {
     ClearTexture::ClearTexture()
-        : mOutputID(KC::NewUUID())
+        : RenderPass("Clear Texture")
     {
         // Define the output texture
-        RegisterOutputPin("Output", ("ClearTexture/" + std::to_string(mOutputID)).c_str());
+        RegisterOutputPin("Output", ("ClearTexture/" + std::to_string(mUUID)).c_str());
     }
 
     ClearTexture::~ClearTexture()

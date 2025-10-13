@@ -6,8 +6,8 @@
 target("ToolEditor")
     set_kind("binary")
     set_group("Kaleidoscope")
-    
+
     add_files("**.cpp")
     add_headerfiles("**.h")
     add_includedirs(".")
-    add_deps("Kaleidoscope")
+    add_deps("Kaleidoscope", "imgui-node-editor")

@@ -15,6 +15,7 @@
 namespace R3D
 {
     TiledLightCull::TiledLightCull()
+        : RenderPass("Tiled Light Cull")
     {
         RegisterInputPin("Depth", mDepthInput);
         RegisterInputPin("Camera Data", mCameraDataInput);
