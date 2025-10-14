@@ -11,11 +11,9 @@
 namespace Gfx
 {
     TextureCache::TextureCache() {}
-    
+
     TextureCache::~TextureCache()
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-
         for (auto& [_, texture] : mTextures)
         {
             KC_DELETE(texture->Handle);
@@ -26,8 +24,6 @@ namespace Gfx
 
     Texture* TextureCache::Take(const KC::String& path)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-
         auto it = mTextures.find(path);
         if (it != mTextures.end())
         {
@@ -54,14 +50,11 @@ namespace Gfx
 
     void TextureCache::GiveBack(Texture* texture)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
         texture->Release();
     }
 
     void TextureCache::Clear()
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-
         KC::Array<KC::String> toErase;
         for (auto& [key, texture] : mTextures)
         {

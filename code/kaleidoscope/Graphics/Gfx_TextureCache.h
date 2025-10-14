@@ -35,8 +35,6 @@ namespace Gfx
 
         void Clear() override;
     private:
-        std::mutex mMutex;
-
         KC::HashMap<KC::String, Texture*> mTextures;
     };
 }

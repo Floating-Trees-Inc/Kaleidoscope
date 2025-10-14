@@ -11,7 +11,6 @@ namespace KC
 
     DeletionQueue::~DeletionQueue()
     {
-        Flush();
     }
 
     void DeletionQueue::Flush()

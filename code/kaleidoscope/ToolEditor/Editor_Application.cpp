@@ -161,6 +161,8 @@ namespace Editor
                         .OutputWidth = (uint)viewportSize.x,
                         .OutputHeight = (uint)viewportSize.y,
                         .ViewProj = mCamera.Projection() * mCamera.View(),
+                        .View = mCamera.View(),
+                        .Proj = mCamera.Projection(),
                         .CmdList = cmdList,
                         .SwapchainTexture = texture,
                         .SwapchainTextureView = textureView,

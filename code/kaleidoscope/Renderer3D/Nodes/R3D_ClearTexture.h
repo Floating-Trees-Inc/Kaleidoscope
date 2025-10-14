@@ -17,5 +17,7 @@ namespace R3D
         ~ClearTexture();
 
         void Execute(const RenderInfo& info) override;
+    private:
+        KC::String mOutputTexture;
     };
 }

@@ -4,7 +4,9 @@
 //
 
 #include "R3D_ClearTexture.h"
-#include "R3D_RenderPass.h"
+
+#include <Graphics/Gfx_ResourceManager.h>
+#include <Graphics/Gfx_ViewRecycler.h>
 
 namespace R3D
 {
@@ -12,15 +14,27 @@ namespace R3D
         : RenderPass("Clear Texture")
     {
         // Define the output texture
-        RegisterOutputPin("Output", ("ClearTexture/" + std::to_string(mUUID)).c_str());
+        mOutputTexture = ("ClearTexture/" + std::to_string(mUUID));
+
+        RegisterOutputPin("Output", mOutputTexture.c_str());
     }
 
     ClearTexture::~ClearTexture()
     {
+        KC::DeletionQueue::PostPresentQueue.Queue([&](){
+            Gfx::ResourceManager::DeleteResource(mOutputTexture.c_str());
+        });
     }
 
     void ClearTexture::Execute(const RenderInfo& info)
     {
-        // TODO: Just clear color
+        KGPU::ScopedMarker _(info.CmdList, "Clear Texture ");
+        Gfx::Resource& before = Gfx::ResourceManager::Import(mOutputTexture, info.CmdList, Gfx::ImportType::kColorWrite);
+
+        KGPU::RenderAttachment attachment(Gfx::ViewRecycler::GetRTV(before.Texture), true, KGPU::float3(1.0f));
+        KGPU::RenderBegin renderBegin(before.Texture->GetDesc().Width, before.Texture->GetDesc().Height, { attachment }, {});
+
+        info.CmdList->BeginRendering(renderBegin);
+        info.CmdList->EndRendering();
     }
 }

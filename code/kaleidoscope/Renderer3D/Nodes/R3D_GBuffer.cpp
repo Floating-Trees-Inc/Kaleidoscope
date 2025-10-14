@@ -101,9 +101,14 @@ namespace R3D
     {
         KGPU::ScopedMarker _(info.CmdList, "GBuffer");
 
-        mCameraData.PrevViewProj = mCameraData.ViewProj;
         mCameraData.ViewProj = info.ViewProj;
+        mCameraData.PrevViewProj = mCameraData.ViewProj;
         mCameraData.InvViewProj = glm::inverse(info.ViewProj);
+        mCameraData.PrevInvViewProj = mCameraData.InvViewProj;
+        mCameraData.View = info.View;
+        mCameraData.PrevView = mCameraData.View;
+        mCameraData.Proj = info.Proj;
+        mCameraData.PrevProj = mCameraData.Proj;
 
         Gfx::Resource& cameraBuffer = Gfx::ResourceManager::Get(GBufferResources::CAMERA_BUFFER);
         void* pMappedData = cameraBuffer.RingBuffer[info.FrameInFlight]->Map();

@@ -6,16 +6,25 @@
 #pragma once
 
 #include "KGPU_Bindless.h"
+#include "KernelCore/KC_Array.h"
 #include <Renderer3D/R3D_RenderPass.h>
 
 namespace R3D
 {
     constexpr int SHADOW_CASCADE_COUNT = 4;
     constexpr int SHADOW_CASCADE_QUALITY = 2048;
+    constexpr float CAMERA_NEAR = 0.1f;
+    constexpr float CAMERA_FAR = 150.0f;
 
     namespace CSMResources
     {
         constexpr const char* VISIBILITY_MASK = "CSM/VisibilityMask";
+        constexpr const char* CASCADE_0 = "CSM/Cascade0";
+        constexpr const char* CASCADE_1 = "CSM/Cascade1";
+        constexpr const char* CASCADE_2 = "CSM/Cascade2";
+        constexpr const char* CASCADE_3 = "CSM/Cascade3";
+        constexpr const char* SHADOW_SAMPLER = "CSM/ShadowSampler";
+        constexpr const char* CASCADE_RING_BUFFER = "CSM/CascadeRingBuffer";
     };
 
     struct ShadowCascade
@@ -36,8 +45,15 @@ namespace R3D
 
         void Execute(const RenderInfo& info) override;
     private:
+        void UpdateCascades(const RenderInfo& info);
+        void Draw(const RenderInfo& info);
+        void PopulateVisibilityMask(const RenderInfo& info);
+
         KC::String mCameraInput;
         KC::String mDepthInput;
         KC::String mNormalInput;
+
+        float mSplitLambda = 0.95f;
+        KC::StaticArray<ShadowCascade, SHADOW_CASCADE_COUNT> mCascades;
     };
 }

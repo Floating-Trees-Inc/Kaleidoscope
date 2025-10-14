@@ -8,11 +8,9 @@
 namespace Gfx
 {
     ModelCache::ModelCache() {}
-    
+
     ModelCache::~ModelCache()
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-
         for (auto& [_, model] : mModels)
             KC_DELETE(model);
         mModels.clear();
@@ -20,8 +18,6 @@ namespace Gfx
 
     Model* ModelCache::Take(const KC::String& path)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-
         auto it = mModels.find(path);
         if (it != mModels.end())
         {
@@ -35,14 +31,11 @@ namespace Gfx
 
     void ModelCache::GiveBack(Model* model)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
         model->Release();
     }
 
     void ModelCache::Clear()
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-
         KC::Array<KC::String> toErase;
         for (auto& [key, model] : mModels)
         {

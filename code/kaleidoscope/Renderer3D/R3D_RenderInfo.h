@@ -29,6 +29,8 @@ namespace R3D
 
         // Camera
         glm::mat4 ViewProj;
+        glm::mat4 View;
+        glm::mat4 Proj;
 
         // Device resources
         KGPU::ICommandList* CmdList;

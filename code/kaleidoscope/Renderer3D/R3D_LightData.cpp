@@ -100,5 +100,7 @@ namespace R3D
         mPtr = mSunBuffer[frameIndex]->Map();
         memcpy(mPtr, &sunLight, sizeof(DirectionalLight));
         mSunBuffer[frameIndex]->Unmap();
+
+        mSun = sunLight;
     }
 }

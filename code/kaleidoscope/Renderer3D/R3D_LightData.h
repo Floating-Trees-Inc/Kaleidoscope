@@ -59,6 +59,7 @@ namespace R3D
 
         uint GetPointLightCount() { return mPointLightCount; }
         uint GetSpotLightCount() { return mSpotLightCount; }
+        DirectionalLight GetSun() { return mSun; }
     private:
         KGPU::IBuffer* mPointLightBuffer[KGPU::FRAMES_IN_FLIGHT];
         KGPU::IBufferView* mPointLightBufferView[KGPU::FRAMES_IN_FLIGHT];
@@ -71,5 +72,6 @@ namespace R3D
 
         uint mPointLightCount;
         uint mSpotLightCount;
+        DirectionalLight mSun;
     };
 }
