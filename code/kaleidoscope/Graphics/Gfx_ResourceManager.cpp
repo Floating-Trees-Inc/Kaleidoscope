@@ -36,16 +36,16 @@ namespace Gfx
         defaultDesc.MipLevels = 1;
         defaultDesc.Format = KGPU::TextureFormat::kR8G8B8A8_UNORM;
         defaultDesc.Usage = KGPU::TextureUsage::kShaderResource;
-        
+
         CreateTexture(DEFAULT_WHITE_TEXTURE, defaultDesc);
         CreateTexture(DEFAULT_BLACK_TEXTURE, defaultDesc);
-        
+
         auto& black = Get(DEFAULT_BLACK_TEXTURE);
         auto& white = Get(DEFAULT_WHITE_TEXTURE);
-        
+
         uint32 blackColor = 0xFF000000;
         uint32 whiteColor = 0xFFFFFFFF;
-        
+
         Uploader::EnqueueTextureUploadRaw(&blackColor, sizeof(uint), black.Texture);
         Uploader::EnqueueTextureUploadRaw(&whiteColor, sizeof(uint), white.Texture);
     }
@@ -98,6 +98,31 @@ namespace Gfx
         resource->Type = ResourceType::kSampler;
         resource->Sampler = Manager::GetDevice()->CreateSampler(std::move(desc));
         sData.Resources[name] = resource;
+    }
+
+    void ResourceManager::DeleteResource(const KC::String& name)
+    {
+        auto resource = sData.Resources[name];
+        switch (resource->Type)
+        {
+        case ResourceType::kBuffer:
+            KC_DELETE(resource->Buffer);
+            break;
+        case ResourceType::kTexture:
+            KC_DELETE(resource->Texture);
+            break;
+        case ResourceType::kSampler:
+            KC_DELETE(resource->Sampler);
+            break;
+        case ResourceType::kRingBuffer:
+            for (int i = 0; i < KGPU::FRAMES_IN_FLIGHT; i++) {
+                KC_DELETE(resource->RingBufferViews[i]);
+                KC_DELETE(resource->RingBuffer[i]);
+            }
+            break;
+        }
+        KC_DELETE(resource);
+        sData.Resources.erase(name);
     }
 
     Resource& ResourceManager::Get(const KC::String& name)
@@ -166,7 +191,7 @@ namespace Gfx
                 for (int i = 0; i < mipLevels; i++) {
                     bool found = false;
                     for (auto& group : groups) {
-                        if (group.access == resource->LastAccess[i] && 
+                        if (group.access == resource->LastAccess[i] &&
                             group.stage == resource->LastStage[i]) {
                             group.mips.push_back(i);
                             found = true;
@@ -191,7 +216,7 @@ namespace Gfx
                         barrier.SourceStage = group.stage;
                         barrier.ArrayLayer = 0;
                         barrier.LayerCount = resource->Texture->GetDesc().Depth;
-                        
+
                         // Set specific mip range for this group
                         barrier.BaseMipLevel = group.mips[0];
                         barrier.LevelCount = group.mips.size();
@@ -243,11 +268,11 @@ namespace Gfx
 
             // Now proceed with the main barrier
             KGPU::TextureBarrier barrier(resource->Texture);
-            
+
             // Handle full mip range or specific mip
             int baseMip = (mip == -1) ? 0 : mip;
             int mipCount = (mip == -1) ? resource->Texture->GetDesc().MipLevels : 1;
-            
+
             // For mip -1, we can now safely use the target state as source state
             barrier.SourceAccess = resource->LastAccess[baseMip];
             barrier.SourceStage = resource->LastStage[baseMip];

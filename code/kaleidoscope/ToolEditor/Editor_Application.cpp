@@ -25,6 +25,7 @@
 #include <World/World_Manager.h>
 #include <World/Nodes/World_MeshNode.h>
 
+#include "KernelCore/KC_DeletionQueue.h"
 #include "Panels/Editor_SceneHierarchyPanel.h"
 #include "Panels/Editor_ViewportPanel.h"
 #include "Panels/Editor_RenderGraphEditor.h"
@@ -198,6 +199,8 @@ namespace Editor
                     cmdList->End();
                     mFrameSync->EndSynchronize(cmdList);
                     mFrameSync->PresentSurface();
+
+                    KC::DeletionQueue::PostPresentQueue.Flush();
                 }
 
                 CODE_BLOCK("Update") {

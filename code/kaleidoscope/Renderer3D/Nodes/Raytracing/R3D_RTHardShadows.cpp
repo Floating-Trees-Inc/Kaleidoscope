@@ -6,6 +6,7 @@
 #include "R3D_RTHardShadows.h"
 #include "KGPU_Bindless.h"
 #include "KGPU_CommandList.h"
+#include "KernelCore/KC_DeletionQueue.h"
 #include "R3D_Manager.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
@@ -17,6 +18,7 @@ namespace R3D
     RTHardShadows::RTHardShadows()
         : RenderPass("Raytraced Shadows")
     {
+        RegisterInputPin("Camera Data", mCameraInput);
         RegisterInputPin("Depth", mDepthInput);
         RegisterInputPin("Normal", mNormalInput);
         RegisterOutputPin("Visibility Mask", RTHardShadowsResources::VISIBILITY_MASK);
@@ -35,7 +37,9 @@ namespace R3D
 
     RTHardShadows::~RTHardShadows()
     {
-        // Destructor implementation
+        KC::DeletionQueue::PostPresentQueue.Queue([&](){
+            Gfx::ResourceManager::DeleteResource(RTHardShadowsResources::VISIBILITY_MASK);
+        });
     }
 
     void RTHardShadows::Execute(const RenderInfo& info)

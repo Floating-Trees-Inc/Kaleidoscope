@@ -6,6 +6,7 @@
 #pragma once
 
 #include <KernelGPU/KGPU_Device.h>
+#include <KernelCore/KC_DeletionQueue.h>
 
 namespace Gfx
 {
@@ -63,6 +64,7 @@ namespace Gfx
         static void CreateBuffer(const KC::String& name, KGPU::BufferDesc desc);
         static void CreateRingBuffer(const KC::String& name, uint size);
         static void CreateSampler(const KC::String& name, KGPU::SamplerDesc desc);
+        static void DeleteResource(const KC::String& name);
 
         static Resource& Get(const KC::String& name);
         static Resource& Import(const KC::String& name, KGPU::ICommandList* list, ImportType type, int mip = -1);

@@ -85,7 +85,16 @@ namespace R3D
 
     GBuffer::~GBuffer()
     {
-
+        KC::DeletionQueue::PostPresentQueue.Queue([&](){
+            Gfx::ResourceManager::DeleteResource(GBufferResources::CAMERA_BUFFER);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::NORMAL);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::ALBEDO);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::METALLIC_ROUGHNESS);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::EMISSIVE);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::MOTION_VECTORS);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::PREV_DEPTH);
+            Gfx::ResourceManager::DeleteResource(GBufferResources::PREV_NORMAL);
+        });
     }
 
     void GBuffer::Execute(const RenderInfo& info)

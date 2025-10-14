@@ -36,7 +36,9 @@ namespace R3D
 
     Compositor::~Compositor()
     {
-
+        KC::DeletionQueue::PostPresentQueue.Queue([&](){
+            Gfx::ResourceManager::DeleteResource(CompositorResources::OUTPUT);
+        });
     }
 
     void Compositor::Execute(const RenderInfo& info)
