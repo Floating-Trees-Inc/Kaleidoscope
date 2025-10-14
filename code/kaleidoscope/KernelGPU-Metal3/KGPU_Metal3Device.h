@@ -66,14 +66,14 @@ namespace KGPU
 
         Backend GetBackend() override { return Backend::kMetal3; }
 
-        TextureFormat GetSurfaceFormat() override { return TextureFormat::kB8G8R8A8_UNORM; }
+        TextureFormat GetSurfaceFormat() override { return TextureFormat::kR8G8B8A8_UNORM; }
         uint64 GetOptimalRowPitchAlignment() override { return 4; }
         uint64 GetBufferImageGranularity() override { return 1; }
         KGPU::ShaderBytecodeType GetTargetBytecode() override { return KGPU::ShaderBytecodeType::kMetalLib; }
 
         bool SupportsRaytracing() override { return [mDevice supportsRaytracing]; }
         bool SupportsMeshShaders() override { return true; }
-    
+
         id<MTLDevice> GetMTLDevice() { return mDevice; }
         Metal3BindlessManager* GetBindlessManager() { return mBindlessManager; }
         Metal3ResidencySet* GetResidencySet() { return mResidencySet; }
@@ -86,7 +86,7 @@ namespace KGPU
     private:
         id<MTLDevice> mDevice = nil;
         ICBConversionPipelines mICBConversionPipelines;
-        
+
         Metal3ResidencySet* mResidencySet = nullptr;
         Metal3BindlessManager* mBindlessManager = nullptr;
     };

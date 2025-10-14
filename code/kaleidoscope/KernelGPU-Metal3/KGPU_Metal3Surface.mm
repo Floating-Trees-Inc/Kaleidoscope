@@ -8,6 +8,7 @@
 #include "KGPU_Metal3CommandQueue.h"
 #include "KGPU_Metal3Texture.h"
 #include "KGPU_Metal3TextureView.h"
+#include <Metal/Metal.h>
 
 namespace KGPU
 {
@@ -22,7 +23,7 @@ namespace KGPU
 
         mLayer = (__bridge CAMetalLayer*)SDL_Metal_GetLayer(mView);
         mLayer.device = device->GetMTLDevice();
-        mLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+        mLayer.pixelFormat = MTLPixelFormatRGBA8Unorm;
         mLayer.framebufferOnly = NO;
 
         KC::String title = window->GetTitle();
@@ -36,15 +37,15 @@ namespace KGPU
             desc.Depth = 1;
             desc.MipLevels = 1;
             desc.Usage = TextureUsage::kRenderTarget;
-            desc.Format = TextureFormat::kB8G8R8A8_UNORM;
+            desc.Format = TextureFormat::kR8G8B8A8_UNORM;
 
             mTextures[i] = device->CreateTexture(desc);
             mTextureViews[i] = device->CreateTextureView(TextureViewDesc(mTextures[i], TextureViewType::kRenderTarget));
         }
-    
+
         KD_WHATEVER("Created Metal3 surface");
     }
-    
+
     Metal3Surface::~Metal3Surface()
     {
         for (int i = 0; i < FRAMES_IN_FLIGHT; i++) {

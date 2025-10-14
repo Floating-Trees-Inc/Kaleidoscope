@@ -68,5 +68,6 @@ float4 PSMain(VertexOutput i) : SV_Target
     // float2 offset = float2(viewportX, viewportY) / allocSize;
     // uv = clamp(offset + saturate(i.Texcoord) * scale, offset + halfTexel, offset + scale - halfTexel);
 
-    return inputTex.Sample(samp, uv);
+    float4 color = inputTex.Sample(samp, uv);
+    return pow(color, 1.0 / 2.2);
 }
