@@ -9,6 +9,11 @@
 
 namespace R3D
 {
+    namespace FXTonemappingResources
+    {
+        constexpr const char* OUTPUT = "FXTonemapping/Output";
+    }
+
     class FXTonemapping : public RenderPass
     {
     public:
@@ -16,5 +21,7 @@ namespace R3D
         ~FXTonemapping();
 
         void Execute(const RenderInfo& info) override;
+    private:
+        KC::String mInputTexture;
     };
 }

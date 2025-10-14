@@ -1,0 +1,68 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-07-20 13:55:28
+//
+
+#include "kd/shaders/common/bindless.kds"
+
+#pragma compute CSMain
+
+struct PushConstants
+{
+    uint HDR;
+    uint LDR;
+    uint Width;
+    uint Height;
+};
+PUSH_CONSTANTS(PushConstants, Push);
+
+float3 AgXDefaultContrastApprox(float3 x)
+{
+    float3 x2 = x * x;
+    float3 x4 = x2 * x2;
+
+    return + 15.5     * x4 * x2
+           - 40.14    * x4 * x
+           + 31.96    * x4
+           - 6.868    * x2 * x
+           + 0.4298   * x2
+           + 0.1191   * x
+           - 0.00232;
+}
+
+float3 AgX(float3 val)
+{
+    const float3x3 agx_mat = float3x3(
+        0.842479062253094, 0.0423282422610123, 0.0423756549057051,
+        0.0784335999999992,  0.878468636469772,  0.0784336,
+        0.0792237451477643, 0.0791661274605434, 0.879142973793104
+    );
+
+    const float min_ev = -12.47393f;
+    const float max_ev = 4.026069f;
+
+    // Input transform (inset)
+    val = mul(agx_mat, val);
+
+    // Log2 space encoding
+    val = clamp(log2(val), min_ev, max_ev);
+    val = (val - min_ev) / (max_ev - min_ev);
+
+    // Apply sigmoid function approximation
+    val = AgXDefaultContrastApprox(val);
+
+    return val;
+}
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 tid: SV_DispatchThreadID)
+{
+    if (tid.x >= Push.Width || tid.y >= Push.Height) return;
+
+    Texture2D<float4> hdr = ResourceDescriptorHeap[Push.HDR];
+    RWTexture2D<float4> ldr = ResourceDescriptorHeap[Push.LDR];
+
+    float3 color = hdr.Load(tid).rgb;
+    color = AgX(color);
+    ldr[tid.xy] = float4(color, 1.0);
+}
