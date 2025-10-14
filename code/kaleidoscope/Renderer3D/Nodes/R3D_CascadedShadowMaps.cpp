@@ -4,9 +4,8 @@
 //
 
 #include "R3D_CascadedShadowMaps.h"
-#include "KGPU_CommandList.h"
-#include "KGPU_Texture.h"
-#include "R3D_Manager.h"
+
+#include <Renderer3D/R3D_Manager.h>
 
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_ShaderManager.h>
@@ -61,8 +60,8 @@ namespace R3D
         pipelineDesc.DepthOperation = KGPU::DepthOperation::kLess;
         pipelineDesc.CullMode = KGPU::CullMode::kBack;
 
-        Gfx::ShaderManager::SubscribeGraphics("data/kd/nodes/csm/csm/draw.kds", pipelineDesc);
-        Gfx::ShaderManager::SubscribeCompute("data/kd/nodes/csm/csm/populate.kds");
+        Gfx::ShaderManager::SubscribeGraphics("data/kd/nodes/csm/draw.kds", pipelineDesc);
+        Gfx::ShaderManager::SubscribeCompute("data/kd/nodes/csm/populate.kds");
     }
 
     CascadedShadowMaps::~CascadedShadowMaps()
@@ -177,10 +176,104 @@ namespace R3D
     void CascadedShadowMaps::Draw(const RenderInfo& info)
     {
         KGPU::ScopedMarker _(info.CmdList, "Draw Cascaded Shadow Maps");
+
+        for (int i = 0; i < SHADOW_CASCADE_COUNT; i++) {
+            KGPU::ScopedMarker marker(info.CmdList, "Cascade " + std::to_string(i));
+            KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/nodes/csm/draw.kds");
+            const char* indexToID[4] = { CSMResources::CASCADE_0, CSMResources::CASCADE_1, CSMResources::CASCADE_2, CSMResources::CASCADE_3 };
+
+            Gfx::Resource& depthTexture = Gfx::ResourceManager::Import(indexToID[i], info.CmdList, Gfx::ImportType::kDepthWrite);
+            Gfx::Resource& defaultWhite = Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE);
+            Gfx::Resource& materialSampler = Gfx::ResourceManager::Get(DefaultResources::LINEAR_WRAP_SAMPLER_WITH_MIPS);
+            KGPU::RenderBegin renderBegin(SHADOW_CASCADE_QUALITY, SHADOW_CASCADE_QUALITY, {}, KGPU::RenderAttachment(Gfx::ViewRecycler::GetDSV(depthTexture.Texture)));
+
+            info.CmdList->BeginRendering(renderBegin);
+            info.CmdList->SetGraphicsPipeline(pipeline);
+            info.CmdList->SetRenderSize(SHADOW_CASCADE_QUALITY, SHADOW_CASCADE_QUALITY);
+            for (auto& mesh : R3D::Manager::GetShadowBatch()) {
+                for (auto& submesh : mesh.Model->Submeshes) {
+                    KGPU::BindlessHandle albedoHandle = submesh.Material->GetAlbedo()
+                    ? Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(submesh.Material->GetAlbedo()->Handle, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle()
+                    : Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(Gfx::ResourceManager::Get(DefaultResources::WHITE_TEXTURE).Texture, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR8G8B8A8_sRGB))->GetBindlessHandle();
+
+                    struct PushConstants {
+                        KGPU::BindlessHandle VertexBuffer;
+                        KGPU::BindlessHandle Albedo;
+                        KGPU::BindlessHandle Sampler;
+                        uint Pad;
+
+                        glm::mat4 ViewProj;
+                        glm::mat4 Transform;
+                    } constant = {
+                        submesh.Primitive->GetVertexBufferView()->GetBindlessHandle(),
+                        albedoHandle,
+                        materialSampler.Sampler->GetBindlessHandle(),
+                        0,
+
+                        mCascades[i].Proj * mCascades[i].View,
+                        mesh.WorldMatrix
+                    };
+
+                    info.CmdList->SetIndexBuffer(submesh.Primitive->GetIndexBuffer());
+                    info.CmdList->SetGraphicsConstants(pipeline, &constant, sizeof(constant));
+                    info.CmdList->DrawIndexed(submesh.Primitive->GetIndexCount(), 1, 0, 0, 0);
+                }
+            }
+            info.CmdList->EndRendering();
+        }
     }
 
     void CascadedShadowMaps::PopulateVisibilityMask(const RenderInfo& info)
     {
         KGPU::ScopedMarker _(info.CmdList, "Populate Visibility Mask");
+
+        const char* indexToID[4] = { CSMResources::CASCADE_0, CSMResources::CASCADE_1, CSMResources::CASCADE_2, CSMResources::CASCADE_3 };
+        for (int i = 0; i < SHADOW_CASCADE_COUNT; i++) {
+            (void)Gfx::ResourceManager::Import(indexToID[i], info.CmdList, Gfx::ImportType::kShaderRead);
+        }
+
+        Gfx::Resource& output = Gfx::ResourceManager::Import(CSMResources::CASCADE_RING_BUFFER, info.CmdList, Gfx::ImportType::kShaderWrite);
+        Gfx::Resource& gbufferDepth = Gfx::ResourceManager::Import(mDepthInput, info.CmdList, Gfx::ImportType::kShaderRead);
+        Gfx::Resource& gbufferNormal = Gfx::ResourceManager::Import(mNormalInput, info.CmdList, Gfx::ImportType::kShaderRead);
+        Gfx::Resource& cameraBuffer = Gfx::ResourceManager::Get(mCameraInput);
+        Gfx::Resource& materialSampler = Gfx::ResourceManager::Get(CSMResources::SHADOW_SAMPLER);
+        Gfx::Resource& cascadeBuffer = Gfx::ResourceManager::Get(CSMResources::CASCADE_RING_BUFFER);
+
+        struct PushConstants {
+            KGPU::BindlessHandle CascadeIndex;
+            KGPU::BindlessHandle SamplerIndex;
+            KGPU::BindlessHandle CameraIndex;
+            KGPU::BindlessHandle DepthIndex;
+
+            KGPU::BindlessHandle OutputIndex;
+            KGPU::BindlessHandle SunIndex;
+            KGPU::BindlessHandle NormalIndex;
+            uint Pad;
+
+            uint Width;
+            uint Height;
+            KGPU::uint2 Pad1;
+        } constants = {
+            Gfx::ViewRecycler::GetSRV(cascadeBuffer.RingBuffer[info.FrameInFlight])->GetBindlessHandle(),
+            materialSampler.Sampler->GetBindlessHandle(),
+            cameraBuffer.RingBufferViews[info.FrameInFlight]->GetBindlessHandle(),
+            Gfx::ViewRecycler::GetTextureView(KGPU::TextureViewDesc(gbufferDepth.Texture, KGPU::TextureViewType::kShaderRead, KGPU::TextureFormat::kR32_FLOAT))->GetBindlessHandle(),
+
+            Gfx::ViewRecycler::GetUAV(output.Texture)->GetBindlessHandle(),
+            R3D::Manager::GetLightingData()->GetSunBufferView(info.FrameInFlight)->GetBindlessHandle(),
+            Gfx::ViewRecycler::GetSRV(gbufferNormal.Texture)->GetBindlessHandle(),
+            0,
+
+            info.RenderWidth,
+            info.RenderHeight,
+            {}
+        };
+
+        KGPU::IComputePipeline* pipeline = Gfx::ShaderManager::GetCompute("data/kd/shaders/nodes/csm/populate.kds");
+        info.CmdList->BeginCompute();
+        info.CmdList->SetComputePipeline(pipeline);
+        info.CmdList->SetComputeConstants(pipeline, &constants, sizeof(constants));
+        info.CmdList->Dispatch(KGPU::uint3((info.RenderWidth + 7) / 8, (info.RenderHeight + 7) / 8, 1), KGPU::uint3(8, 8, 1));
+        info.CmdList->EndCompute();
     }
 }

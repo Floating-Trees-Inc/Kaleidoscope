@@ -58,6 +58,8 @@ namespace R3D
         static void BuildBatches(const World::NodeGroups& groups);
 
         static const KC::Array<Renderable>& GetOpaqueBatch() { return sData.OpaqueBatch; }
+        static const KC::Array<Renderable>& GetShadowBatch() { return sData.ShadowBatch; }
+
         static Gfx::RaytracingWorld* GetRaytracingWorld() { return sData.RaytracingWorld; }
         static LightData* GetLightingData() { return sData.LightingData; }
     private:
@@ -66,6 +68,7 @@ namespace R3D
             LightData* LightingData;
 
             KC::Array<Renderable> OpaqueBatch;
+            KC::Array<Renderable> ShadowBatch;
 
             KC::Array<SceneInstance> SceneInstances;
             KC::Array<SceneMaterial> SceneMaterials;

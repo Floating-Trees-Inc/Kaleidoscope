@@ -23,8 +23,8 @@ struct PushConstants
     uint Sampler;
     uint Pad;
 
-    column_major float4x4 LightView;
-    column_major float4x4 LightProj;
+    column_major float4x4 LightViewProj;
+    column_major float4x4 Transform;
 };
 PUSH_CONSTANTS(PushConstants, Push);
 
@@ -42,7 +42,7 @@ VertexOut VSMain(uint vid : SV_VertexID)
     // Logic
     VertexInput input = vertices[vid];
     VertexOut output = (VertexOut)0;
-    output.Clip = mul(Push.LightProj, mul(Push.LightView, float4(input.Position, 1.0f)));
+    output.Clip = mul(Push.LightViewProj, mul(Push.Transform, float4(input.Position, 1.0f)));
     output.UV = input.Texcoord;
     return output;
 }

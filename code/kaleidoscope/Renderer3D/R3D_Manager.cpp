@@ -87,6 +87,7 @@ namespace R3D
             renderable.WorldMatrix = meshNode->GetWorldTransform();
 
             sData.OpaqueBatch.push_back(renderable);
+            if (meshNode->ShouldCastShadows()) sData.ShadowBatch.push_back(renderable);
 
             for (auto& submesh : renderable.Model->Submeshes) {
                 if (meshNode->IsRaytracingEnabled() && Gfx::Manager::GetDevice()->SupportsRaytracing())
