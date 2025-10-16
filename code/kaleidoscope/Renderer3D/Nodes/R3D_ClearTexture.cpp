@@ -4,6 +4,8 @@
 //
 
 #include "R3D_ClearTexture.h"
+#include "KGPU_Texture.h"
+#include "R3D_RenderInfo.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_ViewRecycler.h>
@@ -15,6 +17,14 @@ namespace R3D
     {
         // Define the output texture
         mOutputTexture = ("ClearTexture/" + std::to_string(mUUID));
+
+        KGPU::TextureDesc desc;
+        desc.Width = R3D::SCREEN_WIDTH;
+        desc.Height = R3D::SCREEN_HEIGHT;
+        desc.Format = KGPU::TextureFormat::kR8G8B8A8_UNORM;
+        desc.Usage = KGPU::TextureUsage::kRenderTarget | KGPU::TextureUsage::kShaderResource;
+
+        Gfx::ResourceManager::CreateTexture(mOutputTexture, desc);
 
         RegisterOutputPin("Output", mOutputTexture.c_str());
     }

@@ -17,12 +17,29 @@ namespace R3D
 
     bool RenderGraph::ConnectPins(RenderPass* srcPass, RenderPass* dstPass, const OutputPin& srcOut, InputPin& dstIn, KC::String* err)
     {
-        if (!srcOut.PinName || !dstIn.StoreInto) {
-            if (err) *err = "Null pin storage.";
+        if (!dstIn.StoreInto) {
+            if (err) *err = "Null input pin storage.";
             return false;
         }
 
-        *dstIn.StoreInto = srcOut.PinName;
+        // For non-pass-through pins, require PinName
+        if (!srcOut.IsPassThrough && !srcOut.PinName) {
+            if (err) *err = "Null output pin name.";
+            return false;
+        }
+
+        // Store connection for later resolution during compile
+        Connection conn;
+        conn.SrcPass = srcPass;
+        conn.DstPass = dstPass;
+        conn.SrcPin = &srcOut;
+        conn.DstPin = &dstIn;
+        mConnections.push_back(conn);
+
+        // For non-pass-through pins, set the connection immediately
+        if (!srcOut.IsPassThrough) {
+            *dstIn.StoreInto = srcOut.PinName;
+        }
 
         int srcIdx = FindNodeIndex(srcPass);
         int dstIdx = FindNodeIndex(dstPass);
@@ -97,6 +114,20 @@ namespace R3D
                 mComplete = false;
                 KD_ERROR("RenderGraph compile error: %s", verr.c_str());
                 return false;
+            }
+        }
+
+        // Resolve pass-through connections after validation
+        for (const auto& conn : mConnections) {
+            if (conn.SrcPin->IsPassThrough) {
+                // The pass-through pin's PinName should now be resolved after validation
+                if (conn.SrcPin->PinName) {
+                    *conn.DstPin->StoreInto = conn.SrcPin->PinName;
+                } else {
+                    if (err) *err = "Pass-through pin failed to resolve resource name.";
+                    mComplete = false;
+                    return false;
+                }
             }
         }
 

@@ -26,6 +26,23 @@ namespace R3D
         mPins.Outputs.push_back(p);
     }
 
+    void RenderPass::RegisterPassThroughPin(const char* uiName, KC::String& inputRef)
+    {
+        OutputPin p;
+        p.UI.Name = uiName;
+        p.PinName = nullptr; // Will be set during validation/execution
+        p.IsPassThrough = true;
+        p.PassThroughInputRef = &inputRef;
+        
+        mPins.Outputs.push_back(p);
+    }
+
+    void RenderPass::RegisterInPlacePin(const char* inputUIName, const char* outputUIName, KC::String& storeInto, bool optional)
+    {
+        RegisterInputPin(inputUIName, storeInto, optional);
+        RegisterPassThroughPin(outputUIName, storeInto);
+    }
+
     bool RenderPass::ValidatePins(KC::String* err) const
     {
         for (auto& in : mPins.Inputs) {
@@ -34,6 +51,19 @@ namespace R3D
                 return false;
             }
         }
+        
+        // Validate pass-through pins
+        for (auto& out : mPins.Outputs) {
+            if (out.IsPassThrough) {
+                if (!out.PassThroughInputRef || out.PassThroughInputRef->empty()) {
+                    if (err) *err = "Pass-through output '" + out.UI.Name + "' references empty input";
+                    return false;
+                }
+                // Update the pass-through pin to reference the input resource
+                const_cast<OutputPin&>(out).PinName = out.PassThroughInputRef->c_str();
+            }
+        }
+        
         return true;
     }
 }

@@ -10,6 +10,7 @@ namespace R3D
     FXBloom::FXBloom()
         : RenderPass("Bloom")
     {
+        RegisterInPlacePin("Input Texture", "Output Texture", mInputTexture);
     }
 
     FXBloom::~FXBloom()

@@ -37,7 +37,15 @@ namespace R3D
             int InDegree = 0;
         };
 
+        struct Connection {
+            RenderPass* SrcPass;
+            RenderPass* DstPass;
+            const OutputPin* SrcPin;
+            InputPin* DstPin;
+        };
+
         KC::Array<RGNode> mNodes;
+        KC::Array<Connection> mConnections;
         KC::Array<RenderPass*> mExecutionList;
         bool mComplete = false;
 

@@ -33,6 +33,10 @@ namespace R3D
     {
         PinUI UI;
         const char* PinName = nullptr;
+        
+        // For pass-through pins: reference an input pin's resource instead of creating new one
+        bool IsPassThrough = false;
+        KC::String* PassThroughInputRef = nullptr;
 
         KC::UUID UUID = KC::NewUUID();
     };
@@ -77,6 +81,8 @@ namespace R3D
 
         void RegisterInputPin(const char* uiName, KC::String& storeInto, bool optional = false);
         void RegisterOutputPin(const char* uiName, const char* pinName);
+        void RegisterPassThroughPin(const char* uiName, KC::String& inputRef);
+        void RegisterInPlacePin(const char* inputUIName, const char* outputUIName, KC::String& storeInto, bool optional = false);
 
         bool ValidatePins(KC::String* err = nullptr) const;
 
