@@ -11,10 +11,10 @@ namespace R3D
 {
     namespace FXBloomResources
     {
-        constexpr const char* BLOOM_MASK = "Bloom/Mask";
-        constexpr const char* BLOOM_LINEAR_CLAMP_SAMPLER_ID = "Bloom/LinearClampSampler";
-        constexpr const char* BLOOM_LINEAR_BORDER_SAMPLER_ID = "Bloom/LinearBorderSampler";
-        constexpr const char* BLOOM_POINT_CLAMP_SAMPLER_ID = "Bloom/PointClampSampler";
+        constexpr const char* MASK = "Bloom/Mask";
+        constexpr const char* LINEAR_CLAMP_SAMPLER_ID = "Bloom/LinearClampSampler";
+        constexpr const char* LINEAR_BORDER_SAMPLER_ID = "Bloom/LinearBorderSampler";
+        constexpr const char* POINT_CLAMP_SAMPLER_ID = "Bloom/PointClampSampler";
     }
 
     class FXBloom : public RenderPass
@@ -25,7 +25,13 @@ namespace R3D
 
         void Execute(const RenderInfo& info) override;
     private:
+        void PopulateMask(const RenderInfo& info);
+        void Downsample(const RenderInfo& info);
+        void Upsample(const RenderInfo& info);
+        void Composite(const RenderInfo& info);
+
         KC::String mInputTexture;
+        KC::String mInputEmissive;
 
         float mUpsampleGain = 0.4f;
         float mLightThreshold = 20.0f;

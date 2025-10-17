@@ -1,0 +1,57 @@
+//
+// > Notice: Floating Trees Inc. @ 2025
+// > Create Time: 2025-08-20 14:16:00
+//
+
+#include "kd/shaders/common/bindless.kds"
+#include "kd/shaders/common/compute.kds"
+#include "kd/shaders/common/colors.kds"
+
+#pragma compute CSMain
+
+struct PushConstants
+{
+    uint MipN;
+    uint Sampler;
+    uint MipNPlusOne;
+    uint Pad;
+};
+PUSH_CONSTANTS(PushConstants, Push);
+
+// Weighted downsample to prevent fireflies
+float4 DownsampleBloom(Texture2D<float4> tex, SamplerState sam, float2 uv, float2 texelSize)
+{
+    // Take 4 samples around the center point
+    float4 samples[4];
+    samples[0] = tex.SampleLevel(sam, uv + float2(-0.5, -0.5) * texelSize, 0);
+    samples[1] = tex.SampleLevel(sam, uv + float2( 0.5, -0.5) * texelSize, 0);
+    samples[2] = tex.SampleLevel(sam, uv + float2(-0.5,  0.5) * texelSize, 0);
+    samples[3] = tex.SampleLevel(sam, uv + float2( 0.5,  0.5) * texelSize, 0);
+
+    // Take sqrt to better handle high intensities
+    float4 result = 0;
+    [unroll]
+    for (int i = 0; i < 4; i++) {
+        result += sqrt(samples[i]);
+    }
+    result *= 0.25;
+
+    // Square to restore range
+    return result * result;
+}
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 dtid : SV_DispatchThreadID)
+{
+    Texture2D<float4> mipN = ResourceDescriptorHeap[Push.MipN];
+    SamplerState sampler = SamplerDescriptorHeap[Push.Sampler];
+    RWTexture2D<float4> mipNPlusOne = ResourceDescriptorHeap[Push.MipNPlusOne];
+
+    float2 texelSize;
+    float2 dims;
+    mipN.GetDimensions(0, dims.x, dims.y, texelSize.x);
+    texelSize = 1.0 / dims;
+
+    float2 uv = (float2(dtid.xy) + 0.5) * texelSize * 2.0;
+    mipNPlusOne[dtid.xy] = DownsampleBloom(mipN, sampler, uv, texelSize);
+}

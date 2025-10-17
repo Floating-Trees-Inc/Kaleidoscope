@@ -4,19 +4,6 @@
 - Node inspector
 - File dialog
 
-## SERAPH PORT
-- R3D_Bloom
-- R3D_MotionVectorViz
-- R3D_CascadedShadowMaps
-- R3D_Tonemap
-- R3D_IBLReflections
-- R3D_IBLIrradiance
-- R3D_RTSoftShadows
-- R3D_ConfidenceMaskNormal
-- R3D_ConfidenceMaskReflections
-- R3D_SVGFMask
-- R3D_SVGFLuminance
-
 ## Renderer3D
 - R3D_ClusterLightCull
 - R3D_HZB
