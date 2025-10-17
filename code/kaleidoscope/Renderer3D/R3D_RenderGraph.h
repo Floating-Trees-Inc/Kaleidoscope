@@ -28,6 +28,7 @@ namespace R3D
         }
 
         bool ConnectPins(RenderPass* srcPass, RenderPass* dstPass, const OutputPin& srcOut, InputPin& dstIn, KC::String* err = nullptr);
+        bool DisconnectPins(RenderPass* srcPass, RenderPass* dstPass, const OutputPin& srcOut, InputPin& dstIn, KC::String* err = nullptr);
         bool Compile(KC::String* err = nullptr);
         void Execute(const RenderInfo& info);
     private:

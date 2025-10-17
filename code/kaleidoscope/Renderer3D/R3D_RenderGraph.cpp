@@ -53,6 +53,57 @@ namespace R3D
         return true;
     }
 
+    bool RenderGraph::DisconnectPins(RenderPass* srcPass, RenderPass* dstPass, const OutputPin& srcOut, InputPin& dstIn, KC::String* err)
+    {
+        int srcIdx = FindNodeIndex(srcPass);
+        int dstIdx = FindNodeIndex(dstPass);
+        if (srcIdx < 0 || dstIdx < 0) {
+            if (err) *err = "DisconnectPins: pass not found in graph.";
+            return false;
+        }
+
+        // Find and remove the connection from mConnections
+        bool foundConnection = false;
+        for (size_t i = 0; i < mConnections.size(); ++i) {
+            const auto& conn = mConnections[i];
+            if (conn.SrcPass == srcPass && conn.DstPass == dstPass &&
+                conn.SrcPin == &srcOut && conn.DstPin == &dstIn) {
+                mConnections.erase(mConnections.begin() + i);
+                foundConnection = true;
+                break;
+            }
+        }
+
+        if (!foundConnection) {
+            if (err) *err = "DisconnectPins: connection not found.";
+            return false;
+        }
+
+        // Remove the edge from source node's OutEdges
+        auto& srcOutEdges = mNodes[srcIdx].OutEdges;
+        for (size_t i = 0; i < srcOutEdges.size(); ++i) {
+            if (srcOutEdges[i] == dstIdx) {
+                srcOutEdges.erase(srcOutEdges.begin() + i);
+                break;
+            }
+        }
+
+        // Decrease the in-degree of destination node
+        if (mNodes[dstIdx].InDegree > 0) {
+            mNodes[dstIdx].InDegree -= 1;
+        }
+
+        // Clear the input pin storage
+        if (dstIn.StoreInto) {
+            *dstIn.StoreInto = nullptr;
+        }
+
+        // Mark the graph as needing recompilation
+        mComplete = false;
+
+        return true;
+    }
+
     bool RenderGraph::Compile(KC::String* err)
     {
         // Mark active nodes: any node that participates in at least one edge.
