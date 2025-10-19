@@ -497,11 +497,47 @@ namespace Editor
                     R3D::RenderPass* passToDelete = GetPassFromNodeId(deletedNodeId);
                     if (passToDelete)
                     {
-                        // Remove from render graph
+                        // Find the node index BEFORE deletion
+                        int nodeIndexToRemove = -1;
+                        for (size_t i = 0; i < mNodes.size(); ++i)
+                        {
+                            if (mNodes[i].Pass == passToDelete)
+                            {
+                                nodeIndexToRemove = static_cast<int>(i);
+                                break;
+                            }
+                        }
+                        
+                        // Remove links involving this node BEFORE deletion
+                        for (size_t i = 0; i < mLinks.size(); )
+                        {
+                            if (mLinks[i].SrcPass == passToDelete || mLinks[i].DstPass == passToDelete)
+                            {
+                                mLinks.erase(mLinks.begin() + i);
+                            }
+                            else
+                            {
+                                ++i;
+                            }
+                        }
+                        
+                        // Remove from render graph (this will delete the pass object)
                         KC::String err;
                         if (mRenderGraph->RemovePass(passToDelete, &err))
                         {
-                            mNeedsRebuild = true;
+                            // Now remove the node from our cache using the saved index
+                            if (nodeIndexToRemove >= 0)
+                            {
+                                mNodes.erase(mNodes.begin() + nodeIndexToRemove);
+                                
+                                // Rebuild node ID map
+                                mNodeIdMap.clear();
+                                for (size_t i = 0; i < mNodes.size(); ++i)
+                                {
+                                    mNodeIdMap[mNodes[i].Pass] = i;
+                                }
+                            }
+                            
                             mShowCompileError = false;
                         }
                         else
