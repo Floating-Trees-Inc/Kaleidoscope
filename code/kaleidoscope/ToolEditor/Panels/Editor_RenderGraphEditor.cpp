@@ -15,7 +15,9 @@ namespace Editor
         : mConfig(), mContext(), mFirstFrame(true)
     {
         mConfig.SettingsFile = "KaleidoscopeNodeEditor.json";
+
         mContext = ned::CreateEditor(&mConfig);
+
     }
 
     RenderGraphEditor::~RenderGraphEditor()
@@ -74,6 +76,58 @@ namespace Editor
 
         for (auto& linkInfo : mLinks)
             ned::Link(linkInfo.Id, linkInfo.InputId, linkInfo.OutputId);
+
+        if (ned::BeginCreate())
+        {
+            ned::PinId inputPinId, outputPinId;
+            if (ned::QueryNewLink(&inputPinId, &outputPinId))
+            {
+                if (inputPinId && outputPinId) // both are valid, let's accept link
+                {
+                    // ed::AcceptNewItem() return true when user release mouse button.
+                    if (ned::AcceptNewItem())
+                    {
+                        // Since we accepted new link, lets add one to our list of links.
+                        mLinks.push_back({ ned::LinkId(mNextLinkID++), inputPinId, outputPinId });
+
+                        // Draw new link.
+                        ned::Link(mLinks.back().Id, mLinks.back().InputId, mLinks.back().OutputId);
+                    }
+
+                    // You may choose to reject connection between these nodes
+                    // by calling ed::RejectNewItem(). This will allow editor to give
+                    // visual feedback by changing link thickness and color.
+                }
+            }
+        }
+        ned::EndCreate(); // Wraps up object creation action handling.
+
+        if (ned::BeginDelete())
+        {
+            // There may be many links marked for deletion, let's loop over them.
+            ned::LinkId deletedLinkId;
+            while (ned::QueryDeletedLink(&deletedLinkId))
+            {
+                // If you agree that link can be deleted, accept deletion.
+                if (ned::AcceptDeletedItem())
+                {
+                    // Then remove link from your data.
+                    for (int i = 0; i < mLinks.size(); i++)
+                    {
+                        auto& link = mLinks[i];
+                        if (link.Id == deletedLinkId)
+                        {
+                            mLinks.erase(mLinks.begin() + i);
+                            break;
+                        }
+                    }
+                }
+
+                // You may reject link deletion by calling:
+                // ed::RejectDeletedItem();
+            }
+        }
+        ned::EndDelete(); // Wrap up deletion action
 
         ned::End();
         if (mFirstFrame)

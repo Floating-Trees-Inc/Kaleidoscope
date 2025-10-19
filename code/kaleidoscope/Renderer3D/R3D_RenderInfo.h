@@ -27,7 +27,7 @@ namespace R3D
         uint OutputWidth;
         uint OutputHeight;
 
-        // Camera
+        // Camera (TODO: Use camera data struct. To be filled by CameraComponent::ToCameraData or EditorCamera::ToCameraData)
         glm::mat4 ViewProj;
         glm::mat4 View;
         glm::mat4 Proj;

@@ -30,6 +30,7 @@ namespace Editor
         ned::Config mConfig;
         ned::EditorContext* mContext;
         bool mFirstFrame = true;
+        int mNextLinkID = 100;
         KC::Array<LinkInfo> mLinks;
     };
 }

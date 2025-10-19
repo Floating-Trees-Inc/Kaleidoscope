@@ -90,7 +90,7 @@ namespace Editor
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
             mPanelManager->RegisterPanel<ViewportPanel>()->Open();
-            mPanelManager->RegisterPanel<RenderGraphEditor>();
+            mPanelManager->RegisterPanel<RenderGraphEditor>()->Open();
         }
 
         CODE_BLOCK("Finish start and go!") {
