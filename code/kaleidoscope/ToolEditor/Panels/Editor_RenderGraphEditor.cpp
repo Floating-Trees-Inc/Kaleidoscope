@@ -562,139 +562,154 @@ namespace Editor
             ImGui::Text("Add Render Pass");
             ImGui::PopStyleColor();
             ImGui::Separator();
-
-            // Core Rendering
-            ImGui::TextDisabled("Core Rendering");
-
-            // TODO: Add icons for each render pass type
-            bool hasGBuffer = HasUniquePassOfType<R3D::GBuffer>();
-            if (ImGui::MenuItem("GBuffer", nullptr, false, !hasGBuffer))
+            
+            // Core Rendering submenu
+            if (ImGui::BeginMenu("Core Rendering"))
             {
-                auto pass = mRenderGraph->AddPass<R3D::GBuffer>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
+                // TODO: Add icons for each render pass type
+                bool hasGBuffer = HasUniquePassOfType<R3D::GBuffer>();
+                if (ImGui::MenuItem("GBuffer", nullptr, false, !hasGBuffer))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::GBuffer>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasGBuffer) { ImGui::SetItemTooltip("Only one GBuffer allowed"); }
+                
+                bool hasLighting = HasUniquePassOfType<R3D::Lighting>();
+                if (ImGui::MenuItem("Lighting", nullptr, false, !hasLighting))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::Lighting>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasLighting) { ImGui::SetItemTooltip("Only one Lighting allowed"); }
+                
+                bool hasCompositor = HasUniquePassOfType<R3D::Compositor>();
+                if (ImGui::MenuItem("Compositor", nullptr, false, !hasCompositor))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::Compositor>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasCompositor) { ImGui::SetItemTooltip("Only one Compositor allowed"); }
+                
+                bool hasTiledLightCull = HasUniquePassOfType<R3D::TiledLightCull>();
+                if (ImGui::MenuItem("Tiled Light Cull", nullptr, false, !hasTiledLightCull))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::TiledLightCull>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasTiledLightCull) { ImGui::SetItemTooltip("Only one Tiled Light Cull allowed"); }
+                
+                bool hasSky = HasUniquePassOfType<R3D::Sky>();
+                if (ImGui::MenuItem("Sky", nullptr, false, !hasSky))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::Sky>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasSky) { ImGui::SetItemTooltip("Only one Sky allowed"); }
+                
+                bool hasCSM = HasUniquePassOfType<R3D::CascadedShadowMaps>();
+                if (ImGui::MenuItem("Cascaded Shadow Maps", nullptr, false, !hasCSM))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::CascadedShadowMaps>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasCSM) { ImGui::SetItemTooltip("Only one Cascaded Shadow Maps allowed"); }
+                
+                bool hasRasterRadiance = HasUniquePassOfType<R3D::RasterRadiance>();
+                if (ImGui::MenuItem("Raster Radiance", nullptr, false, !hasRasterRadiance))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::RasterRadiance>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasRasterRadiance) { ImGui::SetItemTooltip("Only one Raster Radiance allowed"); }
+                
+                ImGui::EndMenu();
             }
-            if (hasGBuffer) { ImGui::SetItemTooltip("Only one GBuffer allowed"); }
-
-            bool hasLighting = HasUniquePassOfType<R3D::Lighting>();
-            if (ImGui::MenuItem("Lighting", nullptr, false, !hasLighting))
+            
+            // Raytracing submenu
+            if (ImGui::BeginMenu("Raytracing"))
             {
-                auto pass = mRenderGraph->AddPass<R3D::Lighting>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
+                bool hasRTHardShadows = HasUniquePassOfType<R3D::RTHardShadows>();
+                if (ImGui::MenuItem("RT Hard Shadows", nullptr, false, !hasRTHardShadows))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::RTHardShadows>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasRTHardShadows) { ImGui::SetItemTooltip("Only one RT Hard Shadows allowed"); }
+                
+                ImGui::EndMenu();
             }
-            if (hasLighting) { ImGui::SetItemTooltip("Only one Lighting allowed"); }
-
-            bool hasCompositor = HasUniquePassOfType<R3D::Compositor>();
-            if (ImGui::MenuItem("Compositor", nullptr, false, !hasCompositor))
+            
+            // IBL submenu
+            if (ImGui::BeginMenu("IBL"))
             {
-                auto pass = mRenderGraph->AddPass<R3D::Compositor>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
+                bool hasIBLIrradiance = HasUniquePassOfType<R3D::IBLIrradiance>();
+                if (ImGui::MenuItem("IBL Irradiance", nullptr, false, !hasIBLIrradiance))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::IBLIrradiance>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasIBLIrradiance) { ImGui::SetItemTooltip("Only one IBL Irradiance allowed"); }
+                
+                bool hasIBLReflections = HasUniquePassOfType<R3D::IBLReflections>();
+                if (ImGui::MenuItem("IBL Reflections", nullptr, false, !hasIBLReflections))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::IBLReflections>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasIBLReflections) { ImGui::SetItemTooltip("Only one IBL Reflections allowed"); }
+                
+                ImGui::EndMenu();
             }
-            if (hasCompositor) { ImGui::SetItemTooltip("Only one Compositor allowed"); }
-
-            bool hasTiledLightCull = HasUniquePassOfType<R3D::TiledLightCull>();
-            if (ImGui::MenuItem("Tiled Light Cull", nullptr, false, !hasTiledLightCull))
+            
+            // Post FX submenu
+            if (ImGui::BeginMenu("Post FX"))
             {
-                auto pass = mRenderGraph->AddPass<R3D::TiledLightCull>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
+                bool hasBloom = HasUniquePassOfType<R3D::FXBloom>();
+                if (ImGui::MenuItem("Bloom", nullptr, false, !hasBloom))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::FXBloom>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasBloom) { ImGui::SetItemTooltip("Only one Bloom allowed"); }
+                
+                bool hasTonemapping = HasUniquePassOfType<R3D::FXTonemapping>();
+                if (ImGui::MenuItem("Tonemapping", nullptr, false, !hasTonemapping))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::FXTonemapping>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (hasTonemapping) { ImGui::SetItemTooltip("Only one Tonemapping allowed"); }
+                
+                ImGui::EndMenu();
             }
-            if (hasTiledLightCull) { ImGui::SetItemTooltip("Only one Tiled Light Cull allowed"); }
-
-            bool hasSky = HasUniquePassOfType<R3D::Sky>();
-            if (ImGui::MenuItem("Sky", nullptr, false, !hasSky))
+            
+            // Utility submenu
+            if (ImGui::BeginMenu("Utility"))
             {
-                auto pass = mRenderGraph->AddPass<R3D::Sky>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
+                // ClearTexture is not unique, can have multiple
+                if (ImGui::MenuItem("Clear Texture"))
+                {
+                    auto pass = mRenderGraph->AddPass<R3D::ClearTexture>();
+                    mNeedsRebuild = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                
+                ImGui::EndMenu();
             }
-            if (hasSky) { ImGui::SetItemTooltip("Only one Sky allowed"); }
-
-            bool hasCSM = HasUniquePassOfType<R3D::CascadedShadowMaps>();
-            if (ImGui::MenuItem("Cascaded Shadow Maps", nullptr, false, !hasCSM))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::CascadedShadowMaps>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasCSM) { ImGui::SetItemTooltip("Only one Cascaded Shadow Maps allowed"); }
-
-            bool hasRasterRadiance = HasUniquePassOfType<R3D::RasterRadiance>();
-            if (ImGui::MenuItem("Raster Radiance", nullptr, false, !hasRasterRadiance))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::RasterRadiance>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasRasterRadiance) { ImGui::SetItemTooltip("Only one Raster Radiance allowed"); }
-
-            ImGui::Separator();
-            ImGui::TextDisabled("Raytracing");
-
-            bool hasRTHardShadows = HasUniquePassOfType<R3D::RTHardShadows>();
-            if (ImGui::MenuItem("RT Hard Shadows", nullptr, false, !hasRTHardShadows))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::RTHardShadows>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasRTHardShadows) { ImGui::SetItemTooltip("Only one RT Hard Shadows allowed"); }
-
-            ImGui::Separator();
-            ImGui::TextDisabled("IBL");
-
-            bool hasIBLIrradiance = HasUniquePassOfType<R3D::IBLIrradiance>();
-            if (ImGui::MenuItem("IBL Irradiance", nullptr, false, !hasIBLIrradiance))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::IBLIrradiance>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasIBLIrradiance) { ImGui::SetItemTooltip("Only one IBL Irradiance allowed"); }
-
-            bool hasIBLReflections = HasUniquePassOfType<R3D::IBLReflections>();
-            if (ImGui::MenuItem("IBL Reflections", nullptr, false, !hasIBLReflections))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::IBLReflections>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasIBLReflections) { ImGui::SetItemTooltip("Only one IBL Reflections allowed"); }
-
-            ImGui::Separator();
-            ImGui::TextDisabled("Post FX");
-
-            bool hasBloom = HasUniquePassOfType<R3D::FXBloom>();
-            if (ImGui::MenuItem("Bloom", nullptr, false, !hasBloom))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::FXBloom>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasBloom) { ImGui::SetItemTooltip("Only one Bloom allowed"); }
-
-            bool hasTonemapping = HasUniquePassOfType<R3D::FXTonemapping>();
-            if (ImGui::MenuItem("Tonemapping", nullptr, false, !hasTonemapping))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::FXTonemapping>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (hasTonemapping) { ImGui::SetItemTooltip("Only one Tonemapping allowed"); }
-
-            ImGui::Separator();
-            ImGui::TextDisabled("Utility");
-
-            // ClearTexture is not unique, can have multiple
-            if (ImGui::MenuItem("Clear Texture"))
-            {
-                auto pass = mRenderGraph->AddPass<R3D::ClearTexture>();
-                mNeedsRebuild = true;
-                ImGui::CloseCurrentPopup();
-            }
-
+            
             ImGui::EndPopup();
         }
     }
