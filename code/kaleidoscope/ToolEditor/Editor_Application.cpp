@@ -90,7 +90,9 @@ namespace Editor
             mPanelManager = KC_NEW(PanelManager);
             mPanelManager->RegisterPanel<SceneHierarchyPanel>()->Open();
             mPanelManager->RegisterPanel<ViewportPanel>()->Open();
-            mPanelManager->RegisterPanel<RenderGraphEditor>()->Open();
+            auto* renderGraphEditor = mPanelManager->RegisterPanel<RenderGraphEditor>();
+            renderGraphEditor->SetRenderGraph(mRenderGraph);
+            renderGraphEditor->Open();
         }
 
         CODE_BLOCK("Finish start and go!") {
@@ -282,9 +284,6 @@ namespace Editor
         auto gbuffer = mRenderGraph->AddPass<R3D::GBuffer>();
         auto compositor = mRenderGraph->AddPass<R3D::Compositor>();
         auto lightCull = mRenderGraph->AddPass<R3D::TiledLightCull>();
-        auto rtShadows = mRenderGraph->AddPass<R3D::RTHardShadows>();
-        auto rasterRadiance = mRenderGraph->AddPass<R3D::RasterRadiance>();
-        auto lighting = mRenderGraph->AddPass<R3D::Lighting>();
 
         // Tiled light cull
         mRenderGraph->ConnectPins(gbuffer, lightCull, gbuffer->Pins().FindOutputByUIName("Depth"), lightCull->Pins().Inputs[0]);

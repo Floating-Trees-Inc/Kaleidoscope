@@ -25,15 +25,15 @@ namespace R3D
         mName = "GBuffer";
 
         // Pins
-        RegisterOutputPin("Depth", GBufferResources::DEPTH);
-        RegisterOutputPin("Normal", GBufferResources::NORMAL);
-        RegisterOutputPin("Albedo", GBufferResources::ALBEDO);
-        RegisterOutputPin("Metallic Roughness", GBufferResources::METALLIC_ROUGHNESS);
-        RegisterOutputPin("Emissive", GBufferResources::EMISSIVE);
-        RegisterOutputPin("Motion Vectors", GBufferResources::MOTION_VECTORS);
-        RegisterOutputPin("Previous Depth", GBufferResources::PREV_DEPTH);
-        RegisterOutputPin("Previous Normal", GBufferResources::PREV_NORMAL);
-        RegisterOutputPin("Camera Data", GBufferResources::CAMERA_BUFFER);
+        RegisterOutputPin("Depth", GBufferResources::DEPTH, PinResourceType::kTexture);
+        RegisterOutputPin("Normal", GBufferResources::NORMAL, PinResourceType::kTexture);
+        RegisterOutputPin("Albedo", GBufferResources::ALBEDO, PinResourceType::kTexture);
+        RegisterOutputPin("Metallic Roughness", GBufferResources::METALLIC_ROUGHNESS, PinResourceType::kTexture);
+        RegisterOutputPin("Emissive", GBufferResources::EMISSIVE, PinResourceType::kTexture);
+        RegisterOutputPin("Motion Vectors", GBufferResources::MOTION_VECTORS, PinResourceType::kTexture);
+        RegisterOutputPin("Previous Depth", GBufferResources::PREV_DEPTH, PinResourceType::kTexture);
+        RegisterOutputPin("Previous Normal", GBufferResources::PREV_NORMAL, PinResourceType::kTexture);
+        RegisterOutputPin("Camera Data", GBufferResources::CAMERA_BUFFER, PinResourceType::kRingBuffer);
 
         // Attachments
         KGPU::TextureDesc depthDesc, normalDesc, albedoDesc, pbrDesc;

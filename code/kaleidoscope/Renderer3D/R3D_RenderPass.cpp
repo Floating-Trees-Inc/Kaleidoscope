@@ -7,29 +7,32 @@
 
 namespace R3D
 {
-    void RenderPass::RegisterInputPin(const char* uiName, KC::String& storeInto, bool optional)
+    void RenderPass::RegisterInputPin(const char* uiName, KC::String& storeInto, bool optional, PinResourceType type)
     {
         InputPin p;
         p.UI.Name = uiName;
+        p.UI.Type = type;
         p.StoreInto = &storeInto;
         p.Optional = optional;
 
         mPins.Inputs.push_back(p);
     }
 
-    void RenderPass::RegisterOutputPin(const char* uiName, const char* pinName)
+    void RenderPass::RegisterOutputPin(const char* uiName, const char* pinName, PinResourceType type)
     {
         OutputPin p;
         p.UI.Name = uiName;
+        p.UI.Type = type;
         p.PinName = pinName;
         
         mPins.Outputs.push_back(p);
     }
 
-    void RenderPass::RegisterPassThroughPin(const char* uiName, KC::String& inputRef)
+    void RenderPass::RegisterPassThroughPin(const char* uiName, KC::String& inputRef, PinResourceType type)
     {
         OutputPin p;
         p.UI.Name = uiName;
+        p.UI.Type = type;
         p.PinName = nullptr; // Will be set during validation/execution
         p.IsPassThrough = true;
         p.PassThroughInputRef = &inputRef;
@@ -37,10 +40,10 @@ namespace R3D
         mPins.Outputs.push_back(p);
     }
 
-    void RenderPass::RegisterInPlacePin(const char* inputUIName, const char* outputUIName, KC::String& storeInto, bool optional)
+    void RenderPass::RegisterInPlacePin(const char* inputUIName, const char* outputUIName, KC::String& storeInto, bool optional, PinResourceType type)
     {
-        RegisterInputPin(inputUIName, storeInto, optional);
-        RegisterPassThroughPin(outputUIName, storeInto);
+        RegisterInputPin(inputUIName, storeInto, optional, type);
+        RegisterPassThroughPin(outputUIName, storeInto, type);
     }
 
     bool RenderPass::ValidatePins(KC::String* err) const

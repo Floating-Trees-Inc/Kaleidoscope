@@ -16,6 +16,8 @@ namespace R3D
         ClearTexture();
         ~ClearTexture();
 
+        bool IsUnique() const override { return false; } // Allow multiple clear texture nodes
+
         void Execute(const RenderInfo& info) override;
     private:
         KC::String mOutputTexture;

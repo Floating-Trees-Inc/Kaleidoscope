@@ -15,6 +15,19 @@ namespace R3D
     class RenderGraph
     {
     public:
+        struct RGNode {
+            RenderPass* Pass = nullptr;
+            KC::Array<int> OutEdges;
+            int InDegree = 0;
+        };
+
+        struct Connection {
+            RenderPass* SrcPass;
+            RenderPass* DstPass;
+            const OutputPin* SrcPin;
+            InputPin* DstPin;
+        };
+
         RenderGraph() = default;
         ~RenderGraph();
 
@@ -29,22 +42,15 @@ namespace R3D
 
         bool ConnectPins(RenderPass* srcPass, RenderPass* dstPass, const OutputPin& srcOut, InputPin& dstIn, KC::String* err = nullptr);
         bool DisconnectPins(RenderPass* srcPass, RenderPass* dstPass, const OutputPin& srcOut, InputPin& dstIn, KC::String* err = nullptr);
+        bool RemovePass(RenderPass* pass, KC::String* err = nullptr);
         bool Compile(KC::String* err = nullptr);
         void Execute(const RenderInfo& info);
+        
+        // Access methods for editor/debugging
+        const KC::Array<RGNode>& GetNodes() const { return mNodes; }
+        const KC::Array<Connection>& GetConnections() const { return mConnections; }
+        
     private:
-        struct RGNode {
-            RenderPass* Pass = nullptr;
-            KC::Array<int> OutEdges;
-            int InDegree = 0;
-        };
-
-        struct Connection {
-            RenderPass* SrcPass;
-            RenderPass* DstPass;
-            const OutputPin* SrcPin;
-            InputPin* DstPin;
-        };
-
         KC::Array<RGNode> mNodes;
         KC::Array<Connection> mConnections;
         KC::Array<RenderPass*> mExecutionList;

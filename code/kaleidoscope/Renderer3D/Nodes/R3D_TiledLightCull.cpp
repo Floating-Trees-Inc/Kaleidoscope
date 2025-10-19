@@ -17,10 +17,10 @@ namespace R3D
     TiledLightCull::TiledLightCull()
         : RenderPass("Tiled Light Cull")
     {
-        RegisterInputPin("Depth", mDepthInput);
-        RegisterInputPin("Camera Data", mCameraDataInput);
-        RegisterOutputPin("Tile Buffer", TiledLightCullResources::TILE_BUFFER);
-        RegisterOutputPin("Tile Indices Buffer", TiledLightCullResources::TILE_INDICES_BUFFER);
+        RegisterInputPin("Depth", mDepthInput, false, PinResourceType::kTexture);
+        RegisterInputPin("Camera Data", mCameraDataInput, false, PinResourceType::kRingBuffer);
+        RegisterOutputPin("Tile Buffer", TiledLightCullResources::TILE_BUFFER, PinResourceType::kBuffer);
+        RegisterOutputPin("Tile Indices Buffer", TiledLightCullResources::TILE_INDICES_BUFFER, PinResourceType::kBuffer);
 
         uint maxTilesX = GetNumTilesX(R3D::SCREEN_WIDTH);
         uint maxTilesY = GetNumTilesY(R3D::SCREEN_HEIGHT);

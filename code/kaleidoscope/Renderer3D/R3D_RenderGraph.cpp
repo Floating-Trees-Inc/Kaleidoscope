@@ -104,6 +104,63 @@ namespace R3D
         return true;
     }
 
+    bool RenderGraph::RemovePass(RenderPass* pass, KC::String* err)
+    {
+        int passIdx = FindNodeIndex(pass);
+        if (passIdx < 0) {
+            if (err) *err = "RemovePass: pass not found in graph.";
+            return false;
+        }
+
+        // Remove all connections involving this pass
+        for (size_t i = 0; i < mConnections.size(); )
+        {
+            const auto& conn = mConnections[i];
+            if (conn.SrcPass == pass || conn.DstPass == pass)
+            {
+                // Clear the input pin storage if this is the destination
+                if (conn.DstPass != pass && conn.DstPin && conn.DstPin->StoreInto)
+                {
+                    *conn.DstPin->StoreInto = nullptr;
+                }
+                
+                mConnections.erase(mConnections.begin() + i);
+            }
+            else
+            {
+                ++i;
+            }
+        }
+
+        // Update in-degrees and out-edges for remaining nodes
+        // First, rebuild edges from scratch based on remaining connections
+        for (auto& node : mNodes)
+        {
+            node.OutEdges.clear();
+            node.InDegree = 0;
+        }
+
+        for (const auto& conn : mConnections)
+        {
+            int srcIdx = FindNodeIndex(conn.SrcPass);
+            int dstIdx = FindNodeIndex(conn.DstPass);
+            if (srcIdx >= 0 && dstIdx >= 0)
+            {
+                mNodes[srcIdx].OutEdges.push_back(dstIdx);
+                mNodes[dstIdx].InDegree += 1;
+            }
+        }
+
+        // Delete the pass and remove from nodes array
+        KC_DELETE(mNodes[passIdx].Pass);
+        mNodes.erase(mNodes.begin() + passIdx);
+
+        // Mark as needing recompilation
+        mComplete = false;
+
+        return true;
+    }
+
     bool RenderGraph::Compile(KC::String* err)
     {
         // Mark active nodes: any node that participates in at least one edge.

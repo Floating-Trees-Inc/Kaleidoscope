@@ -17,7 +17,14 @@ namespace R3D
         kOutput
     };
 
-    struct PinUI { KC::String Name; };
+    enum class PinResourceType : uint8
+    {
+        kTexture,
+        kBuffer,
+        kRingBuffer
+    };
+
+    struct PinUI { KC::String Name; PinResourceType Type = PinResourceType::kTexture; };
 
     struct InputPin
     {
@@ -27,6 +34,8 @@ namespace R3D
         const char* PinName = nullptr;
 
         KC::UUID UUID = KC::NewUUID();
+
+        PinResourceType GetResourceType() const { return UI.Type; }
     };
 
     struct OutputPin
@@ -39,6 +48,8 @@ namespace R3D
         KC::String* PassThroughInputRef = nullptr;
 
         KC::UUID UUID = KC::NewUUID();
+
+        PinResourceType GetResourceType() const { return UI.Type; }
     };
 
     struct PinSet
@@ -79,10 +90,12 @@ namespace R3D
 
         virtual ~RenderPass() = default;
 
-        void RegisterInputPin(const char* uiName, KC::String& storeInto, bool optional = false);
-        void RegisterOutputPin(const char* uiName, const char* pinName);
-        void RegisterPassThroughPin(const char* uiName, KC::String& inputRef);
-        void RegisterInPlacePin(const char* inputUIName, const char* outputUIName, KC::String& storeInto, bool optional = false);
+        virtual bool IsUnique() const { return true; } // Most nodes are unique by default
+
+        void RegisterInputPin(const char* uiName, KC::String& storeInto, bool optional = false, PinResourceType type = PinResourceType::kTexture);
+        void RegisterOutputPin(const char* uiName, const char* pinName, PinResourceType type = PinResourceType::kTexture);
+        void RegisterPassThroughPin(const char* uiName, KC::String& inputRef, PinResourceType type = PinResourceType::kTexture);
+        void RegisterInPlacePin(const char* inputUIName, const char* outputUIName, KC::String& storeInto, bool optional = false, PinResourceType type = PinResourceType::kTexture);
 
         bool ValidatePins(KC::String* err = nullptr) const;
 
