@@ -8,6 +8,7 @@
 #include "KGPU_CommandList.h"
 #include "KernelCore/KC_DeletionQueue.h"
 #include "R3D_Manager.h"
+#include "R3D_RenderPass.h"
 
 #include <Graphics/Gfx_ResourceManager.h>
 #include <Graphics/Gfx_ShaderManager.h>
@@ -18,10 +19,10 @@ namespace R3D
     RTHardShadows::RTHardShadows()
         : RenderPass("Raytraced Shadows")
     {
-        RegisterInputPin("Camera Data", mCameraInput);
-        RegisterInputPin("Depth", mDepthInput);
-        RegisterInputPin("Normal", mNormalInput);
-        RegisterOutputPin("Visibility Mask", RTHardShadowsResources::VISIBILITY_MASK);
+        RegisterInputPin("Camera Data", mCameraInput, false, PinResourceType::kRingBuffer);
+        RegisterInputPin("Depth", mDepthInput, false, PinResourceType::kTexture);
+        RegisterInputPin("Normal", mNormalInput, false, PinResourceType::kTexture);
+        RegisterOutputPin("Visibility Mask", RTHardShadowsResources::VISIBILITY_MASK, PinResourceType::kTexture);
 
         // Textures
         KGPU::TextureDesc visibilityDesc;

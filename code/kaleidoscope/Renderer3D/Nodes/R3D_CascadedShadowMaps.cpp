@@ -60,8 +60,8 @@ namespace R3D
         pipelineDesc.DepthOperation = KGPU::DepthOperation::kLess;
         pipelineDesc.CullMode = KGPU::CullMode::kBack;
 
-        Gfx::ShaderManager::SubscribeGraphics("data/kd/nodes/csm/draw.kds", pipelineDesc);
-        Gfx::ShaderManager::SubscribeCompute("data/kd/nodes/csm/populate.kds");
+        Gfx::ShaderManager::SubscribeGraphics("data/kd/shaders/nodes/csm/draw.kds", pipelineDesc);
+        Gfx::ShaderManager::SubscribeCompute("data/kd/shaders/nodes/csm/populate.kds");
     }
 
     CascadedShadowMaps::~CascadedShadowMaps()
@@ -179,7 +179,7 @@ namespace R3D
 
         for (int i = 0; i < SHADOW_CASCADE_COUNT; i++) {
             KGPU::ScopedMarker marker(info.CmdList, "Cascade " + std::to_string(i));
-            KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/nodes/csm/draw.kds");
+            KGPU::IGraphicsPipeline* pipeline = Gfx::ShaderManager::GetGraphics("data/kd/shaders/nodes/csm/draw.kds");
             const char* indexToID[4] = { CSMResources::CASCADE_0, CSMResources::CASCADE_1, CSMResources::CASCADE_2, CSMResources::CASCADE_3 };
 
             Gfx::Resource& depthTexture = Gfx::ResourceManager::Import(indexToID[i], info.CmdList, Gfx::ImportType::kDepthWrite);

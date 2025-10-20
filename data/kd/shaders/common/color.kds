@@ -16,4 +16,9 @@ float4 UnpackColor(uint u)
     return color;
 }
 
+float Luminance(float3 linearRgb)
+{
+    return dot(linearRgb, float3(0.2126729, 0.7151522, 0.0721750));
+}
+
 #endif

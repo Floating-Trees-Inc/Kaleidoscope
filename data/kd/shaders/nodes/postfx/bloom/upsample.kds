@@ -5,7 +5,7 @@
 
 #include "kd/shaders/common/bindless.kds"
 #include "kd/shaders/common/compute.kds"
-#include "kd/shaders/common/colors.kds"
+#include "kd/shaders/common/color.kds"
 
 #pragma compute CSMain
 
