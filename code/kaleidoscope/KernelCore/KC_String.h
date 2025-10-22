@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <iostream>
 #include <string>
 #include <string_view>
+#include <locale>
+#include <codecvt>
 
-#include "KC_Common.h"
 #include "KC_Array.h"
 
 namespace KC
@@ -29,52 +29,18 @@ namespace KC
         bool StartsWith(const String& s, const String& prefix);
     }
 
-    template<typename CharSource, typename CharDest>
-    inline uint64 StringConvert(const CharSource* source, CharDest* dest, int size);
-    
-    template<>
-    inline uint64 StringConvert(const wchar_t* source, char* destination, int size)
+    inline String WCharToChar(const wchar_t* wstr)
     {
-#ifdef KD_MAC
-        return wcstombs(destination, source, size);
-#elif defined(KD_WINDOWS)
-        uint64 converted = 0;
-        wcstombs_s(&converted, destination, size, source, size);
-        return converted;
-#endif
+        if (!wstr) return {};
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+        return conv.to_bytes(wstr);
     }
-    
-    template<>
-    inline uint64 StringConvert(const char* source, wchar_t* destination, int size)
-    {
-#ifdef KD_MAC
-        return mbstowcs(destination, source, size);
-#elif defined(KD_WINDOWS)
-        uint64 converted = 0;
-        mbstowcs_s(&converted, destination, size, source, size);
-        return converted;
-#endif
-    }
-    
-    template<typename CharSource, typename CharDest>
-    struct StringConverter
-    {
-        StringConverter(const CharSource* str)
-            : mString({})
-        {
-            StringConvert<CharSource, CharDest>(str, mString, 128);
-        }
-    
-        CharDest* Get() { return mString; }
-    
-        const CharDest* operator*() const { return mString; }
-    private:
-        CharDest mString[128];
-    };
-    
-    using UnicodeToMultibyte = StringConverter<wchar_t, char>;
-    using MultibyteToUnicode = StringConverter<char, wchar_t>;
-}
 
-#define UNICODE_TO_MULTIBYTE(input) KC::UnicodeToMultibyte(input).Get()
-#define MULTIBYTE_TO_UNICODE(input) KC::MultibyteToUnicode(input).Get()
+    // Convert char* (UTF-8) to wchar_t*
+    inline WString CharToWChar(const char* str)
+    {
+        if (!str) return {};
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+        return conv.from_bytes(str);
+    }
+}

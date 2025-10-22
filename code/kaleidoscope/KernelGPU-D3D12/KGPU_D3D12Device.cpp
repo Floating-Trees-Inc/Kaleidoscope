@@ -66,7 +66,7 @@ namespace KGPU
         DXGI_ADAPTER_DESC1 desc;
         mAdapter->GetDesc1(&desc);
 
-        KD_INFO("Choosing D3D12 GPU : %s", UNICODE_TO_MULTIBYTE(desc.Description));
+        KD_INFO("Choosing D3D12 GPU : %s", KC::WCharToChar(desc.Description).c_str());
 
         // Create device.
         result = D3D12CreateDevice(mAdapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&mDevice));

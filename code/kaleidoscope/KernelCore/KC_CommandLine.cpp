@@ -4,6 +4,7 @@
 //
 
 #include "KC_CommandLine.h"
+#include "KC_String.h"
 
 #ifdef KD_WINDOWS
     #define WIN32_LEAN_AND_MEAN
@@ -39,7 +40,7 @@ namespace KC
         sData.sArgv.clear();
         sData.sArgv.reserve(argc);
         for (int i = 0; i < argc; ++i)
-            sData.sArgv.emplace_back(UNICODE_TO_MULTIBYTE(argv[i]));
+            sData.sArgv.emplace_back(WCharToChar(argv[i]));
         FinalizeCStrArray();
     }
     
@@ -52,7 +53,7 @@ namespace KC
         {
             sData.sArgv.reserve(argcW);
             for (int i = 0; i < argcW; ++i)
-                sData.sArgv.emplace_back(UNICODE_TO_MULTIBYTE(wargv[i]));
+                sData.sArgv.emplace_back(WCharToChar(wargv[i]));
             ::LocalFree(wargv);
         }
         FinalizeCStrArray();

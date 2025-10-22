@@ -5,6 +5,7 @@
 
 #include "KGPU_D3D12Buffer.h"
 #include "KGPU_D3D12Device.h"
+#include "KernelCore/KC_String.h"
 
 namespace KGPU
 {
@@ -50,7 +51,7 @@ namespace KGPU
 
     void D3D12Buffer::SetName(const KC::String& name)
     {
-        mResource->SetName(MULTIBYTE_TO_UNICODE(name.c_str()));
+        mResource->SetName(KC::CharToWChar(name.c_str()).c_str());
     }
 
     void* D3D12Buffer::Map()

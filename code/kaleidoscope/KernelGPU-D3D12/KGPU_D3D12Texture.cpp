@@ -54,7 +54,7 @@ namespace KGPU
     
     void D3D12Texture::SetName(const KC::String& name)
     {
-        mResource->SetName(MULTIBYTE_TO_UNICODE(name.c_str()));
+        mResource->SetName(KC::CharToWChar(name.c_str()).c_str());
     }
     
     DXGI_FORMAT D3D12Texture::TranslateToDXGIFormat(TextureFormat format)

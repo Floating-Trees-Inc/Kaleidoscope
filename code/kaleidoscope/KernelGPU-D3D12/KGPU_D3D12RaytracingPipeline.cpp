@@ -5,6 +5,7 @@
 
 #include "KGPU_D3D12RaytracingPipeline.h"
 #include "KGPU_D3D12Device.h"
+#include "KernelCore/KC_String.h"
 
 namespace KGPU
 {
@@ -49,7 +50,7 @@ namespace KGPU
             
         for (auto& stage : desc.Modules) {
             // Persist wide string
-            exportNames.push_back(MULTIBYTE_TO_UNICODE(stage.Entry.c_str()));
+            exportNames.push_back(KC::CharToWChar(stage.Entry.c_str()));
             
             D3D12_EXPORT_DESC exportDesc = {};
             exportDesc.Name = exportNames.back().c_str(); // safe: exportNames is stable
@@ -94,15 +95,15 @@ namespace KGPU
                                      : D3D12_HIT_GROUP_TYPE_TRIANGLES;
             
         if (closestHit) {
-            importClosestHitW.push_back(MULTIBYTE_TO_UNICODE(closestHit->Entry.c_str()));
+            importClosestHitW.push_back(KC::CharToWChar(closestHit->Entry.c_str()));
             hitGroup.ClosestHitShaderImport = importClosestHitW.back().c_str();
         }
         if (anyHit) {
-            importAnyHitW.push_back(MULTIBYTE_TO_UNICODE(anyHit->Entry.c_str()));
+            importAnyHitW.push_back(KC::CharToWChar(anyHit->Entry.c_str()));
             hitGroup.AnyHitShaderImport = importAnyHitW.back().c_str();
         }
         if (intersection) {
-            importIntersectionW.push_back(MULTIBYTE_TO_UNICODE(intersection->Entry.c_str()));
+            importIntersectionW.push_back(KC::CharToWChar(intersection->Entry.c_str()));
             hitGroup.IntersectionShaderImport = importIntersectionW.back().c_str();
         }
         
@@ -168,8 +169,8 @@ namespace KGPU
             pData = static_cast<char*>(pData) + D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
         };
     
-        writeId(MULTIBYTE_TO_UNICODE(raygen->Entry.c_str()));
-        writeId(MULTIBYTE_TO_UNICODE(miss->Entry.c_str()));
+        writeId(KC::CharToWChar(raygen->Entry.c_str()).c_str());
+        writeId(KC::CharToWChar(miss->Entry.c_str()).c_str());
         if (closestHit || anyHit || intersection) {
             writeId(hitGroupName.c_str());
         }
